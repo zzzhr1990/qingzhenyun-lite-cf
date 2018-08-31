@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.9.0)
-if(MSVC)
-    SET(CMAKE_TOOLCHAIN_FILE "G:/vcpkg/scripts/buildsystems/vcpkg.cmake")
-endif()
+SET(CMAKE_TOOLCHAIN_FILE "G:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 SET(LINKING_TYPE "dynamic")
 SET(PROJECT_NAME "qingzhenyun-lite")
 project(${PROJECT_NAME})

@@ -29,6 +29,7 @@
 #include "wx/wx.h"
 #endif
 #include "frames/main_frame.h"
+#include "./common/common_window_ids.h"
 
 // ----------------------------------------------------------------------------
 // resources
@@ -83,8 +84,11 @@ enum
 // handlers) which process them. It can be also done at run-time, but for the
 // simple menu events like this the static method is much simpler.
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(Minimal_Quit, MainFrame::OnQuit)
-EVT_MENU(Minimal_About, MainFrame::OnAbout)
+	EVT_MENU(wxID_EXIT, MainFrame::OnQuit)
+	EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
+	EVT_MENU(ID_USER_LOGIN_MENU_ITEM, MainFrame::OnLoginMenuClick)
+// EVT_WINDOW_CREATE(MainFrame::OnWindowCreate)
+// EVT_MENU(8848, MainFrame::CloseLogWindow)
 wxEND_EVENT_TABLE()
 
 // Create a new application object: this macro will allow wxWidgets to create

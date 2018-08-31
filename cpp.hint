@@ -2,3 +2,4 @@
 // such as names of functions and macros.
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define wxOVERRIDE
+#define wxBEGIN_EVENT_TABLE(theClass, baseClass) const wxEventTable theClass::sm_eventTable = { &baseClass::sm_eventTable, &theClass::sm_eventTableEntries[0] }; const wxEventTable *theClass::GetEventTable() const { return &theClass::sm_eventTable; } wxEventHashTable theClass::sm_eventHashTable(theClass::sm_eventTable); wxEventHashTable &theClass::GetEventHashTable() const { return theClass::sm_eventHashTable; } const wxEventTableEntry theClass::sm_eventTableEntries[] = {
