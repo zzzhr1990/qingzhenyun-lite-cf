@@ -1,0 +1,37 @@
+/* XPM */
+static const char *delete_task_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 15 1",
+"= c #FF3300",
+"; c #9B0000",
+"@ c #FF731E",
+"X c #FFCCFF",
+". c #CA2900",
+"O c #930000",
+"- c #FF2900",
+"+ c #FF7E1C",
+"& c #FF4C0C",
+"# c #FF6C14",
+"* c #FF3A02",
+"  c None",
+"$ c #FF6015",
+"% c #FF5A0B",
+"o c #FF8320",
+/* pixels */
+"                ",
+"   ..      ..   ",
+"  .XX.    .XX.  ",
+" .XooX.  .XooX. ",
+" Ooo++X..X++ooO ",
+"  O@@##XX##@@O  ",
+"   O$$%%%%$$O   ",
+"    O&&&&&&O    ",
+"    .******.    ",
+"   .X======X.   ",
+"  .X-======-X.  ",
+" .X--==OO===-X. ",
+" O--==O  O====O ",
+"  ;==O    O==O  ",
+"   OO      OO   ",
+"                "
+};
