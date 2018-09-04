@@ -8,6 +8,7 @@ set(default_build_type "Debug")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
@@ -22,6 +23,8 @@ else(MSVC)
     include(${wxWidgets_USE_FILE})
 endif()
 find_package(cpprestsdk REQUIRED cpprestsdk cpprest web pplx)
+find_package(Boost REQUIRED filesystem system chrono thread)
+
 message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #file(GLOB helloworld_SRC
 #    "*.h"
@@ -41,4 +44,4 @@ if(MSVC)
 else(MSVC)
     add_executable(${PROJECT_NAME} ${FINAL_RES})
 endif()
-target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES}  cpprestsdk::cpprest)
+target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} cpprestsdk::cpprest)

@@ -99,7 +99,7 @@ bool QingzhenApp::OnInit()
 #if wxUSE_GIF
 	wxImage::AddHandler(new wxGIFHandler);
 #endif
-	MainFrame* mainWindow = new MainFrame( NULL );
+	MainFrame* mainWindow = new MainFrame(nullptr);
 	mainWindow->Show(true);
 ////@end QingzhenApp initialisation
 

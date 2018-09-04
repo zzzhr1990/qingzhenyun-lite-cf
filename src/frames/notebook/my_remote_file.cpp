@@ -25,6 +25,7 @@
 ////@end includes
 
 #include "my_remote_file.h"
+#include "../../model/remote_file_model.h"
 
 ////@begin XPM images
 #include "../../resources/refresh.xpm"
@@ -35,21 +36,22 @@
 #include "../../resources/copy.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
+#include "../../util/common_util.h"
 ////@end XPM images
 
 
 /*
- * NyRemoteFilePanel type definition
+ * MyRemoteFilePanel type definition
  */
 
-IMPLEMENT_DYNAMIC_CLASS( NyRemoteFilePanel, wxPanel )
+IMPLEMENT_DYNAMIC_CLASS( MyRemoteFilePanel, wxPanel )
 
 
 /*
- * NyRemoteFilePanel event table definition
+ * MyRemoteFilePanel event table definition
  */
 
-BEGIN_EVENT_TABLE( NyRemoteFilePanel, wxPanel )
+BEGIN_EVENT_TABLE( MyRemoteFilePanel, wxPanel )
 
 ////@begin NyRemoteFilePanel event table entries
 ////@end NyRemoteFilePanel event table entries
@@ -58,15 +60,15 @@ END_EVENT_TABLE()
 
 
 /*
- * NyRemoteFilePanel constructors
+ * MyRemoteFilePanel constructors
  */
 
-NyRemoteFilePanel::NyRemoteFilePanel()
+MyRemoteFilePanel::MyRemoteFilePanel()
 {
     Init();
 }
 
-NyRemoteFilePanel::NyRemoteFilePanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
+MyRemoteFilePanel::MyRemoteFilePanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 {
     Init();
     Create(parent, id, pos, size, style);
@@ -74,10 +76,10 @@ NyRemoteFilePanel::NyRemoteFilePanel(wxWindow* parent, wxWindowID id, const wxPo
 
 
 /*
- * NyRemoteFilePanel creator
+ * MyRemoteFilePanel creator
  */
 
-bool NyRemoteFilePanel::Create(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
+bool MyRemoteFilePanel::Create(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 {
 ////@begin NyRemoteFilePanel creation
     SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
@@ -91,10 +93,10 @@ bool NyRemoteFilePanel::Create(wxWindow* parent, wxWindowID id, const wxPoint& p
 
 
 /*
- * NyRemoteFilePanel destructor
+ * MyRemoteFilePanel destructor
  */
 
-NyRemoteFilePanel::~NyRemoteFilePanel()
+MyRemoteFilePanel::~MyRemoteFilePanel()
 {
 ////@begin NyRemoteFilePanel destruction
 ////@end NyRemoteFilePanel destruction
@@ -105,7 +107,7 @@ NyRemoteFilePanel::~NyRemoteFilePanel()
  * Member initialisation
  */
 
-void NyRemoteFilePanel::Init()
+void MyRemoteFilePanel::Init()
 {
 ////@begin NyRemoteFilePanel member initialisation
 ////@end NyRemoteFilePanel member initialisation
@@ -113,13 +115,13 @@ void NyRemoteFilePanel::Init()
 
 
 /*
- * Control creation for NyRemoteFilePanel
+ * Control creation for MyRemoteFilePanel
  */
 
-void NyRemoteFilePanel::CreateControls()
+void MyRemoteFilePanel::CreateControls()
 {    
 ////@begin NyRemoteFilePanel content construction
-    NyRemoteFilePanel* itemPanel1 = this;
+    MyRemoteFilePanel* itemPanel1 = this;
 
     this->SetName(wxT("MyRemoteFiles"));
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
@@ -137,31 +139,34 @@ void NyRemoteFilePanel::CreateControls()
 
     wxBitmapButton* itemBitmapButton6 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON, itemPanel1->GetBitmapResource(wxT("refresh.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBitmapButton6->SetHelpText(_("Refresh"));
-    if (NyRemoteFilePanel::ShowToolTips())
+    if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton6->SetToolTip(_("Refresh"));
     itemBoxSizer3->Add(itemBitmapButton6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBitmapButton* itemBitmapButton2 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON5, itemPanel1->GetBitmapResource(wxT("up_level.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBitmapButton2->SetHelpText(_("Refresh"));
-    if (NyRemoteFilePanel::ShowToolTips())
+    if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton2->SetToolTip(_("Refresh"));
     itemBoxSizer3->Add(itemBitmapButton2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBitmapButton* itemBitmapButton7 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON1, itemPanel1->GetBitmapResource(wxT("search.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBitmapButton7->SetHelpText(_("Search"));
-    if (NyRemoteFilePanel::ShowToolTips())
+    if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton7->SetToolTip(_("Search"));
     itemBoxSizer3->Add(itemBitmapButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBitmapButton* itemBitmapButton1 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON23, itemPanel1->GetBitmapResource(wxT("new_directory.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBitmapButton1->SetHelpText(_("New directory"));
-    if (NyRemoteFilePanel::ShowToolTips())
+    if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton1->SetToolTip(_("New directory"));
     itemBoxSizer3->Add(itemBitmapButton1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxListCtrl* itemListCtrl1 = new wxListCtrl( itemPanel1, ID_LISTCTRL, wxDefaultPosition, wxSize(100, 100), wxLC_REPORT );
-    itemBoxSizer2->Add(itemListCtrl1, 1, wxGROW|wxALL, 5);
-	itemListCtrl1->AppendColumn(_("Type"),wxLIST_FORMAT_CENTER,120);
+    mainListCtrl = new wxListCtrl( itemPanel1, ID_LISTCTRL, wxDefaultPosition, wxSize(100, 100), wxLC_REPORT );
+    itemBoxSizer2->Add(mainListCtrl, 1, wxGROW|wxALL, 5);
+    mainListCtrl->AppendColumn(_("Type"),wxLIST_FORMAT_CENTER);
+	mainListCtrl->AppendColumn(_("Filename"),wxLIST_FORMAT_CENTER,120);
+    mainListCtrl->AppendColumn(_("FileSize"),wxLIST_FORMAT_CENTER);
+    mainListCtrl->AppendColumn(_("FileType"),wxLIST_FORMAT_CENTER);
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer4, 0, wxGROW, 5);
@@ -175,7 +180,7 @@ void NyRemoteFilePanel::CreateControls()
 
     wxBitmapButton* itemBitmapButton5 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON2, itemPanel1->GetBitmapResource(wxT("delete_trash.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBitmapButton5->SetHelpText(_("Delete"));
-    if (NyRemoteFilePanel::ShowToolTips())
+    if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton5->SetToolTip(_("Delete Select Files"));
     itemBoxSizer4->Add(itemBitmapButton5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
@@ -188,15 +193,17 @@ void NyRemoteFilePanel::CreateControls()
     wxStaticText* itemStaticText7 = new wxStaticText( itemPanel1, wxID_STATIC, _("0 / 1024 MB"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer6->Add(itemStaticText7, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
-    wxBitmapButton* itemBitmapButton12 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON6, itemPanel1->GetBitmapResource(wxT("left_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-    itemBoxSizer4->Add(itemBitmapButton12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBitmapButton* prevPageBtn = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON6, itemPanel1->GetBitmapResource(wxT("left_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    itemBoxSizer4->Add(prevPageBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxTextCtrl* itemTextCtrl13 = new wxTextCtrl( itemPanel1, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer4->Add(itemTextCtrl13, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxBitmapButton* itemBitmapButton14 = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON7, itemPanel1->GetBitmapResource(wxT("right_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-    itemBoxSizer4->Add(itemBitmapButton14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBitmapButton* nextPageBtn = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON7, itemPanel1->GetBitmapResource(wxT("right_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    itemBoxSizer4->Add(nextPageBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
+    this->Bind(wxEVT_THREAD,&MyRemoteFilePanel::OnThreadEvent,this);
+    mainListCtrl->Bind(wxEVT_SIZE,&MyRemoteFilePanel::OnSizeChanged,this);
 ////@end NyRemoteFilePanel content construction
 }
 
@@ -205,7 +212,7 @@ void NyRemoteFilePanel::CreateControls()
  * Should we show tooltips?
  */
 
-bool NyRemoteFilePanel::ShowToolTips()
+bool MyRemoteFilePanel::ShowToolTips()
 {
     return true;
 }
@@ -214,7 +221,7 @@ bool NyRemoteFilePanel::ShowToolTips()
  * Get bitmap resources
  */
 
-wxBitmap NyRemoteFilePanel::GetBitmapResource( const wxString& name )
+wxBitmap MyRemoteFilePanel::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
 ////@begin NyRemoteFilePanel bitmap retrieval
@@ -267,11 +274,116 @@ wxBitmap NyRemoteFilePanel::GetBitmapResource( const wxString& name )
  * Get icon resources
  */
 
-wxIcon NyRemoteFilePanel::GetIconResource( const wxString& name )
+wxIcon MyRemoteFilePanel::GetIconResource( const wxString& name )
 {
     // Icon retrieval
 ////@begin NyRemoteFilePanel icon retrieval
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end NyRemoteFilePanel icon retrieval
+}
+
+void MyRemoteFilePanel::RefreshData() {
+    auto & fileModel = RemoteFileModel::Instance();
+    fileModel.GetPage(this);
+}
+
+void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
+    // D
+    switch (event.GetInt()){
+        case USER_REMOTE_FILE_PAGE_DATA:
+        {
+            auto payload = event.GetPayload<ResponseEntity>();
+            RefreshListData(payload);
+            break;
+        }
+        default:
+            event.Skip();
+    }
+}
+
+void MyRemoteFilePanel::RefreshListData(const ResponseEntity& payload) {
+    if(payload.code == U("FILE_NOT_FOUND")){
+        wxMessageBox( _("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."), _("Cannot go to directory"), wxICON_INFORMATION);
+        RemoteFileModel::Instance().GetPage(this,U("/"),1);
+        return;
+    }
+    web::json::array list =  payload.result.at(U("list")).as_array();
+    // model->AppendItem( data ,1);
+    auto model = &RemoteFileModel::Instance();
+    auto dirInfo = payload.result.at(U("info"));
+    auto currentPath = dirInfo.at(U("path")).as_string();
+    auto currentId = dirInfo.at(U("uuid")).as_string();
+    auto parent = dirInfo.at(U("parent")).as_string();
+    auto currentPage = payload.result.at(U("page")).as_integer();
+    auto currentPageSize = payload.result.at(U("pageSize")).as_integer();
+    auto totalPage = payload.result.at(U("totalPage")).as_integer();
+    model->UpdateCurrentLocation(currentPath, currentId, currentPage, currentPageSize, totalPage, parent);
+    /*
+     * "Type" --- "Filename" --- "FileSize" --- "FileType"
+     */
+    long cur = 0;
+    //long index = 0;
+    mainListCtrl->Hide();
+    for(const auto& i : list){
+        // create item
+        wxListItem itemCol;
+        itemCol.SetId(cur);
+        // col 1 type
+        itemCol.SetColumn(0);
+        if(i.at(U("type")).as_integer() == 1){
+            itemCol.SetText(_T("+"));
+        }else{
+            itemCol.SetText(_T("-"));
+        }
+        mainListCtrl->InsertItem(itemCol);
+        // col1 filename
+
+        mainListCtrl->SetItem(cur, 1, i.at(U("name")).as_string());
+        // col 2 file size
+        mainListCtrl->SetItem(cur, 2, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
+        // col3 mime
+        mainListCtrl->SetItem(cur, 3, i.at(U("mime")).as_string());
+
+        //mainListCtrl->GetColumnWidth()
+        /*
+        // col3 size
+        wxListItem itemCol2;
+        itemCol2.SetId(cur);
+        itemCol2.SetColumn(2);
+        itemCol2.SetText(_T("0B"));
+        mainListCtrl->InsertItem(itemCol2);
+        //mainListCtrl->InsertItem(itemCol);
+        //itemCol.SetColumn(3);
+        wxListItem itemCol3;
+        itemCol3.SetId(cur);
+        itemCol3.SetColumn(3);
+        itemCol3.SetText(i.at(U("mime")).as_string());
+        mainListCtrl->InsertItem(itemCol3);
+         */
+        cur++;
+    }
+    mainListCtrl->Show();
+}
+
+void MyRemoteFilePanel::OnSizeChanged(wxSizeEvent &event) {
+    event.Skip();
+    int panelWidth = event.GetSize().GetWidth();
+    /*
+     * "Type" --- "Filename" --- "FileSize" --- "FileType"
+     */
+    auto typeWidth = mainListCtrl->GetColumnWidth(0);
+    //auto fileNameWidth = mainListCtrl->GetColumnWidth(1);
+    auto fileSizeWidth = mainListCtrl->GetColumnWidth(2);
+    auto fileTypeWidth = mainListCtrl->GetColumnWidth(3);
+    auto s2 = 7 * 2;
+    // wxBorder broder = userRemoteFilePage->GetBorder();
+    // broder.
+    auto diff = panelWidth - typeWidth - fileSizeWidth - fileTypeWidth - s2;
+    if(diff > 0){
+        //nameCol->SetWidth(diff);
+        mainListCtrl->SetColumnWidth(1,diff);
+    }
+    // std::cout << mainListCtrl->GetCharWidth() << " x ";
+    // std::cout << panelWidth << std::endl;
 }

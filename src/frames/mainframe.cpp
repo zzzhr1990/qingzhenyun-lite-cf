@@ -21,7 +21,6 @@
 #endif
 
 ////@begin includes
-#include "./notebook/mainnotebook.h"
 ////@end includes
 
 #include "mainframe.h"
@@ -30,6 +29,8 @@
 #include "../resources/if_cloud_main.xpm"
 #include "../resources/user.xpm"
 #include "../resources/settings.xpm"
+#include "../model/user_model.h"
+#include "../common/common_event_ids.h"
 ////@end XPM images
 
 
@@ -116,8 +117,8 @@ void MainFrame::CreateControls()
 ////@begin MainFrame content construction
     MainFrame* itemFrame1 = this;
 
-    wxMenuBar* menuBar = new wxMenuBar;
-    wxMenu* itemMenu2 = new wxMenu;
+    auto* menuBar = new wxMenuBar;
+    auto* itemMenu2 = new wxMenu;
     itemMenu2->Append(wxID_ANY, _("Login/Change User"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu2, _("User"));
     itemFrame1->SetMenuBar(menuBar);
@@ -133,28 +134,82 @@ void MainFrame::CreateControls()
     itemToolBar4->Realize();
     itemFrame1->SetToolBar(itemToolBar4);
 
-    wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxVERTICAL);
+    auto* itemBoxSizer14 = new wxBoxSizer(wxVERTICAL);
     itemFrame1->SetSizer(itemBoxSizer14);
 
-    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer(wxVERTICAL);
+    auto* itemBoxSizer15 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer14->Add(itemBoxSizer15, 1, wxGROW, 5);
 
-    MainNotebook* itemNotebook1 = new MainNotebook( itemFrame1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
-    itemBoxSizer15->Add(itemNotebook1, 1, wxGROW, 5);
+
+    mainNotebook = new MainNotebook( itemFrame1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
+    itemBoxSizer15->Add(mainNotebook, 1, wxGROW, 5);
 
     wxStatusBar* itemStatusBar17 = new wxStatusBar( itemFrame1, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
-    itemStatusBar17->SetFieldsCount(3);
-    itemStatusBar17->SetStatusText(_("Field One"), 0);
-    itemStatusBar17->SetStatusText(_("Field Two"), 1);
-    itemStatusBar17->SetStatusText(_("Sync"), 2);
-    int itemStatusBar17Widths[3];
-    itemStatusBar17Widths[0] = 200;
-    itemStatusBar17Widths[1] = -1;
-    itemStatusBar17Widths[2] = 200;
-    itemStatusBar17->SetStatusWidths(3, itemStatusBar17Widths);
+    itemStatusBar17->SetFieldsCount(2);
+    itemStatusBar17->SetStatusText(_("Waiting..."), 0);
+    //itemStatusBar17->SetStatusText(_("-"), 1);
+    itemStatusBar17->SetStatusText(_("Sync"), 1);
+    int itemStatusBar17Widths[2];
+    itemStatusBar17Widths[0] = -1;
+    itemStatusBar17Widths[1] = 200;
+    // itemStatusBar17Widths[2] = 200;
+    itemStatusBar17->SetStatusWidths(2, itemStatusBar17Widths);
     itemFrame1->SetStatusBar(itemStatusBar17);
-
+    // when inited, check this box.
+    this->Bind(wxEVT_THREAD, &MainFrame::OnThreadEvent, this);
+    this->Bind(wxEVT_IDLE, &MainFrame::OnWindowCreate, this);
+    this->Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
 ////@end MainFrame content construction
+}
+
+void MainFrame::showLoginFrame(const wxString& text){
+    if (this->loginFrame == nullptr) {
+        loginFrame = new LoginFrame(this, wxID_ANY);
+        loginFrame->Iconize(false);
+        //
+    }
+    loginFrame->SetLabel(text);
+    loginFrame->SetTips(text);
+    // login_frame->Show(true);
+    // loginFrame->Raise();  // doesn't seem to work
+    // loginFrame->SetFocus();  // does nothing
+    auto const &result = loginFrame->ShowModal(); // this by itself doesn't work
+    if(result == wxID_OK)
+    {
+        // check validate
+        const auto &userInput = loginFrame->getUserInput();
+        const auto &userPassword = loginFrame->getUserPassword();
+        TryLogin(userInput, userPassword);
+    }else{
+        UserModel::Instance().CheckToken(this);
+    }
+    // std::cout << result << std::endl;
+    // loginFrame->RequestUserAttention();
+}
+
+void MainFrame::OnWindowCreate(wxIdleEvent& event){
+    this->Unbind(wxEVT_IDLE, &MainFrame::OnWindowCreate, this);
+    event.Skip();
+    if(UserModel::Instance().GetToken().empty()){
+        showLoginFrame(_("You need to login first."));
+    }else{
+        // check token validate
+        UserModel::Instance().CheckToken(this);
+    }
+
+    //UserModel::Instance().IsUserLogin();
+    // showLoginFrame(_("苟利国家"));
+    // check login ...
+    // user_model->terminate();
+    //this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnWindowCreate));
+    /*
+    if (!UserModel::instance().IsUserLogin()) {
+        showLoginFrame();
+    }else{
+        //refresh
+        OnUserLogin();
+    }
+     */
 }
 
 
@@ -165,6 +220,11 @@ void MainFrame::CreateControls()
 bool MainFrame::ShowToolTips()
 {
     return true;
+}
+
+void MainFrame::OnClose(wxCloseEvent& event){
+    event.Skip();
+    UserModel::Instance().Terminate();
 }
 
 /*
@@ -206,4 +266,32 @@ wxIcon MainFrame::GetIconResource( const wxString& name )
     }
     return wxNullIcon;
 ////@end MainFrame icon retrieval
+}
+
+void MainFrame::TryLogin(const wxString &input, const wxString &password) {
+    UserModel::Instance().TryLogin(this,input,password);
+}
+
+void MainFrame::OnThreadEvent(wxThreadEvent &event) {
+    switch (event.GetInt()){
+        case USER_LOGIN_RESPONSE:{
+            SetStatusText(_("User login..."), 0);
+            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            UserModel::Instance().SetUserInfo(r.result);
+            UserModel::Instance().StartUserCheckLoop(this);
+            mainNotebook->RefreshCurrentPage();
+            break;
+        }
+
+        case USER_LOGIN_FAILED_RESPONSE:
+        {
+            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            UserModel::Instance().Logout();
+            showLoginFrame(_T("Login failed, please login again."));
+            break;
+        }
+        default:
+            event.Skip();
+    }
+    //
 }

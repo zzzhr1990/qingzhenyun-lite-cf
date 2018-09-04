@@ -19,6 +19,7 @@
 
 ////@begin includes
 #include "wx/listctrl.h"
+#include "../../entity/response_entity.h"
 ////@end includes
 
 /*!
@@ -26,7 +27,7 @@
  */
 
 ////@begin forward declarations
-class NyRemoteFilePanel;
+class MyRemoteFilePanel;
 ////@end forward declarations
 
 /*!
@@ -58,21 +59,21 @@ class NyRemoteFilePanel;
  * NyRemoteFilePanel class declaration
  */
 
-class NyRemoteFilePanel: public wxPanel
+class MyRemoteFilePanel: public wxPanel
 {    
-    DECLARE_DYNAMIC_CLASS( NyRemoteFilePanel )
+    DECLARE_DYNAMIC_CLASS( MyRemoteFilePanel )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    NyRemoteFilePanel();
-    NyRemoteFilePanel(wxWindow* parent, wxWindowID id = ID_MY_REMOTE_FILE_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
+    MyRemoteFilePanel();
+    MyRemoteFilePanel(wxWindow* parent, wxWindowID id = ID_MY_REMOTE_FILE_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
 
     /// Creation
     bool Create(wxWindow* parent, wxWindowID id = ID_MY_REMOTE_FILE_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
 
     /// Destructor
-    ~NyRemoteFilePanel();
+    ~MyRemoteFilePanel();
 
     /// Initialises member variables
     void Init();
@@ -80,6 +81,11 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
+    void RefreshData();
+
+    void OnThreadEvent(wxThreadEvent& event);
+
+    void RefreshListData(const ResponseEntity& res);
 ////@begin NyRemoteFilePanel event handler declarations
 
 ////@end NyRemoteFilePanel event handler declarations
@@ -97,6 +103,9 @@ public:
     static bool ShowToolTips();
 
 ////@begin NyRemoteFilePanel member variables
+private:
+    wxListCtrl* mainListCtrl = nullptr;
+    void OnSizeChanged(wxSizeEvent &event);
 ////@end NyRemoteFilePanel member variables
 };
 

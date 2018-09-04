@@ -112,10 +112,10 @@ void MainNotebook::CreateControls()
 ////@begin MainNotebook content construction
     MainNotebook* itemNotebook1 = this;
 
-    NyRemoteFilePanel* itemPanel1 = new NyRemoteFilePanel( itemNotebook1, ID_MY_REMOTE_FILE_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemPanel1->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    itemPanel1->SetName(wxT("MyRemoteFiles"));
-    this->AddPage(itemPanel1, _("My Remote Files"));
+    myRemoteFilePanel = new MyRemoteFilePanel( itemNotebook1, ID_MY_REMOTE_FILE_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    myRemoteFilePanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    myRemoteFilePanel->SetName(wxT("MyRemoteFiles"));
+    this->AddPage(myRemoteFilePanel, _("My Remote Files"));
 
     OfflineDownloadTaskPanel* itemPanel2 = new OfflineDownloadTaskPanel( itemNotebook1, ID_OFFLINE_DOWNLOAD_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemPanel2->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
@@ -172,4 +172,14 @@ wxIcon MainNotebook::GetIconResource( const wxString& name )
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end MainNotebook icon retrieval
+}
+
+void MainNotebook::RefreshCurrentPage() {
+    switch (this->GetSelection()){
+        case 0:
+            myRemoteFilePanel->RefreshData();
+            break;
+        default:
+            return;
+    }
 }

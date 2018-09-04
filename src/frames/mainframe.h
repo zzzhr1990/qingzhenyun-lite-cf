@@ -21,6 +21,7 @@
 #include "wx/frame.h"
 #include "wx/toolbar.h"
 #include "wx/statusbr.h"
+#include "loginframe.h"
 ////@end includes
 
 /*!
@@ -28,8 +29,8 @@
  */
 
 ////@begin forward declarations
-class NyRemoteFilePanel;
-class OfflineDownloadTaskPanel;
+#include "./notebook/mainnotebook.h"
+
 ////@end forward declarations
 
 /*!
@@ -86,12 +87,29 @@ public:
 
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
+
+    void OnClose(wxCloseEvent& event);
 ////@end MainFrame member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
+    //void MainFrame::ShowLogWindow(wxCommandEvent& WXUNUSED(event));
+
+
+
+
+
+
+
 ////@begin MainFrame member variables
+private:
+    LoginFrame * loginFrame = nullptr;
+    MainNotebook* mainNotebook = nullptr;
+    void showLoginFrame(const wxString& text);
+    void OnWindowCreate(wxIdleEvent& event);
+    void TryLogin(const wxString & input, const wxString & password);
+    void OnThreadEvent(wxThreadEvent& event);
 ////@end MainFrame member variables
 };
 

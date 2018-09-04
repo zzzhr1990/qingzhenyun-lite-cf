@@ -26,7 +26,7 @@
  */
 
 ////@begin forward declarations
-class NyRemoteFilePanel;
+class MyRemoteFilePanel;
 class OfflineDownloadTaskPanel;
 ////@end forward declarations
 
@@ -35,7 +35,7 @@ class OfflineDownloadTaskPanel;
  */
 
 ////@begin control identifiers
-#define ID_NOTEBOOK 10012
+//#define ID_NOTEBOOK 10012
 #define ID_SYNC_TASK_PANEL 10025
 #define SYMBOL_MAINNOTEBOOK_STYLE wxNB_DEFAULT
 #define SYMBOL_MAINNOTEBOOK_IDNAME ID_NOTEBOOK
@@ -85,6 +85,11 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
+
+    void RefreshCurrentPage();
+
+private:
+    MyRemoteFilePanel* myRemoteFilePanel = nullptr;
 
 ////@begin MainNotebook member variables
 ////@end MainNotebook member variables

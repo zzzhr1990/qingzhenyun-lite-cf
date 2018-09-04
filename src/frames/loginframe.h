@@ -12,7 +12,19 @@
 #ifndef _LOGINFRAME_H_
 #define _LOGINFRAME_H_
 
+#include "wx/wxprec.h"
 
+#ifdef __BORLANDC__
+#pragma hdrstop
+#endif
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
+////@begin includes
+#include "wx/imaglist.h"
+////@end includes
 /*!
  * Includes
  */
@@ -72,6 +84,10 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
+    void SetTips(const wxString &str);
+    wxString getUserInput();
+    wxString getUserPassword();
+
 ////@begin LoginFrame event handler declarations
 
 ////@end LoginFrame event handler declarations
@@ -89,6 +105,10 @@ public:
     static bool ShowToolTips();
 
 ////@begin LoginFrame member variables
+private:
+    wxTextCtrl* passwordTextCtrl = nullptr;
+    wxTextCtrl* inputTextCtrl = nullptr;
+    wxStaticText* tipsText = nullptr;
 ////@end LoginFrame member variables
 };
 
