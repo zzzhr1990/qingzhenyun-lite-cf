@@ -20,6 +20,7 @@
 ////@begin includes
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"
+#include "../userfile/add_directory_dialog.h"
 ////@end includes
 
 /*!
@@ -85,7 +86,27 @@ public:
 
     void OnThreadEvent(wxThreadEvent& event);
 
-    void RefreshListData(const ResponseEntity& res);
+	void OnUserRemoteFileDClick(wxMouseEvent & event);
+
+	void OnUserRemoteFileActivated(wxListEvent & event);
+
+	void RefreshBtnClicked(wxCommandEvent & event);
+
+	void NewDirectoryBtnClicked(wxCommandEvent & event);
+
+	void ParentBtnClicked(wxCommandEvent & event);
+
+	void PrevBtnClicked(wxCommandEvent & event);
+
+	void NextBtnClicked(wxCommandEvent & event);
+
+	void ResetCurrentPathDisplay();
+
+	void OnPageInputDClick(wxMouseEvent & event);
+
+	void OnPageInputKillFocus(wxFocusEvent & event);
+
+	void RefreshListData(const ResponseEntity& res);
 ////@begin NyRemoteFilePanel event handler declarations
 
 ////@end NyRemoteFilePanel event handler declarations
@@ -101,11 +122,25 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
+	void UpdateSpaceCapacity(const long& spaceUsed = 0, const long& spaceCapacity = 0);
 
 ////@begin NyRemoteFilePanel member variables
 private:
     wxListCtrl* mainListCtrl = nullptr;
     void OnSizeChanged(wxSizeEvent &event);
+	void OnStartDrag(wxListEvent &event);
+	void OnEndDrag(wxListEvent &event);
+	bool drag = false;
+	wxBitmapButton* prevPageBtn = nullptr;
+	wxBitmapButton* nextPageBtn = nullptr;
+	wxTextCtrl* currentPageInput = nullptr;
+	wxTextCtrl* pathInput = nullptr;
+	wxBitmapButton* parentBtn = nullptr;
+	AddDirectoryDialog * addDirectoryDialog = nullptr;
+	
+	long spaceUsed = 0;
+	long spaceCapacity = 0;
+	wxStaticText* capacityText = nullptr;
 ////@end NyRemoteFilePanel member variables
 };
 

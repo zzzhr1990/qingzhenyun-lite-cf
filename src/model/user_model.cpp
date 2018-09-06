@@ -105,6 +105,26 @@ void UserModel::SetUserInfo(web::json::value v, const bool& login) {
         this->login = true;
     }
     this->userInfo = v;
+	if (!this->currentToken.empty()) {
+		auto path = wxGetCwd() + wxPATH_SEP + "token.history";
+		wxTextFile tfile(path);
+		if (tfile.Exists()) {
+			if (tfile.Open(wxConvUTF8)) {
+				tfile.Clear();
+				tfile.AddLine(this->currentToken);
+				tfile.Write(wxTextFileType_None, wxConvUTF8);
+				tfile.Close();
+			}
+		}
+		else {
+			if (tfile.Create()) {
+				tfile.Clear();
+				tfile.AddLine(this->currentToken);
+				tfile.Write(wxTextFileType_None, wxConvUTF8);
+				tfile.Close();
+			}
+		}
+	}
 }
 
 void UserModel::Logout() {

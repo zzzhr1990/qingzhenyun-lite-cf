@@ -17,9 +17,25 @@
  * Includes
  */
 
+#include "wx/wxprec.h"
+
+#ifdef __BORLANDC__
+#pragma hdrstop
+#endif
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
+ ////@begin includes
+#include "wx/imaglist.h"
+////@end includes
+
 ////@begin includes
 #include "wx/srchctrl.h"
 #include "wx/listctrl.h"
+#include "../../entity/response_entity.h"
+#include "../../frames/offline/add_offline_task.h"
 ////@end includes
 
 /*!
@@ -35,15 +51,7 @@ class OfflineDownloadTaskPanel;
  */
 
 ////@begin control identifiers
-#define ID_OFFLINE_DOWNLOAD_PANEL 10024
-#define ID_SEARCHCTRL 10009
-#define ID_BITMAPBUTTON9 10027
-#define ID_LISTCTRL1 10028
-#define ID_CHECKBOX1 10019
-#define ID_BITMAPBUTTON4 10020
-#define ID_BITMAPBUTTON8 10031
-#define ID_TEXTCTRL2 10032
-#define ID_BITMAPBUTTON12 10036
+
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_STYLE wxSUNKEN_BORDER|wxTAB_TRAVERSAL
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_IDNAME ID_OFFLINE_DOWNLOAD_PANEL
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_SIZE wxDefaultSize
@@ -63,10 +71,10 @@ class OfflineDownloadTaskPanel: public wxPanel
 public:
     /// Constructors
     OfflineDownloadTaskPanel();
-    OfflineDownloadTaskPanel(wxWindow* parent, wxWindowID id = ID_OFFLINE_DOWNLOAD_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
+    OfflineDownloadTaskPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
 
     /// Creation
-    bool Create(wxWindow* parent, wxWindowID id = ID_OFFLINE_DOWNLOAD_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
+    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
 
     /// Destructor
     ~OfflineDownloadTaskPanel();
@@ -83,18 +91,50 @@ public:
 
 ////@begin OfflineDownloadTaskPanel member function declarations
 
-    /// Retrieves bitmap resources
+	void OnSizeChanged(wxSizeEvent & event);
+
+	void OnUserRemoteTaskActivated(wxListEvent & event);
+
+	/// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
 
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
+
+	void OnPageInputDClick(wxMouseEvent & event);
+
+	void RefreshBtnClicked(wxCommandEvent & event);
+	
 ////@end OfflineDownloadTaskPanel member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
+	void RefreshData();
+
+	
 
 ////@begin OfflineDownloadTaskPanel member variables
 ////@end OfflineDownloadTaskPanel member variables
+private:
+	void OnPageInputKillFocus(wxFocusEvent & event);
+	void OnThreadEvent(wxThreadEvent & event);
+	void RefreshListData(const ResponseEntity & payload);
+	void PrevBtnClicked(wxCommandEvent & event);
+	void StartDownloadUrl(const wxString & str);
+	void NextBtnClicked(wxCommandEvent & event);
+	void NewTaskBtnClicked(wxCommandEvent & event);
+	void ResetCurrentPathDisplay();
+	void OnStartDrag(wxListEvent & event);
+	void OnEndDrag(wxListEvent & event);
+	//	void RefreshListData(const ResponseEntity & payload);
+	
+	bool drag = false;
+	wxListCtrl* mainListCtrl = nullptr;
+	wxBitmapButton* prevPageBtn = nullptr;
+	wxBitmapButton* nextPageBtn = nullptr;
+	wxTextCtrl* currentPageInput = nullptr;
+	AddOfflineTask* addOfflineTask = nullptr;
+	wxString currentDownloadPath = _T("/");
 };
 
 #endif

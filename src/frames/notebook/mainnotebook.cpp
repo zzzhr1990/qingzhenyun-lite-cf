@@ -27,6 +27,8 @@
 ////@end includes
 
 #include "mainnotebook.h"
+#include "../../common/common_event_ids.h"
+#include "../../model/remote_file_model.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -117,9 +119,9 @@ void MainNotebook::CreateControls()
     myRemoteFilePanel->SetName(wxT("MyRemoteFiles"));
     this->AddPage(myRemoteFilePanel, _("My Remote Files"));
 
-    OfflineDownloadTaskPanel* itemPanel2 = new OfflineDownloadTaskPanel( itemNotebook1, ID_OFFLINE_DOWNLOAD_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemPanel2->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    this->AddPage(itemPanel2, _("Offline Download Task"));
+    offlineDownloadTaskPanel = new OfflineDownloadTaskPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+	offlineDownloadTaskPanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    this->AddPage(offlineDownloadTaskPanel, _("Offline Download Task"));
 
     wxPanel* itemPanel21 = new wxPanel( itemNotebook1, ID_SYNC_TASK_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemPanel21->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
@@ -134,7 +136,7 @@ void MainNotebook::CreateControls()
     itemBoxSizer7->Add(itemStaticText8, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     this->AddPage(itemPanel21, _("Sync Task"));
-
+	offlineDownloadTaskPanel->Bind(wxEVT_THREAD, &MainNotebook::OnThreadEvent, this);
 ////@end MainNotebook content construction
 }
 
@@ -142,7 +144,23 @@ void MainNotebook::CreateControls()
 /*
  * Should we show tooltips?
  */
+void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
+	switch (event.GetInt()) {
+	case USER_GOTO_DIRECTORY: {
+		auto path = event.GetString();
+		auto &model = RemoteFileModel::Instance();
+		model.SetCurrentPage(1);
+		model.SetCurrentPath(path);
+		this->ChangeSelection(0);
+		RefreshCurrentPage();
+		break;
+	}
 
+	default:
+		event.Skip();
+	}
+	//
+}
 bool MainNotebook::ShowToolTips()
 {
     return true;
@@ -175,11 +193,29 @@ wxIcon MainNotebook::GetIconResource( const wxString& name )
 }
 
 void MainNotebook::RefreshCurrentPage() {
+	if (!inited) {
+		inited = true;
+		this->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &MainNotebook::OnNoteBookChange, this);
+	}
     switch (this->GetSelection()){
         case 0:
             myRemoteFilePanel->RefreshData();
             break;
+		case 1:
+			offlineDownloadTaskPanel->RefreshData();
+			break;
         default:
             return;
     }
+}
+
+void MainNotebook::OnNoteBookChange(wxBookCtrlEvent &event) {
+
+	event.Skip();
+	RefreshCurrentPage();
+
+}
+
+void MainNotebook::UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity) {
+	myRemoteFilePanel->UpdateSpaceCapacity(spaceUsed, spaceCapacity);
 }

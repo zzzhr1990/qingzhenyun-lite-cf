@@ -76,6 +76,8 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
+	void OnToolClick(const wxCommandEvent & event);
+
 ////@begin MainFrame event handler declarations
 
 ////@end MainFrame event handler declarations

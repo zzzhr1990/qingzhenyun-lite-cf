@@ -22,10 +22,19 @@ public:
     static RemoteFileModel& Instance();
     void GetPage(wxWindow* handler, const utility::string_t &path = U(""), const int &page = -1, const int &pageSize = -1, const int &type = -1);
     void GetPageById(wxWindow* handler, const utility::string_t &uuid, const int &page = -1, const int &pageSize = -1, const int &type = -1);
+	void CreateNewDirectory(wxWindow * handler, const utility::string_t & directoryName, const utility::string_t & parent = U(""));
     /*
     static void SendThreadMessage(wxWindow * handler, ResponseEntity v){
     }
      */
+	void SetCurrentPage(const int &page = 1) {
+		if (page > 0) {
+			current_page = page;
+		}
+	}
+	void SetCurrentPath(const utility::string_t &path) {
+		current_path = path;
+	}
     int GetCurrentPage(){
         return current_page;
     }
@@ -41,16 +50,22 @@ public:
     }
 
     void UpdateCurrentLocation(const utility::string_t &path, const utility::string_t &fileId, const int &page,
-                               const int &pageSize, const int &totalPage, const utility::string_t &parent);
+                               const int &pageSize, const int &totalPage, const utility::string_t &parent, const web::json::array& list);
     utility::string_t GetCurrentPath();
+
+	web::json::array GetCurrentList() {
+		return this->currentList;
+	}
 
 private:
     utility::string_t current_path = U("/");
     utility::string_t current_file_id = U("");
     int current_page = 1;
-    int current_page_size = 20;
+    int current_page_size = 40;
     int total_page = 1;
     utility::string_t current_parent = U("");
+	web::json::array currentList = web::json::value::array().as_array();
+	int currentOrder = -1;
 };
 
 

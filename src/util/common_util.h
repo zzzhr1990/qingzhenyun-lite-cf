@@ -15,6 +15,7 @@
 #endif
 #include <iomanip>
 #include <sstream>
+#include <openssl/md5.h>
 
 static wxString ConvertSizeToDisplay(int64_t size){
     const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
@@ -23,7 +24,7 @@ static wxString ConvertSizeToDisplay(int64_t size){
         size /= 1024;
         i++;
     }
-    return wxString::Format(_T("%ld%s"), size, units[i]);
+    return wxString::Format(_T("%lld%s"), size, units[i]);
 }
 
 static wxString ConvertTimeToDisplay(time_t time,  const std::string& format = "%Y-%m-%d %H:%M:%S"){
@@ -31,6 +32,24 @@ static wxString ConvertTimeToDisplay(time_t time,  const std::string& format = "
     ss << std::put_time(std::localtime(&time), format.data()); // 4 time
     //current.
     return (wxString::Format(_T("%s"),ss.str())); // 4 time
+}
+
+static wxString Utf8MD5(const wxString& str) {
+	unsigned char digest[16];
+	const char* string = str.data();
+
+	//printf("string length: %d\n", strlen(string));
+
+	MD5_CTX ctx;
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, string, strlen(string));
+	MD5_Final(digest, &ctx);
+
+	char mdString[33];
+	for (int i = 0; i < 16; i++)
+		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
+	return wxString::FromAscii(mdString);
+
 }
 
 #endif //FUCK_COMMON_UTIL_H

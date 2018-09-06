@@ -83,14 +83,22 @@ public:
     wxIcon GetIconResource( const wxString& name );
 ////@end MainNotebook member function declarations
 
-    /// Should we show tooltips?
+	void OnThreadEvent(wxThreadEvent & event);
+
+	/// Should we show tooltips?
     static bool ShowToolTips();
 
     void RefreshCurrentPage();
 
-private:
-    MyRemoteFilePanel* myRemoteFilePanel = nullptr;
+	void UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity);
 
+private:
+	void OnNoteBookChange(wxBookCtrlEvent & event);
+	
+    MyRemoteFilePanel* myRemoteFilePanel = nullptr;
+	OfflineDownloadTaskPanel* offlineDownloadTaskPanel = nullptr;
+	bool inited = false;
+	
 ////@begin MainNotebook member variables
 ////@end MainNotebook member variables
 };

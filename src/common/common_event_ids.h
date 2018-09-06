@@ -20,7 +20,12 @@ enum {
     USER_REFRESH_RESPONSE = 1002,
     USER_LOGIN_FAILED_RESPONSE = 1003,
     USER_REMOTE_FILE_PAGE_DATA = 2001,
-    USER_REMOTE_TASK_PAGE_DATA = 2002
+	USER_REMOTE_DIRECTORY_CREATE = 2002,
+    USER_REMOTE_TASK_PAGE_DATA = 3002,
+	USER_REMOTE_TASK_CREATE = 3003,
+	USER_GOTO_DIRECTORY = 3004,
+	USER_REMOTE_TASK_URL_PARSED = 4002,
+	USER_REMOTE_TASK_URL_START = 4003,
 };
 
 static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const ResponseEntity & v, const bool & checkMessage=false) {
@@ -35,6 +40,8 @@ static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const Re
         }
     }
     wxThreadEvent event(wxEVT_THREAD, handler->GetId());
+	auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	event.SetTimestamp(ts);
     event.SetId(handler->GetId());
     event.SetInt(type_id);
     event.SetPayload(v);

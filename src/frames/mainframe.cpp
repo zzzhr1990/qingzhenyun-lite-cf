@@ -31,6 +31,7 @@
 #include "../resources/settings.xpm"
 #include "../model/user_model.h"
 #include "../common/common_event_ids.h"
+#include "../util/common_util.h"
 ////@end XPM images
 
 
@@ -123,16 +124,17 @@ void MainFrame::CreateControls()
     menuBar->Append(itemMenu2, _("User"));
     itemFrame1->SetMenuBar(menuBar);
 
-    wxToolBar* itemToolBar4 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR );
+    wxToolBar* mainToolBar = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR );
     wxBitmap itemtool5Bitmap(itemFrame1->GetBitmapResource(wxT("user.xpm")));
     wxBitmap itemtool5BitmapDisabled;
-    itemToolBar4->AddTool(ID_USER_TOOL, wxEmptyString, itemtool5Bitmap, itemtool5BitmapDisabled, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
-    itemToolBar4->AddSeparator();
+	mainToolBar->AddTool(ID_USER_TOOL, wxEmptyString, itemtool5Bitmap, itemtool5BitmapDisabled, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
+	mainToolBar->Bind(wxEVT_TOOL, &MainFrame::OnToolClick, this);
+	mainToolBar->AddSeparator();
     wxBitmap itemtool8Bitmap(itemFrame1->GetBitmapResource(wxT("settings.xpm")));
     wxBitmap itemtool8BitmapDisabled;
-    itemToolBar4->AddTool(ID_SETTING_TOOL, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
-    itemToolBar4->Realize();
-    itemFrame1->SetToolBar(itemToolBar4);
+	mainToolBar->AddTool(ID_SETTING_TOOL, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
+	mainToolBar->Realize();
+    itemFrame1->SetToolBar(mainToolBar);
 
     auto* itemBoxSizer14 = new wxBoxSizer(wxVERTICAL);
     itemFrame1->SetSizer(itemBoxSizer14);
@@ -161,7 +163,11 @@ void MainFrame::CreateControls()
     this->Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
 ////@end MainFrame content construction
 }
-
+void MainFrame::OnToolClick(const wxCommandEvent& event) {
+	if (event.GetId() == ID_USER_TOOL) {
+		showLoginFrame(_("Login"));
+	}
+}
 void MainFrame::showLoginFrame(const wxString& text){
     if (this->loginFrame == nullptr) {
         loginFrame = new LoginFrame(this, wxID_ANY);
@@ -179,9 +185,15 @@ void MainFrame::showLoginFrame(const wxString& text){
         // check validate
         const auto &userInput = loginFrame->getUserInput();
         const auto &userPassword = loginFrame->getUserPassword();
-        TryLogin(userInput, userPassword);
+        TryLogin(userInput, Utf8MD5(userPassword));
     }else{
-        UserModel::Instance().CheckToken(this);
+		if (UserModel::Instance().GetToken().empty()) {
+			Close();
+		}
+		else {
+			UserModel::Instance().CheckToken(this);
+		}
+        
     }
     // std::cout << result << std::endl;
     // loginFrame->RequestUserAttention();
@@ -196,6 +208,8 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
         // check token validate
         UserModel::Instance().CheckToken(this);
     }
+
+	
 
     //UserModel::Instance().IsUserLogin();
     // showLoginFrame(_("苟利国家"));
@@ -280,6 +294,10 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
             UserModel::Instance().SetUserInfo(r.result);
             UserModel::Instance().StartUserCheckLoop(this);
             mainNotebook->RefreshCurrentPage();
+			if (r.result.has_field(U("spaceUsed"))) {
+				mainNotebook->UpdateSpaceCapacity(r.result.at(U("spaceUsed")).as_number().to_int64(), r.result.at(U("spaceCapacity")).as_number().to_int64());
+			}
+			
             break;
         }
 
@@ -290,6 +308,14 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
             showLoginFrame(_T("Login failed, please login again."));
             break;
         }
+
+		case USER_REFRESH_RESPONSE: {
+			const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+			long d = event.GetTimestamp();
+			time_t time = d;
+			SetStatusText(wxString::Format(_T("User info update at...%s"), ConvertTimeToDisplay(time), "%Y-%m-%d %H:%M"));
+			UserModel::Instance().SetUserInfo(r.result);
+		}
         default:
             event.Skip();
     }

@@ -15,6 +15,7 @@
 #include "cpprest/http_client.h"
 #include "../util/simple_timer.h"
 #include "../util/common_api.h"
+#include <wx/textfile.h>
 
 class UserModel {
 public:
@@ -31,7 +32,20 @@ public:
     void TryLogin(wxWindow* handler,const utility::string_t& value,const utility::string_t &password);
 private:
     UserModel():timer(){
-
+		
+		auto path = wxGetCwd() + wxPATH_SEP + "token.history";
+		wxTextFile tfile(path);
+		if (tfile.Exists()) {
+			if (tfile.Open(wxConvUTF8)) {
+				auto str = tfile.GetLastLine();
+				if (str.length() > 0) {
+					currentToken = str;
+				}
+				tfile.Close();
+			}
+		}
+		
+		//currentToken = U("");
     }
     ~UserModel(){
         this->Terminate();
