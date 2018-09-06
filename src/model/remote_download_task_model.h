@@ -29,8 +29,8 @@ public:
 	}
 
 	void GetPage(wxWindow* handler, const int &page = -1, const int &pageSize = -1);
-	void StartUrl(wxWindow * handler, utility::string_t url);
-	void StartTask(wxWindow * handler, utility::string_t taskHash, utility::string_t savePath, utility::string_t copyFile);
+	void StartUrl(wxWindow * handler, const utility::string_t& url);
+	void StartTask(wxWindow * handler, const utility::string_t& taskHash, const utility::string_t & savePath,const utility::string_t& copyFile);
 	void UpdateCurrent(const int &page, const int &pageSize, const int &totalPage, const web::json::array& list);
 	web::json::array GetCurrentList() {
 		return this->currentList;

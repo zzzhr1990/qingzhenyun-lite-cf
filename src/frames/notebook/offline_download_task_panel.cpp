@@ -357,7 +357,7 @@ void OfflineDownloadTaskPanel::OnThreadEvent(wxThreadEvent &event) {
 		if (res.has_field(U("taskHash"))) {
 			// start
 			auto & remoteModel = RemoteDownloadTaskModel::Instance();
-			remoteModel.StartTask(this, res.at(U("taskHash")).as_string(), currentDownloadPath, _T("*"));
+			remoteModel.StartTask(this, res.at(U("taskHash")).as_string(), currentDownloadPath, _("*"));
 		}
 		break;
 	}

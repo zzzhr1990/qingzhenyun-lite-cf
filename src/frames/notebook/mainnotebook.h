@@ -88,7 +88,7 @@ public:
 	/// Should we show tooltips?
     static bool ShowToolTips();
 
-    void RefreshCurrentPage();
+    void RefreshCurrentPage(int selection = -1);
 
 	void UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity);
 

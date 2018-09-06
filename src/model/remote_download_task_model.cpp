@@ -26,7 +26,7 @@ void RemoteDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const 
 
 }
 
-void RemoteDownloadTaskModel::StartUrl(wxWindow* handler, utility::string_t url) {
+void RemoteDownloadTaskModel::StartUrl(wxWindow* handler, const utility::string_t& url) {
 	web::json::value request;
 	request[U("url")] = web::json::value::string(url);
 	CommonApi::Instance().PostData(U("/v1/offline/parseUrl"), request).then([handler](ResponseEntity v) {
@@ -35,7 +35,7 @@ void RemoteDownloadTaskModel::StartUrl(wxWindow* handler, utility::string_t url)
 
 }
 
-void RemoteDownloadTaskModel::StartTask(wxWindow* handler, utility::string_t taskHash, utility::string_t savePath, utility::string_t copyFile) {
+void RemoteDownloadTaskModel::StartTask(wxWindow* handler,const utility::string_t& taskHash, const utility::string_t& savePath,const utility::string_t& copyFile) {
 	web::json::value request;
 	request[U("taskHash")] = web::json::value::string(taskHash);
 	request[U("savePath")] = web::json::value::string(savePath);

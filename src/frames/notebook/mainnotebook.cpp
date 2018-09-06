@@ -192,12 +192,15 @@ wxIcon MainNotebook::GetIconResource( const wxString& name )
 ////@end MainNotebook icon retrieval
 }
 
-void MainNotebook::RefreshCurrentPage() {
+void MainNotebook::RefreshCurrentPage(int selection) {
 	if (!inited) {
 		inited = true;
 		this->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &MainNotebook::OnNoteBookChange, this);
 	}
-    switch (this->GetSelection()){
+	if(selection < 0){
+        selection = this->GetSelection();
+	}
+    switch (selection){
         case 0:
             myRemoteFilePanel->RefreshData();
             break;
@@ -212,7 +215,7 @@ void MainNotebook::RefreshCurrentPage() {
 void MainNotebook::OnNoteBookChange(wxBookCtrlEvent &event) {
 
 	event.Skip();
-	RefreshCurrentPage();
+	RefreshCurrentPage(event.GetSelection());
 
 }
 
