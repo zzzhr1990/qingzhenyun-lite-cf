@@ -16,7 +16,7 @@
 #include "../util/simple_timer.h"
 #include "../util/common_api.h"
 #include <wx/textfile.h>
-
+#include <wx/filename.h>
 class UserModel {
 public:
     static UserModel& Instance();
@@ -33,7 +33,7 @@ public:
 private:
     UserModel():timer(){
 		
-		auto path = wxGetCwd() + wxPATH_SEP + "token.history";
+		auto path = wxGetCwd() + wxFileName::GetPathSeparator() + "token.history";
 		wxTextFile tfile(path);
 		if (tfile.Exists()) {
 			if (tfile.Open(wxConvUTF8)) {

@@ -197,7 +197,7 @@ void MyRemoteFilePanel::CreateControls()
     prevPageBtn = new wxBitmapButton( itemPanel1, ID_BITMAPBUTTON6, itemPanel1->GetBitmapResource(wxT("left_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBoxSizer4->Add(prevPageBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    currentPageInput = new wxTextCtrl( itemPanel1, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    currentPageInput = new wxTextCtrl( itemPanel1, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_CENTRE);
 	currentPageInput->SetEditable(false);
 	currentPageInput->Bind(wxEVT_LEFT_DCLICK, &MyRemoteFilePanel::OnPageInputDClick, this);
     itemBoxSizer4->Add(currentPageInput, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);

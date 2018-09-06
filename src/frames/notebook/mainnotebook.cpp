@@ -29,6 +29,7 @@
 #include "mainnotebook.h"
 #include "../../common/common_event_ids.h"
 #include "../../model/remote_file_model.h"
+#include "wx/mediactrl.h"   // for wxMediaCtrl
 
 ////@begin XPM images
 ////@end XPM images
@@ -137,6 +138,13 @@ void MainNotebook::CreateControls()
 
     this->AddPage(itemPanel21, _("Sync Task"));
 	offlineDownloadTaskPanel->Bind(wxEVT_THREAD, &MainNotebook::OnThreadEvent, this);
+
+	auto m_mediactrl = new wxMediaCtrl();
+	bool bOK = m_mediactrl->Create(this, wxID_ANY, wxEmptyString,
+		wxDefaultPosition, wxDefaultSize, 0);
+		// you could specify a macro backend here like
+		//  wxMEDIABACKEND_WMP10);
+		//        wxT("wxPDFMediaBackend"));
 ////@end MainNotebook content construction
 }
 

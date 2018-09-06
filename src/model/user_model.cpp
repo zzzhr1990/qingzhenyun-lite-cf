@@ -106,7 +106,7 @@ void UserModel::SetUserInfo(web::json::value v, const bool& login) {
     }
     this->userInfo = v;
 	if (!this->currentToken.empty()) {
-		auto path = wxGetCwd() + wxPATH_SEP + "token.history";
+		auto path = wxGetCwd() + wxFileName::GetPathSeparator() + "token.history";
 		wxTextFile tfile(path);
 		if (tfile.Exists()) {
 			if (tfile.Open(wxConvUTF8)) {

@@ -56,6 +56,8 @@ class OfflineDownloadTaskPanel;
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_IDNAME ID_OFFLINE_DOWNLOAD_PANEL
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_SIZE wxDefaultSize
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_POSITION wxDefaultPosition
+#define ID_COPY_URL_TO_CLIP 6401
+#define ID_VIEW_TASK_DETAIL 6402
 ////@end control identifiers
 
 
@@ -91,9 +93,11 @@ public:
 
 ////@begin OfflineDownloadTaskPanel member function declarations
 
-	void OnSizeChanged(wxSizeEvent & event);
+	
 
-	void OnUserRemoteTaskActivated(wxListEvent & event);
+	void OnSizeChanged( wxSizeEvent & event);
+
+	void OnUserRemoteTaskActivated(const wxListEvent & event);
 
 	/// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
@@ -101,9 +105,9 @@ public:
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
 
-	void OnPageInputDClick(wxMouseEvent & event);
+	void OnPageInputDClick(const wxMouseEvent & event);
 
-	void RefreshBtnClicked(wxCommandEvent & event);
+	void RefreshBtnClicked(const wxCommandEvent & event);
 	
 ////@end OfflineDownloadTaskPanel member function declarations
 
@@ -116,16 +120,18 @@ public:
 ////@begin OfflineDownloadTaskPanel member variables
 ////@end OfflineDownloadTaskPanel member variables
 private:
-	void OnPageInputKillFocus(wxFocusEvent & event);
+	void OnCtrlListMenuClicked(const wxCommandEvent & event);
+	void OnItemRightClick(const wxListEvent & event);
+	void OnPageInputKillFocus(const wxFocusEvent & event);
 	void OnThreadEvent(wxThreadEvent & event);
 	void RefreshListData(const ResponseEntity & payload);
-	void PrevBtnClicked(wxCommandEvent & event);
+	void PrevBtnClicked(const wxCommandEvent & event);
 	void StartDownloadUrl(const wxString & str);
-	void NextBtnClicked(wxCommandEvent & event);
-	void NewTaskBtnClicked(wxCommandEvent & event);
+	void NextBtnClicked(const wxCommandEvent & event);
+	void NewTaskBtnClicked(const wxCommandEvent & event);
 	void ResetCurrentPathDisplay();
-	void OnStartDrag(wxListEvent & event);
-	void OnEndDrag(wxListEvent & event);
+	void OnStartDrag( wxListEvent & event);
+	void OnEndDrag( wxListEvent & event);
 	//	void RefreshListData(const ResponseEntity & payload);
 	
 	bool drag = false;
@@ -135,6 +141,7 @@ private:
 	wxTextCtrl* currentPageInput = nullptr;
 	AddOfflineTask* addOfflineTask = nullptr;
 	wxString currentDownloadPath = _T("/");
+	wxMenu* menu = nullptr;
 };
 
 #endif

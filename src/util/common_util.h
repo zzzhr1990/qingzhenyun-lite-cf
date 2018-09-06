@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <sstream>
 #include <openssl/md5.h>
+#include <wx/clipbrd.h>
 
 static wxString ConvertSizeToDisplay(int64_t size){
     const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
@@ -50,6 +51,33 @@ static wxString Utf8MD5(const wxString& str) {
 		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
 	return wxString::FromAscii(mdString);
 
+}
+
+
+static void CopyTextToClipboard(const wxString& str) {
+	if (wxTheClipboard->Open())
+	{
+		// This data objects are held by the clipboard,
+		// so do not delete them in the app.
+		wxTheClipboard->SetData(new wxTextDataObject(str));
+		wxTheClipboard->Close();
+	}
+
+}
+
+static wxString CopyTextToClipboard() {
+	wxString x = _T("");
+	if (wxTheClipboard->Open())
+	{
+		if (wxTheClipboard->IsSupported(wxDF_TEXT))
+		{
+			wxTextDataObject data;
+			wxTheClipboard->GetData(data);
+			x = data.GetText();
+		}
+		wxTheClipboard->Close();
+	}
+	return x;
 }
 
 #endif //FUCK_COMMON_UTIL_H
