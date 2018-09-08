@@ -55,7 +55,7 @@ class MyRemoteFilePanel;
 #define SYMBOL_NYREMOTEFILEPANEL_POSITION wxDefaultPosition
 ////@end control identifiers
 
-
+#include "../video/videopreviewframe.h"
 /*!
  * NyRemoteFilePanel class declaration
  */
@@ -141,6 +141,7 @@ private:
 	long spaceUsed = 0;
 	long spaceCapacity = 0;
 	wxStaticText* capacityText = nullptr;
+	VideoPreviewFrame * videoPreviewFrame = nullptr;
 ////@end NyRemoteFilePanel member variables
 };
 

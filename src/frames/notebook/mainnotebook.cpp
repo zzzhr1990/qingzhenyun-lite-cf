@@ -139,9 +139,6 @@ void MainNotebook::CreateControls()
     this->AddPage(itemPanel21, _("Sync Task"));
 	offlineDownloadTaskPanel->Bind(wxEVT_THREAD, &MainNotebook::OnThreadEvent, this);
 
-	auto m_mediactrl = new wxMediaCtrl();
-	bool bOK = m_mediactrl->Create(this, wxID_ANY, wxEmptyString,
-		wxDefaultPosition, wxDefaultSize, 0);
 		// you could specify a macro backend here like
 		//  wxMEDIABACKEND_WMP10);
 		//        wxT("wxPDFMediaBackend"));

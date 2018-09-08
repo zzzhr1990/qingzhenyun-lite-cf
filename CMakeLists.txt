@@ -17,23 +17,32 @@ endif()
 
 if(MSVC)
     include(${CMAKE_SOURCE_DIR}/winmsvc.cmake)
-	find_package(OpenSSL REQUIRED)
 else(MSVC)
     set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
     find_package(wxWidgets REQUIRED COMPONENTS net core base)
     include(${wxWidgets_USE_FILE})
+	find_package(Boost REQUIRED filesystem system chrono thread)
 endif()
 find_package(cpprestsdk CONFIG REQUIRED)
 # include(${CMAKE_SOURCE_DIR}/FindLibtorrentRasterbar.cmake)
 # find_package(FindLibtorrentRasterbar REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED filesystem system chrono thread)
+
 
 message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #file(GLOB helloworld_SRC
 #    "*.h"
 #    "*.cpp"
 #)
+
+include_directories(
+     "D:\\vlc-x86\\vlc-3.0.4\\sdk\\include"
+	 "D:\\vlcpp"
+)
+
+link_directories(
+    "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link"
+)
 
 # file(GLOB_RECURSE qingzhenyun_SRC  "*.h" "*.cpp")
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xpm)
@@ -48,4 +57,4 @@ if(MSVC)
 else(MSVC)
     add_executable(${PROJECT_NAME} ${FINAL_RES})
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)

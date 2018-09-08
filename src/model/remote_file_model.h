@@ -23,6 +23,7 @@ public:
     void GetPage(wxWindow* handler, const utility::string_t &path = U(""), const int &page = -1, const int &pageSize = -1, const int &type = -1);
     void GetPageById(wxWindow* handler, const utility::string_t &uuid, const int &page = -1, const int &pageSize = -1, const int &type = -1);
 	void CreateNewDirectory(wxWindow * handler, const utility::string_t & directoryName, const utility::string_t & parent = U(""));
+	void GetPreviewInfo(wxWindow * handler, const utility::string_t & path);
     /*
     static void SendThreadMessage(wxWindow * handler, ResponseEntity v){
     }

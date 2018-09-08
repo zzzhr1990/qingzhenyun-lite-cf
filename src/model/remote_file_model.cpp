@@ -52,6 +52,17 @@ void RemoteFileModel::CreateNewDirectory(wxWindow* handler, const utility::strin
 
 }
 
+void RemoteFileModel::GetPreviewInfo(wxWindow* handler, const utility::string_t &path) {
+	web::json::value request;
+	request[U("path")] = web::json::value::string(path);
+	//request[U("name")] = web::json::value::string(directoryName);
+
+	CommonApi::Instance().PostData(U("/v1/preview/media"), request).then([handler](ResponseEntity v) {
+		SendCommonThreadEvent(handler, USER_PREVIEW_INFO, v, true);
+	});
+
+}
+
 utility::string_t RemoteFileModel::GetCurrentPath() {
     return current_path;
 }

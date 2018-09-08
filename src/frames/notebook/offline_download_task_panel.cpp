@@ -25,6 +25,7 @@
 //#include "../../model/remote_download_task_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
+
 ////@end XPM images
 
 
@@ -88,6 +89,7 @@ OfflineDownloadTaskPanel::~OfflineDownloadTaskPanel()
 {
 ////@begin OfflineDownloadTaskPanel destruction
 	menu->Destroy(ID_COPY_URL_TO_CLIP);
+	menu->Destroy(ID_VIEW_TASK_DETAIL);
 	// menu->Detach();
 	delete menu;
 ////@end OfflineDownloadTaskPanel destruction
@@ -206,6 +208,46 @@ bool OfflineDownloadTaskPanel::ShowToolTips()
  */
 // wxListEvent
 void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
+	long itemIndex = -1;
+
+	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
+		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
+		// Got the selected item index
+		//wxLogDebug(listControl->GetItemText(itemIndex));
+		// got
+		auto & fileModel = RemoteDownloadTaskModel::Instance();
+		auto list = fileModel.GetCurrentList();
+		long count = list.size();
+		if (itemIndex >= count) {
+			return;
+		}
+		auto fileData = list.at(itemIndex);
+		if (fileData.is_null()) {
+			return;
+		}
+		// found
+		if (event.GetId() == ID_COPY_URL_TO_CLIP) {
+			if (fileData.has_field(U("detail"))) {
+				try
+				{
+					web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
+					if (data.has_field(U("url"))) {
+						CopyTextToClipboard(data.at(U("url")).as_string());
+						break;
+					}
+				}
+				catch (const std::exception&)
+				{
+					continue;
+				}
+			}
+		}
+		else if (event.GetId() == ID_VIEW_TASK_DETAIL) {
+			ShowTaskDetail(fileData);
+		}
+	}
+	
+	/*
 	if (event.GetId() == ID_COPY_URL_TO_CLIP) {
 		long itemIndex = -1;
 
@@ -224,12 +266,14 @@ void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event
 			if (fileData.is_null()) {
 				return;
 			}
+
 			if (fileData.has_field(U("detail"))) {
 				try
 				{
 					web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
 					if (data.has_field(U("url"))) {
 						CopyTextToClipboard(data.at(U("url")).as_string());
+						break;
 					}
 				}
 				catch (const std::exception&)
@@ -239,7 +283,18 @@ void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event
 			}
 		}
 	}
+	*/
+	
 }
+
+void OfflineDownloadTaskPanel::ShowTaskDetail(const web::json::value& v) {
+	if (taskDetail == nullptr) {
+		taskDetail = new TaskDetail(this);
+	}
+	taskDetail->setView(v);
+	taskDetail->ShowModal();
+}
+
 void OfflineDownloadTaskPanel::OnItemRightClick(const wxListEvent &event) {
 	mainListCtrl->PopupMenu(menu);
 }

@@ -27,6 +27,7 @@
 #include "my_remote_file.h"
 #include "../../model/remote_file_model.h"
 
+
 ////@begin XPM images
 #include "../../resources/refresh.xpm"
 #include "../../resources/up_level.xpm"
@@ -359,6 +360,21 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 	else if (type == -1) {
 		wxMessageBox(wxT("This file is in invalid.\nThere's something wrong with our server."), _T("ErrorFile"), wxICON_ERROR);
 		//ShowModal())msg->Show();
+	}
+	else {
+		if (fileData.has_field(U("preview"))) {
+			int preview = fileData.at(U("preview")).as_integer();
+			if (preview == 1000) {
+				if (videoPreviewFrame == nullptr) {
+					videoPreviewFrame = new VideoPreviewFrame(currentPath, this);
+				}
+				else {
+					videoPreviewFrame->SetPath(currentPath);
+				}
+				videoPreviewFrame->GetVideoStream();
+				videoPreviewFrame->ShowModal();
+			}
+		}
 	}
 		/*
 		

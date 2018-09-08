@@ -35,7 +35,8 @@
 #include "wx/srchctrl.h"
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"
-#include "../../frames/offline/add_offline_task.h"
+#include "../offline/add_offline_task.h"
+#include "../offline/task_detail.h"
 ////@end includes
 
 /*!
@@ -121,6 +122,7 @@ public:
 ////@end OfflineDownloadTaskPanel member variables
 private:
 	void OnCtrlListMenuClicked(const wxCommandEvent & event);
+	void ShowTaskDetail(const web::json::value & v);
 	void OnItemRightClick(const wxListEvent & event);
 	void OnPageInputKillFocus(const wxFocusEvent & event);
 	void OnThreadEvent(wxThreadEvent & event);
@@ -136,6 +138,7 @@ private:
 	
 	bool drag = false;
 	wxListCtrl* mainListCtrl = nullptr;
+	TaskDetail * taskDetail = nullptr;
 	wxBitmapButton* prevPageBtn = nullptr;
 	wxBitmapButton* nextPageBtn = nullptr;
 	wxTextCtrl* currentPageInput = nullptr;
