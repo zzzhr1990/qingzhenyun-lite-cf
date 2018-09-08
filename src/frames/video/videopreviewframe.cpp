@@ -161,18 +161,21 @@ void VideoPreviewFrame::PlayPreview(const web::json::array& array) {
 				return;
 			}
 			//
-			setenv ("VLC_PLUGIN_PATH", text.c_str(), 1);
-
+#ifndef __WINDOWS__
+			setenv("VLC_PLUGIN_PATH", text.c_str(), 1);
+#endif // !__WINDOWS__
+			// Can't do it under windows, Under windows, we have to search plugins manually.
 		}
 		instance = VLC::Instance(0, nullptr);
 		media = VLC::Media(instance, xx, VLC::Media::FromLocation);
 		mp = VLC::MediaPlayer(media);
-		//mp.setHwnd(playerWidget->GetHandle());
-		if(system & wxOS_MAC) {
-			mp.setNsobject(playerWidget->GetHandle());
-		}
+		// Under Windows, we use Hwnd to pass windows ids.
+		// TODO: Change to DirectX 11 for better performance later.
 		if(system & wxOS_WINDOWS){
 			mp.setHwnd(playerWidget->GetHandle());
+		}
+		if (system & wxOS_MAC) {
+			mp.setNsobject(playerWidget->GetHandle());
 		}
 		//CopyTextToClipboard(xx);
 		

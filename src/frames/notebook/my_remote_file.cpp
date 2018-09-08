@@ -367,7 +367,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 			int preview = fileData.at(U("preview")).as_integer();
 			if (preview == 1000) {
 				if (videoPreviewFrame == nullptr) {
-					videoPreviewFrame = new VideoPreviewFrame(currentPath, nullptr);
+					videoPreviewFrame = new VideoPreviewFrame(currentPath, this);
 				}
 				else {
 					videoPreviewFrame->SetPath(currentPath);
