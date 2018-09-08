@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9.0)
-SET(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake")
+#SET(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 SET(LINKING_TYPE "dynamic")
 SET(PROJECT_NAME "qingzhenyun-lite")
 project(${PROJECT_NAME})
@@ -34,15 +34,25 @@ message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #    "*.h"
 #    "*.cpp"
 #)
+if(MSVC)
+    include_directories(
+         "D:\\vlc-x86\\vlc-3.0.4\\sdk\\include"
+	    "D:\\vlcpp"
+    )
 
-include_directories(
-     "D:\\vlc-x86\\vlc-3.0.4\\sdk\\include"
-	 "D:\\vlcpp"
-)
+    link_directories(
+        "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link"
+    )
+elseif(APPLE)
+    include_directories(
+            "/Applications/VLC.app/Contents/MacOS/include"
+            "/Users/zzzhr/Downloads/libvlcpp-master/vlcpp"
+    )
 
-link_directories(
-    "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link"
-)
+    link_directories(
+            "/Applications/VLC.app/Contents/MacOS/lib"
+    )
+endif()
 
 # file(GLOB_RECURSE qingzhenyun_SRC  "*.h" "*.cpp")
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xpm)
@@ -57,4 +67,8 @@ if(MSVC)
 else(MSVC)
     add_executable(${PROJECT_NAME} ${FINAL_RES})
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+if(MSVC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+else()
+    target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib" "/Applications/VLC.app/Contents/MacOS/lib/libvlccore.9.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+endif()

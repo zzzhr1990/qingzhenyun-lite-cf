@@ -358,6 +358,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 		fileModel.GetPage(this, currentPath, 1);
 	}
 	else if (type == -1) {
+
 		wxMessageBox(wxT("This file is in invalid.\nThere's something wrong with our server."), _T("ErrorFile"), wxICON_ERROR);
 		//ShowModal())msg->Show();
 	}
@@ -366,7 +367,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 			int preview = fileData.at(U("preview")).as_integer();
 			if (preview == 1000) {
 				if (videoPreviewFrame == nullptr) {
-					videoPreviewFrame = new VideoPreviewFrame(currentPath, this);
+					videoPreviewFrame = new VideoPreviewFrame(currentPath, nullptr);
 				}
 				else {
 					videoPreviewFrame->SetPath(currentPath);

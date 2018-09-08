@@ -23,6 +23,7 @@
 #endif
 
 ////@begin includes
+#include <wx/platinfo.h>
 ////@end includes
 
 
@@ -132,7 +133,8 @@ void VideoPreviewFrame::OnCloseWindow(wxCloseEvent & event)
 }
 
 void VideoPreviewFrame::PlayPreview(const web::json::array& array) {
-	// create 
+	// create
+
 	int clear = 0;
 	utility::string_t t;
 	for (const auto& i : array) {
@@ -144,12 +146,34 @@ void VideoPreviewFrame::PlayPreview(const web::json::array& array) {
 	}
 	if (clear > 0) {
 		auto url = t.append(U("?token=")).append(UserModel::Instance().GetToken());
-		std::string xx = utility::conversions::to_utf8string(url);
+		const std::string& xx = utility::conversions::to_utf8string(url);
+		auto system = wxPlatformInfo::Get().GetOperatingSystemId();
+
+
+		if(system & wxOS_MAC){
+			auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
+			if(!wxDirExists (text)){
+				text = "/Applications/VLC.app/Contents/MacOS/plugins";
+			}
+			if(!wxDirExists (text)){
+				wxMessageBox(_("Could not found LibVLC plugins"), _("VLC init fail"));
+				this->Close();
+				return;
+			}
+			//
+			setenv ("VLC_PLUGIN_PATH", text.c_str(), 1);
+
+		}
 		instance = VLC::Instance(0, nullptr);
 		media = VLC::Media(instance, xx, VLC::Media::FromLocation);
 		mp = VLC::MediaPlayer(media);
-		mp.setHwnd(playerWidget->GetHandle());
-		
+		//mp.setHwnd(playerWidget->GetHandle());
+		if(system & wxOS_MAC) {
+			mp.setNsobject(playerWidget->GetHandle());
+		}
+		if(system & wxOS_WINDOWS){
+			mp.setHwnd(playerWidget->GetHandle());
+		}
 		//CopyTextToClipboard(xx);
 		
 		//mp.setMedia(media);
@@ -241,13 +265,13 @@ void VideoPreviewFrame::CreateControls()
     wxButton* itemButton2 = new wxButton( itemDialog1, wxID_ANY, _("PLAY"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer1->Add(itemButton2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText3 = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00:00"), wxDefaultPosition, wxSize(60, -1), wxALIGN_CENTRE );
+    wxStaticText* itemStaticText3 = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00:00"), wxDefaultPosition, wxSize(80, -1), wxALIGN_CENTRE );
     itemBoxSizer1->Add(itemStaticText3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxSlider* itemSlider4 = new wxSlider( itemDialog1, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
     itemBoxSizer1->Add(itemSlider4, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00:00"), wxDefaultPosition, wxSize(60, -1), wxALIGN_CENTRE );
+    wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00:00"), wxDefaultPosition, wxSize(80, -1), wxALIGN_CENTRE );
     itemBoxSizer1->Add(itemStaticText5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText6 = new wxStaticText( itemDialog1, wxID_STATIC, _("vol"), wxDefaultPosition, wxDefaultSize, 0 );
