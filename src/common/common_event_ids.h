@@ -32,6 +32,9 @@ enum {
 static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const ResponseEntity & v, const bool & checkMessage=false) {
     if(checkMessage){
         if(v.status == 401 || v.status == 403){
+            if(handler == nullptr){
+                return;
+            }
             wxThreadEvent event(wxEVT_THREAD, handler->GetId());
             // event.SetString(COMMON_THREAD_EVENT_STRING);
             event.SetInt(USER_AUTH_EXPIRED);

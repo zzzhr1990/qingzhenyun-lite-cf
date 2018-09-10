@@ -14,6 +14,16 @@
 #ifndef _VIDEOPREVIEWFRAME_H_
 #define _VIDEOPREVIEWFRAME_H_
 
+#include "wx/wxprec.h"
+
+#ifdef __BORLANDC__
+#pragma hdrstop
+#endif
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
 
 /*!
  * Includes
@@ -57,7 +67,7 @@ class VideoPreviewFrame: public wxDialog
 public:
     /// Constructors
     VideoPreviewFrame();
-    VideoPreviewFrame(utility::string_t path, wxWindow* parent, wxWindowID id = SYMBOL_VIDEOPREVIEWFRAME_IDNAME, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE );
+    VideoPreviewFrame(const utility::string_t& path, wxWindow* parent, wxWindowID id = SYMBOL_VIDEOPREVIEWFRAME_IDNAME, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE );
 
 	
 
@@ -94,6 +104,7 @@ public:
     static bool ShowToolTips();
 	void SetPath(const utility::string_t & path);
 	void GetVideoStream();
+	void Clean();
 	void PlayPreview(const web::json::array & array);
 ////@begin VideoPreviewFrame member variables
 private:
@@ -101,11 +112,28 @@ private:
 	utility::string_t path;
 	
 	void OnThreadEvent(wxThreadEvent & event);
-	
-	VLC::Instance instance;
-	VLC::Media media;
-	VLC::MediaPlayer mp;
-	void OnCloseWindow(wxCloseEvent& event);
+    char *myargs[4] = {const_cast<char *>("--freetype-color=16777216"), const_cast<char *>("--subsdec-encoding=GB18030"), const_cast<char *>("--subsdec-autodetect-utf8"), nullptr};
+	VLC::Instance instance = VLC::Instance(3, myargs);
+	VLC::MediaPlayer mp = VLC::MediaPlayer(instance);
+	int currentPercent = 0;
+	int currentTime = 0;
+    int totalTime = 0;
+	bool beginSeek = false;
+    bool volSeek = false;
+    void OnBeginSeek(wxScrollEvent& WXUNUSED(event));
+    void OnEndSeek(wxScrollEvent& WXUNUSED(event));
+    void OnBeginVol(wxScrollEvent& WXUNUSED(event));
+    void OnEndVol(wxScrollEvent& WXUNUSED(event));
+    void OnPlayBtnClick(wxCommandEvent& WXUNUSED(event));
+    void OnPlayerDClick(wxMouseEvent & WXUNUSED(event));//wxCommandEvent
+    void OnPlayerClick(wxMouseEvent & WXUNUSED(event));
+    void CheckPauseBtnClick();
+    wxSlider* progressSlider = nullptr;
+    wxSlider* volSlider = nullptr;
+    wxStaticText* playingTime = nullptr;
+    wxButton* playBtn = nullptr;
+    //VLC::EventManager::RegisteredEvent playPosEvent = nullptr;
+	// void OnCloseWindow(wxCloseEvent& event);
 	//mp.setHwnd(playerWidget->GetHandle());
 	//mp.setMedia(media);
 	//mp.setFullscreen(1);
@@ -116,6 +144,16 @@ private:
 	//VLC::MediaPlayer player;
 	
 	//mp.play();
+    wxStaticText* totalTimeText = nullptr;
+    VLC::EventManager::RegisteredEvent playPosEvent = nullptr;
+    VLC::EventManager::RegisteredEvent timeEvent = nullptr;
+    VLC::EventManager::RegisteredEvent lengthEvent = nullptr;
+    VLC::EventManager::RegisteredEvent bufferEvent = nullptr;
+    VLC::EventManager::RegisteredEvent playingEvent = nullptr;
+    VLC::EventManager::RegisteredEvent pauseEvent = nullptr;
+    VLC::EventManager::RegisteredEvent volEvent = nullptr;
+	void RegisterEvents();
+    void UnloadEvents();
 
 ////@end VideoPreviewFrame member variables
 };

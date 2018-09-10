@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="qingzhenyun-lite"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\local\;CMake Files\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\usr\local\lib\cpprestsdk\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="qingzhenyun-lite">
+				<Option output="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/qingzhenyun-lite" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add option="-D__WXMAC__"/>
+					<Add option="-D__WXOSX__"/>
+					<Add option="-D__WXOSX_COCOA__"/>
+					<Add option="-DCPPREST_FORCE_HTTP_CLIENT_ASIO"/>
+					<Add option="-DCPPREST_FORCE_HTTP_LISTENER_ASIO"/>
+					<Add directory="/Applications/VLC.app/Contents/MacOS/include"/>
+					<Add directory="/Users/zzzhr/Downloads/libvlcpp-master/vlcpp"/>
+					<Add directory="/usr/local/lib/wx/include/osx_cocoa-unicode-static-3.0"/>
+					<Add directory="/usr/local/include/wx-3.0"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/opt/openssl/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 qingzhenyun-lite"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="qingzhenyun-lite/fast">
+				<Option output="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/qingzhenyun-lite" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add option="-D__WXMAC__"/>
+					<Add option="-D__WXOSX__"/>
+					<Add option="-D__WXOSX_COCOA__"/>
+					<Add option="-DCPPREST_FORCE_HTTP_CLIENT_ASIO"/>
+					<Add option="-DCPPREST_FORCE_HTTP_LISTENER_ASIO"/>
+					<Add directory="/Applications/VLC.app/Contents/MacOS/include"/>
+					<Add directory="/Users/zzzhr/Downloads/libvlcpp-master/vlcpp"/>
+					<Add directory="/usr/local/lib/wx/include/osx_cocoa-unicode-static-3.0"/>
+					<Add directory="/usr/local/include/wx-3.0"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/opt/openssl/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 qingzhenyun-lite/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/common/common_event_ids.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/entity/response_entity.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/loginframe.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/loginframe.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/mainframe.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/mainframe.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/mainnotebook.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/mainnotebook.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/my_remote_file.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/my_remote_file.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/offline_download_task_panel.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/notebook/offline_download_task_panel.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/offline/add_offline_task.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/offline/add_offline_task.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/offline/task_detail.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/offline/task_detail.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/userfile/add_directory_dialog.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/userfile/add_directory_dialog.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/video/videopreviewframe.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/frames/video/videopreviewframe.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/remote_download_task_model.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/remote_download_task_model.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/remote_file_model.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/remote_file_model.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/user_model.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/model/user_model.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/qingzhenapp.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/qingzhenapp.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/copy.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/delete_task.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/delete_trash.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/file_icon/icon_index.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/if_cloud_main.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/left_btn.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/new_directory.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/new_task.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/refresh.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/remote-file.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/right_btn.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/search.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/settings.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/up_level.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/user-disable.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/resources/user.xpm">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/util/common_api.cpp">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/util/common_api.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/util/common_util.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/src/util/simple_timer.h">
+			<Option target="qingzhenyun-lite"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/../../../../usr/local/lib/cpprestsdk/cpprestsdk-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cpprestsdk\"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/../../../../usr/local/lib/cpprestsdk/cpprestsdk-targets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cpprestsdk\"/>
+		</Unit>
+		<Unit filename="/Users/zzzhr/CLionProjects/qingzhenyun-lite-cf/../../../../usr/local/lib/cpprestsdk/cpprestsdk-targets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cpprestsdk\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

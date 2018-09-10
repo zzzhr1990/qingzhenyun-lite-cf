@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 // For compilers that support precompilation, includes "wx/wx.h".
+#include <wx/filename.h>
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
@@ -367,6 +368,23 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 			int preview = fileData.at(U("preview")).as_integer();
 			if (preview == 1000) {
 				if (videoPreviewFrame == nullptr) {
+                    auto system = wxPlatformInfo::Get().GetOperatingSystemId();
+                    if(system & wxOS_MAC){
+                        auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
+                        if(!wxDirExists (text)){
+                            text = "/Applications/VLC.app/Contents/MacOS/plugins";
+                        }
+                        if(!wxDirExists (text)){
+                            wxMessageBox(_("Could not found LibVLC plugins"), _("VLC init fail"));
+                            // this->Close();
+                            return;
+                        }
+                        //
+#ifndef __WINDOWS__
+                        setenv("VLC_PLUGIN_PATH", text.c_str(), 1);
+#endif // !__WINDOWS__
+                        // Can't do it under windows, Under windows, we have to search plugins manually.
+                    }
 					videoPreviewFrame = new VideoPreviewFrame(currentPath, this);
 				}
 				else {
@@ -374,6 +392,9 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)
 				}
 				videoPreviewFrame->GetVideoStream();
 				videoPreviewFrame->ShowModal();
+				//std::cout << "exit" << std::endl;
+                videoPreviewFrame->Clean();
+                //std::cout << "exit3" << std::endl;
 			}
 		}
 	}
@@ -599,6 +620,7 @@ void MyRemoteFilePanel::OnSizeChanged(wxSizeEvent &event) {
     /*
      * "Type" --- "Filename" --- "FileSize" --- "FileType"
      */
+
     auto typeWidth = mainListCtrl->GetColumnWidth(0);
     //auto fileNameWidth = mainListCtrl->GetColumnWidth(1);
     auto fileSizeWidth = mainListCtrl->GetColumnWidth(2);
