@@ -110,7 +110,7 @@ public:
 private:
 	wxWindow * playerWidget;
 	utility::string_t path;
-	
+	wxBoxSizer* controllBarSizer = nullptr;
 	void OnThreadEvent(wxThreadEvent & event);
     char *myargs[4] = {const_cast<char *>("--freetype-color=16777216"), const_cast<char *>("--subsdec-encoding=GB18030"), const_cast<char *>("--subsdec-autodetect-utf8"), nullptr};
 	VLC::Instance instance = VLC::Instance(3, myargs);

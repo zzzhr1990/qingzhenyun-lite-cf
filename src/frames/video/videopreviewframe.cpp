@@ -298,26 +298,26 @@ void VideoPreviewFrame::CreateControls()
 	playerWidget->SetBackgroundColour(wxColour(wxT("black")));
     itemBoxSizer2->Add(playerWidget, 1, wxGROW, 5);
 
-    auto* itemBoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(itemBoxSizer1, 0, wxGROW, 5);
+	controllBarSizer = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(controllBarSizer, 0, wxGROW, 5);
 
     playBtn = new wxButton( itemDialog1, wxID_ANY, _("PLAY"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer1->Add(playBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(playBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     playingTime = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00"), wxDefaultPosition, wxSize(60, -1), wxALIGN_CENTRE );
-    itemBoxSizer1->Add(playingTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(playingTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     progressSlider = new wxSlider( itemDialog1, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
-    itemBoxSizer1->Add(progressSlider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(progressSlider, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     totalTimeText = new wxStaticText( itemDialog1, wxID_STATIC, _("00:00"), wxDefaultPosition, wxSize(60, -1), wxALIGN_CENTRE );
-    itemBoxSizer1->Add(totalTimeText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(totalTimeText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText6 = new wxStaticText( itemDialog1, wxID_STATIC, _("vol"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer1->Add(itemStaticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(itemStaticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     volSlider = new wxSlider( itemDialog1, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
-    itemBoxSizer1->Add(volSlider, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    controllBarSizer->Add(volSlider, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 	progressSlider->Bind(wxEVT_SCROLL_THUMBTRACK, &VideoPreviewFrame::OnBeginSeek,this);
 	progressSlider->Bind(wxEVT_SCROLL_THUMBRELEASE, &VideoPreviewFrame::OnEndSeek,this);
@@ -549,6 +549,8 @@ void VideoPreviewFrame::OnPlayBtnClick(wxCommandEvent &) {
 }
 
 void VideoPreviewFrame::OnPlayerDClick(wxMouseEvent &) {
+	/*
+	
 	bool succ = mp.addSlave(VLC::MediaSlave::Type::Subtitle,"https://www.6pan.cn/test.srt",
 							true);
 	std::cout << "Adding subtitle " << succ << std::endl;
@@ -565,7 +567,7 @@ void VideoPreviewFrame::OnPlayerDClick(wxMouseEvent &) {
 			mp.setSpu(desc.id());
     	}
     }
-
+	*/
 
     //mp.setTeletext(libvlc_teletext_key_red);
     /*
@@ -576,6 +578,7 @@ void VideoPreviewFrame::OnPlayerDClick(wxMouseEvent &) {
      */
 
     //mp.spuDescription().
+	controllBarSizer->Hide(this);
 }
 
 void VideoPreviewFrame::OnPlayerClick(wxMouseEvent &) {
