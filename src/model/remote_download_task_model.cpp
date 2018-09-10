@@ -1,3 +1,4 @@
+
 #include "remote_download_task_model.h"
 #include "cpprest/http_client.h"
 #include "../util/common_api.h"

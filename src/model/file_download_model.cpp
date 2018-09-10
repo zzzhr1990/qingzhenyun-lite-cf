@@ -4,7 +4,14 @@
 
 #include "file_download_model.h"
 #include "../util/common_api.h"
+#include <cpprest/filestream.h>
+using namespace web::http;
+using namespace web::http::client;
+using namespace concurrency::streams;
+using namespace utility;
 
+using namespace web;
+using namespace concurrency;
 using namespace web::http;
 using namespace web::http::client;
 
@@ -18,28 +25,93 @@ FileDownloadModel& FileDownloadModel::Instance() {
 
 
 void FileDownloadModel::DownloadTestFile(const utility::string_t &url) {
-    http_client_config config;
-    config.set_chunksize(512);
-
-    http_client client(url, config);
+    
     const method mtd = methods::GET;
-
-    utility::size64_t upsize = 4711u, downsize = 4711u;
+	///cancellation_token cancellation;
     int calls = 0;
+	const  utility::string_t outputFileName = U("D:\\papaya\\a.out");
+	auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
+	utility::size64_t upsize = 0, downsize = 0;
+	streams::ostream responseStream = streams::bytestream::open_ostream<std::vector<uint8_t>>();
+	http_client_config config;
+	config.set_chunksize(512);
+	http_client client(url, config);
+	http_request msg(mtd);
+	msg.set_progress_handler(
+		[&](message_direction::direction direction, utility::size64_t so_far)
+	{
+		std::cout << "Progress called..." << so_far << std::endl;
+		calls += 1;
 
-    http_request msg(mtd);
-    msg.set_progress_handler(
-            [&](message_direction::direction direction, utility::size64_t so_far)
-            {
-                std::cout << "Progress called..." << so_far << std::endl;
-                calls += 1;
-                if (direction == message_direction::upload)
-                    upsize = so_far;
-                else
-                    downsize = so_far;
-                //msg.body()
-                //msg.get_response()
-            });
+		if (direction == message_direction::upload)
+			upsize = so_far;
+		else
+			downsize = so_far;
+
+
+		//msg.body()
+		//msg.get_response()
+	});
+	file_buffer<uint8_t>::open(outputFileName, std::ios::out).then([=,&client,&msg](streambuf<uint8_t> outFile) {
+		*fileBuffer = outFile;
+		msg.set_response_stream(outFile);
+		return client.request(msg).wait();
+	})
+	.then([=](http_response response) -> pplx::task<http_response>
+	{
+		printf("Response status code %u returned.\n", response.status_code());
+		return response.content_ready();
+		//return response.body().read_to_end(*fileBuffer);
+	}).then([=](http_response response)->pplx::task<void> {
+		return fileBuffer->close();
+	}).wait();
+
+		// Close the file buffer
+
+		// Wait for the entire response body to be written into the file.;
+	std::cout << "Progress end called..." << std::endl;
+	//.wait();
+	/*
+	//auto psp =*fileBuffer;
+	//streams::producer_consumer_buffer<uint8_t> rwbuf;
+	//auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
+	
+	file_buffer<uint8_t>::open(outputFileName, std::ios::out).then([=](streambuf<uint8_t> outFile) -> pplx::task<http_response>
+	{
+		*fileBuffer = outFile;
+
+		// Create an HTTP request.
+		// Encode the URI query since it could contain special characters like spaces.
+		http_client_config config;
+		//config.set_chunksize(2048);
+		http_client client(url, config);
+		http_request msg(mtd);
+		//utility::size64_t upsize = 0, downsize = 0;
+		msg.set_progress_handler(
+			[&](message_direction::direction direction, utility::size64_t so_far)
+		{
+			std::cout << "Progress called..." << so_far << std::endl;
+			//calls += 1;
+			
+			if (direction == message_direction::upload)
+				upsize = so_far;
+			else
+				downsize = so_far;
+			
+			
+			//msg.body()
+			//msg.get_response()
+		});
+		//auto ostr = streams::ostream();
+		//msg.set_response_stream(outFile);
+		
+		//http_client client(U("http://www.bing.com/"),);
+		//return client.request(methods::GET, uri_builder(U("/search")).append_query(U("q"), searchTerm).to_string());
+	});
+	fileBuffer->close();
+	//
+   */
+    
 
     //const size_t repeats = 6000;
 
@@ -58,12 +130,12 @@ void FileDownloadModel::DownloadTestFile(const utility::string_t &url) {
                                          });
                                          */
 
-    auto response = client.request(msg).get();
+   // auto response = .get();
     //http_asserts::assert_response_equals(response, status_codes::OK);
 
     //VERIFY_ARE_EQUAL(0, upsize);
 
-    response.content_ready().wait();
+    //response.content_ready().wait();
 
     //VERIFY_ARE_EQUAL(26u*repeats, downsize);
     // We don't have very precise control over how much of a message is transferred

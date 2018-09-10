@@ -522,6 +522,24 @@ void VideoPreviewFrame::RegisterEvents() {
 		std::cout << "Vol Change" << vol << std::endl;
 	});
 
+	endEvent = mp.eventManager().onEndReached([&]() {
+		//std::cout << vol << std::endl;
+		/*
+		*/
+		
+		if (mp.isSeekable()) {
+			mp.setPosition(0.1f);
+		}
+		if (mp.canPause()) {
+			mp.pause();
+		}
+		
+		//mp.setPosition(0.1f);
+		//mp.stop();
+		//mp.setPosition(0);
+		//mp.play();
+	});
+
 
     /*
     mp.eventManager().onVout([](int newCount){
@@ -571,6 +589,10 @@ void VideoPreviewFrame::UnloadEvents() {
     if(volEvent != nullptr){
         volEvent->unregister();
     }
+	if (endEvent != nullptr) {
+		endEvent->unregister();
+	}
+	
 
 }
 

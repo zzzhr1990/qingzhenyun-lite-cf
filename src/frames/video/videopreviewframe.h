@@ -112,7 +112,7 @@ private:
 	utility::string_t path;
 	wxBoxSizer* controllBarSizer = nullptr;
 	void OnThreadEvent(wxThreadEvent & event);
-    char *myargs[4] = {const_cast<char *>("--freetype-color=16777216"), const_cast<char *>("--subsdec-encoding=GB18030"), const_cast<char *>("--subsdec-autodetect-utf8"), nullptr};
+    char *myargs[4] = {const_cast<char *>("--loop"), const_cast<char *>("--subsdec-encoding=GB18030"), const_cast<char *>("--subsdec-autodetect-utf8"), nullptr};
 	VLC::Instance instance = VLC::Instance(3, myargs);
 	VLC::MediaPlayer mp = VLC::MediaPlayer(instance);
 	int currentPercent = 0;
@@ -154,6 +154,7 @@ private:
     VLC::EventManager::RegisteredEvent playingEvent = nullptr;
     VLC::EventManager::RegisteredEvent pauseEvent = nullptr;
     VLC::EventManager::RegisteredEvent volEvent = nullptr;
+	VLC::EventManager::RegisteredEvent endEvent = nullptr;
 	void OnSliderScrollPageUp(wxScrollEvent& event);
 
 	/// wxEVT_SCROLL_PAGEDOWN event handler for ID_SLIDER
