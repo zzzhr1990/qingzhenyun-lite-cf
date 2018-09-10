@@ -27,6 +27,7 @@
 
 #include "my_remote_file.h"
 #include "../../model/remote_file_model.h"
+#include "../../model/file_download_model.h"
 
 
 ////@begin XPM images
@@ -101,6 +102,8 @@ bool MyRemoteFilePanel::Create(wxWindow* parent, wxWindowID id, const wxPoint& p
 MyRemoteFilePanel::~MyRemoteFilePanel()
 {
 ////@begin NyRemoteFilePanel destruction
+menu->Destroy(ID_DOWNLOAD_FILE);
+delete menu;
 ////@end NyRemoteFilePanel destruction
 }
 
@@ -219,6 +222,10 @@ void MyRemoteFilePanel::CreateControls()
 	mainListCtrl->Bind(wxEVT_LEFT_DCLICK, &MyRemoteFilePanel::OnUserRemoteFileDClick, this);
 	newDirectoryBtn->Bind(wxEVT_BUTTON, &MyRemoteFilePanel::NewDirectoryBtnClicked, this);
 	//prevPageBtn->
+    menu = new wxMenu();
+    menu->Append(ID_DOWNLOAD_FILE,_("Download file"));
+    menu->Bind(wxEVT_MENU, &MyRemoteFilePanel::OnCtrlListMenuClicked, this);
+    mainListCtrl->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MyRemoteFilePanel::OnItemRightClick, this);
 ////@end NyRemoteFilePanel content construction
 }
 
@@ -335,7 +342,95 @@ void MyRemoteFilePanel::OnUserRemoteFileDClick(wxMouseEvent & event)
 	
 }
 
+void MyRemoteFilePanel::OnItemRightClick(const wxListEvent &event) {
+    mainListCtrl->PopupMenu(menu);
+}
 
+void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
+    long itemIndex = -1;
+
+    while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
+                                                  wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
+        // Got the selected item index
+        //wxLogDebug(listControl->GetItemText(itemIndex));
+        // got
+        auto & fileModel = RemoteFileModel::Instance();
+        auto list = fileModel.GetCurrentList();
+        long count = list.size();
+        if (itemIndex >= count) {
+            return;
+        }
+        auto fileData = list.at(itemIndex);
+        if (fileData.is_null()) {
+            return;
+        }
+        // found
+        if (event.GetId() == ID_DOWNLOAD_FILE) {
+            FileDownloadModel::Instance().StartDownloadFile(fileData);
+            /*
+            if (fileData.has_field(U("detail"))) {
+                try
+                {
+                    web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
+                    if (data.has_field(U("url"))) {
+                        CopyTextToClipboard(data.at(U("url")).as_string());
+                        break;
+                    }
+                }
+                catch (const std::exception&)
+                {
+                    continue;
+                }
+            }
+             */
+            // Adding to download list...
+        }
+        /*
+        else if (event.GetId() == ID_VIEW_TASK_DETAIL) {
+            ShowTaskDetail(fileData);
+        }
+         */
+    }
+
+    /*
+    if (event.GetId() == ID_COPY_URL_TO_CLIP) {
+        long itemIndex = -1;
+
+        while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
+            wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
+            // Got the selected item index
+            //wxLogDebug(listControl->GetItemText(itemIndex));
+            // got
+            auto & fileModel = RemoteDownloadTaskModel::Instance();
+            auto list = fileModel.GetCurrentList();
+            long count = list.size();
+            if (itemIndex >= count) {
+                return;
+            }
+            auto fileData = list.at(itemIndex);
+            if (fileData.is_null()) {
+                return;
+            }
+
+            if (fileData.has_field(U("detail"))) {
+                try
+                {
+                    web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
+                    if (data.has_field(U("url"))) {
+                        CopyTextToClipboard(data.at(U("url")).as_string());
+                        break;
+                    }
+                }
+                catch (const std::exception&)
+                {
+                    continue;
+                }
+            }
+        }
+    }
+    */
+
+}
 
 
 void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event)

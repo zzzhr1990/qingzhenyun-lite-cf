@@ -49,6 +49,7 @@ class MyRemoteFilePanel;
 #define ID_BITMAPBUTTON6 10021
 #define ID_TEXTCTRL1 10022
 #define ID_BITMAPBUTTON7 10023
+#define ID_DOWNLOAD_FILE 6404
 #define SYMBOL_NYREMOTEFILEPANEL_STYLE wxSUNKEN_BORDER|wxTAB_TRAVERSAL
 #define SYMBOL_NYREMOTEFILEPANEL_IDNAME ID_MY_REMOTE_FILE_PANEL
 #define SYMBOL_NYREMOTEFILEPANEL_SIZE wxDefaultSize
@@ -107,6 +108,7 @@ public:
 	void OnPageInputKillFocus(wxFocusEvent & event);
 
 	void RefreshListData(const ResponseEntity& res);
+    void OnCtrlListMenuClicked(const wxCommandEvent &event);
 ////@begin NyRemoteFilePanel event handler declarations
 
 ////@end NyRemoteFilePanel event handler declarations
@@ -137,11 +139,12 @@ private:
 	wxTextCtrl* pathInput = nullptr;
 	wxBitmapButton* parentBtn = nullptr;
 	AddDirectoryDialog * addDirectoryDialog = nullptr;
-	
+    void OnItemRightClick(const wxListEvent & event);
 	long spaceUsed = 0;
 	long spaceCapacity = 0;
 	wxStaticText* capacityText = nullptr;
 	VideoPreviewFrame * videoPreviewFrame = nullptr;
+    wxMenu* menu = nullptr;
 ////@end NyRemoteFilePanel member variables
 };
 

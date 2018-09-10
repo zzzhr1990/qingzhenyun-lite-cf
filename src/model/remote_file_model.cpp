@@ -78,3 +78,14 @@ RemoteFileModel::UpdateCurrentLocation(const utility::string_t &path, const util
     this->current_parent = parent;
 	this->currentList = list;
 }
+
+void RemoteFileModel::GetFileInfo(wxWindow *handler, const utility::string_t &path) {
+    web::json::value request;
+    request[U("path")] = web::json::value::string(path);
+    //request[U("name")] = web::json::value::string(directoryName);
+
+    CommonApi::Instance().PostData(U("/v1/files/get"), request).then([handler](ResponseEntity v) {
+        SendCommonThreadEvent(handler, USER_REMOTE_FILE_INFO, v, true);
+    });
+
+}
