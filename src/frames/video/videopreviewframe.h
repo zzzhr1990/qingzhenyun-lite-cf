@@ -122,6 +122,7 @@ private:
     bool volSeek = false;
     void OnBeginSeek(wxScrollEvent& WXUNUSED(event));
     void OnEndSeek(wxScrollEvent& WXUNUSED(event));
+	void StartSeek();
     void OnBeginVol(wxScrollEvent& WXUNUSED(event));
     void OnEndVol(wxScrollEvent& WXUNUSED(event));
     void OnPlayBtnClick(wxCommandEvent& WXUNUSED(event));
@@ -132,6 +133,7 @@ private:
     wxSlider* volSlider = nullptr;
     wxStaticText* playingTime = nullptr;
     wxButton* playBtn = nullptr;
+	wxBoxSizer* mainBoxSizer = nullptr;
     //VLC::EventManager::RegisteredEvent playPosEvent = nullptr;
 	// void OnCloseWindow(wxCloseEvent& event);
 	//mp.setHwnd(playerWidget->GetHandle());
@@ -152,6 +154,10 @@ private:
     VLC::EventManager::RegisteredEvent playingEvent = nullptr;
     VLC::EventManager::RegisteredEvent pauseEvent = nullptr;
     VLC::EventManager::RegisteredEvent volEvent = nullptr;
+	void OnSliderScrollPageUp(wxScrollEvent& event);
+
+	/// wxEVT_SCROLL_PAGEDOWN event handler for ID_SLIDER
+	void OnSliderScrollPageDown(wxScrollEvent& event);
 	void RegisterEvents();
     void UnloadEvents();
 

@@ -290,16 +290,35 @@ void VideoPreviewFrame::CreateControls()
 
     VideoPreviewFrame* itemDialog1 = this;
 
-    auto* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
-    itemDialog1->SetSizer(itemBoxSizer2);
+	mainBoxSizer = new wxBoxSizer(wxVERTICAL);
+    itemDialog1->SetSizer(mainBoxSizer);
 
     // wxMediaCtrl* itemMediaCtrl1 = new wxMediaCtrl( itemDialog1, ID_MEDIACTRL, wxEmptyString, wxDefaultPosition, wxSize(100, 100), wxNO_BORDER );
+	/*
+	
 	playerWidget = new wxWindow(this, wxID_ANY, wxDefaultPosition, wxSize(100, 100), wxNO_BORDER);
 	playerWidget->SetBackgroundColour(wxColour(wxT("black")));
-    itemBoxSizer2->Add(playerWidget, 1, wxGROW, 5);
+	
+	*/
+	wxPanel* itemPanel1 = new wxPanel(itemDialog1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
+	itemPanel1->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+	itemPanel1->SetName(wxT("playerPanel"));
+	itemPanel1->SetBackgroundColour(wxColour(wxT("black")));
+	mainBoxSizer->Add(itemPanel1, 1, wxGROW, 5);
+
+	wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
+	//itemBoxSizer3->SetBackgroundColour(wxColour(wxT("black")));
+	itemPanel1->SetSizer(itemBoxSizer3);
+	playerWidget = new wxWindow(this, wxID_ANY, wxDefaultPosition, wxSize(100, 100), wxNO_BORDER);
+	playerWidget->SetBackgroundColour(wxColour(wxT("black")));
+	playerWidget->Disable();
+	//wxMediaCtrl* itemMediaCtrl4 = new wxMediaCtrl(itemPanel1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(100, 100), wxNO_BORDER);
+	itemBoxSizer3->Add(playerWidget, 1, wxGROW, 5);
+	
+    //mainBoxSizer->Add(playerWidget, 1, wxGROW, 5);
 
 	controllBarSizer = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(controllBarSizer, 0, wxGROW, 5);
+    mainBoxSizer->Add(controllBarSizer, 0, wxGROW, 5);
 
     playBtn = new wxButton( itemDialog1, wxID_ANY, _("PLAY"), wxDefaultPosition, wxDefaultSize, 0 );
     controllBarSizer->Add(playBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -321,6 +340,8 @@ void VideoPreviewFrame::CreateControls()
 
 	progressSlider->Bind(wxEVT_SCROLL_THUMBTRACK, &VideoPreviewFrame::OnBeginSeek,this);
 	progressSlider->Bind(wxEVT_SCROLL_THUMBRELEASE, &VideoPreviewFrame::OnEndSeek,this);
+	progressSlider->Bind(wxEVT_SCROLL_PAGEUP, &VideoPreviewFrame::OnSliderScrollPageUp, this);
+	progressSlider->Bind(wxEVT_SCROLL_PAGEDOWN, &VideoPreviewFrame::OnSliderScrollPageDown, this);
 
 	volSlider->Bind(wxEVT_SCROLL_THUMBTRACK, &VideoPreviewFrame::OnBeginVol,this);
 	volSlider->Bind(wxEVT_SCROLL_THUMBRELEASE, &VideoPreviewFrame::OnEndVol,this);
@@ -329,8 +350,9 @@ void VideoPreviewFrame::CreateControls()
 	//libvlc_event_attach(vlcEventManager, libvlc_Me, ::OnPositionChanged_VLC, NULL);
     playBtn->Bind(wxEVT_BUTTON, &VideoPreviewFrame::OnPlayBtnClick, this);
     playerWidget->Bind(wxEVT_LEFT_DCLICK, &VideoPreviewFrame::OnPlayerDClick, this);
+	playerWidget->Bind(wxEVT_LEFT_UP, &VideoPreviewFrame::OnPlayerClick, this);
     /*
-    playerWidget->Bind(wxEVT_LEFT_UP, &VideoPreviewFrame::OnPlayerClick, this);
+    
 	auto bx = ([&](wxCommandEvent e){
 		std::cout << "xxx" << std::endl;
 	});
@@ -363,6 +385,7 @@ void VideoPreviewFrame::InitVLC() {
 	//libvlc
 	//libvlc_media_player_set_w
 #endif
+	mp.setMouseInput(false);
 }
 
 /*
@@ -382,12 +405,17 @@ void VideoPreviewFrame::OnEndSeek(wxScrollEvent& WXUNUSED(event))
     ) == wxInvalidOffset )
         wxMessageBox(wxT("Couldn't seek in movie!"));
         */
-    if(mp.isSeekable()){
+	StartSeek();
+}
+
+void VideoPreviewFrame::StartSeek() {
+	if (mp.isSeekable()) {
 		//this->totalTime * 1000 / 2;
-    	mp.setPosition(0.01f * progressSlider->GetValue());
-    	//std::cout << progressSlider->GetValue() << std::endl;
-    }
-    beginSeek = false;
+		mp.setPosition(0.01f * progressSlider->GetValue());
+		//std::cout << progressSlider->GetValue() << std::endl;
+		this->currentPercent = -1;
+	}
+	beginSeek = false;
 }
 
 bool VideoPreviewFrame::ShowToolTips()
@@ -419,6 +447,16 @@ wxIcon VideoPreviewFrame::GetIconResource( const wxString& name )
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end VideoPreviewFrame icon retrieval
+}
+
+void VideoPreviewFrame::OnSliderScrollPageUp(wxScrollEvent & event)
+{
+	StartSeek();
+}
+
+void VideoPreviewFrame::OnSliderScrollPageDown(wxScrollEvent & event)
+{
+	StartSeek();
 }
 
 void VideoPreviewFrame::RegisterEvents() {
@@ -483,6 +521,7 @@ void VideoPreviewFrame::RegisterEvents() {
 		volSlider->SetValue(static_cast<int>(vol * 100));
 		std::cout << "Vol Change" << vol << std::endl;
 	});
+
 
     /*
     mp.eventManager().onVout([](int newCount){
@@ -578,7 +617,7 @@ void VideoPreviewFrame::OnPlayerDClick(wxMouseEvent &) {
      */
 
     //mp.spuDescription().
-	controllBarSizer->Hide(this);
+	//controllBarSizer->Hide(this);
 }
 
 void VideoPreviewFrame::OnPlayerClick(wxMouseEvent &) {
