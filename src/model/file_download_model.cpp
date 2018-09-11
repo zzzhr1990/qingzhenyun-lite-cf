@@ -29,7 +29,7 @@ void FileDownloadModel::DownloadTestFile(const utility::string_t &url) {
     const method mtd = methods::GET;
 	///cancellation_token cancellation;
     int calls = 0;
-	const  utility::string_t outputFileName = U("D:\\papaya\\a.out");
+	const  utility::string_t outputFileName = U("/Users/zzzhr/Downloads/download.ppp");
 	auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
 	utility::size64_t upsize = 0, downsize = 0;
 	streams::ostream responseStream = streams::bytestream::open_ostream<std::vector<uint8_t>>();

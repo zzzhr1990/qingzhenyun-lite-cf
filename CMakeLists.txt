@@ -28,7 +28,6 @@ find_package(cpprestsdk CONFIG REQUIRED)
 # find_package(FindLibtorrentRasterbar REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-
 message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #file(GLOB helloworld_SRC
 #    "*.h"
@@ -53,6 +52,7 @@ elseif(APPLE)
             "/Applications/VLC.app/Contents/MacOS/lib"
     )
 endif()
+find_package(TBB CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xpm)
 #FOREACH(LETTER ${SRCS})
@@ -67,7 +67,7 @@ else(MSVC)
     add_executable(${PROJECT_NAME} ${SRCS})
 endif()
 if(MSVC)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 else()
-    target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib" "/Applications/VLC.app/Contents/MacOS/lib/libvlccore.9.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(${PROJECT_NAME} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib" "/Applications/VLC.app/Contents/MacOS/lib/libvlccore.9.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 endif()
