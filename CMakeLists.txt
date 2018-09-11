@@ -54,7 +54,7 @@ elseif(APPLE)
 endif()
 find_package(TBB CONFIG REQUIRED)
 
-file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xpm)
+file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h src/*.xpm)
 #FOREACH(LETTER ${SRCS})
 #    string(FIND ${LETTER} "cmake-" SEARCH_POS)
 #    if(SEARCH_POS EQUAL -1)

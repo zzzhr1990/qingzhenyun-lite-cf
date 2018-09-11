@@ -100,6 +100,8 @@ void LoginFrame::CreateControls()
 {    
 ////@begin LoginFrame content construction
     LoginFrame* itemDialog1 = this;
+    //wxWindow &fr = *this;
+    //wxWindow frr = fr;
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
     itemDialog1->SetSizer(itemBoxSizer2);
