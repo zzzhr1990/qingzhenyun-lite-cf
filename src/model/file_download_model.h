@@ -12,7 +12,7 @@
 class FileDownloadModel {
 public:
     static FileDownloadModel& Instance();
-    virtual void StartDownloadFile(const web::json::value & value) = 0;
+    virtual void StartDownloadFile(const web::json::value & value,const utility::string_t& downloadPath) = 0;
     //void DownloadTestFile(const utility::string_t& url);
     //void TestFunction();
 

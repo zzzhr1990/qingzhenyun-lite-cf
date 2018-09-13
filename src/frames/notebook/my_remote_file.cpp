@@ -366,7 +366,16 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
         }
         // found
         if (event.GetId() == ID_DOWNLOAD_FILE) {
-            FileDownloadModel::Instance().StartDownloadFile(fileData);
+            wxString dirHome;
+            wxGetHomeDir(&dirHome);
+
+            wxDirDialog dialog(this, wxT("Testing directory picker"), dirHome);
+
+            if (dialog.ShowModal() == wxID_OK)
+            {
+                FileDownloadModel::Instance().StartDownloadFile(fileData, dialog.GetPath());
+            }
+
             /*
             if (fileData.has_field(U("detail"))) {
                 try

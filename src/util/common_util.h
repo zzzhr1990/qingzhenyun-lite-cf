@@ -18,6 +18,12 @@
 #include <openssl/md5.h>
 #include <wx/clipbrd.h>
 
+#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+
+
 static wxString ConvertSizeToDisplay(int64_t size){
     const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     int i = 0;
@@ -65,7 +71,7 @@ static void CopyTextToClipboard(const wxString& str) {
 
 }
 
-static wxString CopyTextToClipboard() {
+static wxString CopyTextFromClipboard() {
 	wxString x = _T("");
 	if (wxTheClipboard->Open())
 	{
@@ -79,5 +85,64 @@ static wxString CopyTextToClipboard() {
 	}
 	return x;
 }
+
+
+static void WcsSHABytes(const unsigned char * buffer,size_t size, unsigned char * out){
+    SHA_CTX shaCtx;
+    SHA1_Init( &shaCtx );
+    SHA1_Update(&shaCtx,buffer, size > 0 ? size :sizeof(buffer));
+    SHA1_Final( out, &shaCtx );
+}
+
+
+static void WcsBin2Hex( unsigned char * src, int len, char * hex )
+{
+    int i, j;
+
+    for( i = 0, j = 0; i < len; i++, j+=2 )
+        sprintf( &hex[j], "%02x", src[i] );
+}
+
+static char * Base64Encode(const unsigned char * input, int length, bool with_new_line, bool url_safe)
+{
+    BIO * b64 = nullptr;
+    BUF_MEM * bptr = nullptr;
+
+    b64 = BIO_new(BIO_f_base64());
+    if(!with_new_line) {
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+    }
+    b64 = BIO_push(b64, BIO_new(BIO_s_mem()));
+    BIO_write(b64, input, length);
+    BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
+
+    char * buff = (char *)malloc(bptr->length + 1);
+    memcpy(buff, bptr->data, bptr->length);
+    buff[bptr->length] = 0;
+    BIO_free_all(b64);
+    return buff;
+}
+
+static char * Base64Decode(const unsigned char * input, size_t length, bool with_new_line)
+{
+    BIO * b64 = nullptr;
+    BIO * bmem = nullptr;
+    char * buffer = (char *)malloc(length);
+    memset(buffer, 0, length);
+
+    b64 = BIO_new(BIO_f_base64());
+    if(!with_new_line) {
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+    }
+    bmem = BIO_new_mem_buf(input, length);
+    bmem = BIO_push(b64, bmem);
+    BIO_read(bmem, buffer, length);
+
+    BIO_free_all(bmem);
+
+    return buffer;
+}
+
 
 #endif //FUCK_COMMON_UTIL_H
