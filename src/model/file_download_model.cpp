@@ -16,13 +16,13 @@ using namespace web::http::client;
 //using namespace functional::http::utilities;
 #ifdef U
 #undef U
-#include "tbb/concurrent_vector.h"
+
+#include <tbb/concurrent_vector.h>
 #endif
 
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 #include "../util/simple_timer.h"
 #include "../util/common_util.h"
-
 
 enum file_download_status {
     pretending = 0,
@@ -79,7 +79,9 @@ private:
     void DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask);
     void StartInnerDownload(SingleUrlTask* urlTask);
     void CheckTaskStatus(); //
-    void CreateJsonReport();
+    void ReportStatus();
+
+    web::json::value CreateJsonReport();
     tbb::concurrent_vector<DownloadTask*> taskList;
     SimpleTimer timer;
     bool checking = false;
@@ -269,6 +271,8 @@ void FileDownloadModelEx::CheckTaskStatus() {
             }
         }
     }
+
+    ReportStatus();
 }
 
 void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
@@ -292,19 +296,46 @@ void FileDownloadModelEx::AddRefreshListener(const utility::string_t &key, wxWin
 }
 
 void FileDownloadModelEx::ForceRefresh(wxWindow *window) {
-
+    //Use PPLX
+    pplx::create_task([&]() {
+        //return response;
+        this->ReportStatus();
+    });
 }
 
-void FileDownloadModelEx::CreateJsonReport() {
+web::json::value FileDownloadModelEx::CreateJsonReport() {
     web::json::array response = web::json::value::array().as_array();
 
     //web::json::value postParameters = web::json::value::array();
 
     //postParameters[0] = web::json::value::string(_XPLATSTR("Test1"));
     //postParameters[1] = web::json::value::string(L"Test2");
+    std::vector<web::json::value> value;
     for (auto task : taskList) {
-        //response[1] = response;
+        web::json::value reportTask;
+        reportTask[_XPLATSTR("processedSize")] = web::json::value::number(task->processedSize);
+        reportTask[_XPLATSTR("name")] = web::json::value::string(task->filename);
+        reportTask[_XPLATSTR("type")] = web::json::value::number(task->type);
+        reportTask[_XPLATSTR("localPath")] = web::json::value::string(task->localPath);
+        reportTask[_XPLATSTR("remotePath")] = web::json::value::string(task->remotePath);
+        reportTask[_XPLATSTR("size")] = web::json::value::number(task->fileSize);
+        reportTask[_XPLATSTR("direction")] = web::json::value::number(task->direction);
+        reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->fileCount);
+        //reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->);
+        value.push_back(reportTask);
     }
-    web::json::value resp;
+    return web::json::value::array(value);
     //resp[0] = response;
+}
+
+void FileDownloadModelEx::ReportStatus() {
+    if (!refreshListener.empty()) {
+        for (auto x : refreshListener) {
+            ResponseEntity responseEntity;
+            responseEntity.status = 200;
+            responseEntity.success = true;
+            responseEntity.result = CreateJsonReport();
+            SendCommonThreadEvent(x.second, USER_DOWNLOADING_LIST_REFRESH, responseEntity, false);
+        }
+    }
 }
