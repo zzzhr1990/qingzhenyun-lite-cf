@@ -16,19 +16,21 @@ using namespace web::http::client;
 //using namespace functional::http::utilities;
 #ifdef U
 #undef U
-
-#include <tbb/concurrent_vector.h>
 #endif
+#include <tbb/concurrent_vector.h>
+
 
 #include <boost/filesystem.hpp>
 #include "../util/simple_timer.h"
 #include "../util/common_util.h"
+#include "../common/common_event_ids.h"
 
 enum file_download_status {
     pretending = 0,
     downloading = 1,
     finished = 2,
-    failed = -1
+    failed = -1,
+    info = 3
 };
 
 struct SingleUrlTask{
@@ -52,6 +54,8 @@ struct DownloadTask{
     utility::string_t remotePath;
     int fileCount;
     int type;
+    int status;
+    int progress;
 };
 
 #include "file_download_model.h"
@@ -69,6 +73,7 @@ public:
     };
 
     void AddRefreshListener(const utility::string_t &key, wxWindow *window) override;
+    void ReportSpeed(wxWindow* window) override;
 
     void ForceRefresh(wxWindow *window) override;
 
@@ -81,6 +86,13 @@ private:
     void CheckTaskStatus(); //
     void ReportStatus();
 
+    long lastRefreshTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    size64_t lastUpSize = 0;
+    size64_t lastDownSize = 0;
+    size64_t upSpeed = 0;
+    size64_t downSpeed = 0;
+    int upCount = 0;
+    int downCount = 0;
     web::json::value CreateJsonReport();
     tbb::concurrent_vector<DownloadTask*> taskList;
     SimpleTimer timer;
@@ -124,6 +136,8 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
         task->processedSize = 0;
         task->localPath = localUrl.append(task->filename);
         task->type = value.at(_XPLATSTR("type")).as_integer();
+        task->status = file_download_status::pretending;
+        task->progress = 0;
         if(task->type == 1){
             std::cout << "Explorer all files" << std::endl;
         }
@@ -163,7 +177,6 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
 void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask) {
     //Okay,Starting Download...
     const method mtd = methods::GET;
-
     auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
     // utility::size64_t upsize = 0, downsize = 0;
     streams::ostream responseStream = streams::bytestream::open_ostream<std::vector<uint8_t>>();
@@ -180,6 +193,7 @@ void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const
 
                 //if (direction == message_direction::upload)
                 urlTask->processedSize = so_far;
+                //std::cout<< "Setting Download:" << urlTask->processedSize << std::endl;
                 //else
                 //    urlTask->processedSize = so_far;
 
@@ -217,11 +231,10 @@ void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const
     // check hash
     auto data = WcsFileHash(urlTask->localPath);
     if (urlTask->hash != data) {
-        std::cout << "Download Failed, hash not match" << std::endl;
-        urlTask->status = file_download_status::finished;
-    } else {
-        std::cout << "Download Success, hash match" << std::endl;
+        std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;
         urlTask->status = file_download_status::failed;
+    } else {
+        urlTask->status = file_download_status::finished;
     }
 }
 
@@ -241,38 +254,89 @@ FileDownloadModelEx::~FileDownloadModelEx() {
 }
 
 void FileDownloadModelEx::CheckTaskStatus() {
-    uint workingTaskCount = 0;
+    uint upWorkingTaskCount = 0;
+    uint downWorkingTaskCount = 0;
     uint totalTaskLimit = 5;
-
+    long current = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    auto timeDiff = current - lastRefreshTime;
+    bool check = timeDiff > 0;
+    size64_t upSize = 0;
+    size64_t downSize = 0;
     for (auto task : taskList) {
         auto singleTaskList = task->task;
         for(auto singleTask : singleTaskList){
             //delete singleTask;
-            if(singleTask->status == file_download_status::downloading){
-                workingTaskCount++;
+
+            if(singleTask->direction == message_direction::download){
+                if(singleTask->status == file_download_status::downloading){
+                    downWorkingTaskCount++;
+                }
+                downSize += singleTask->processedSize;
+            }else{
+                if(singleTask->status == file_download_status::downloading){
+                    upWorkingTaskCount++;
+                }
+                upSize += singleTask->processedSize;
+            }
+            //singleTask->processedSize
+            //std::cout << singleTask->filename << std::endl;
+            //std::cout << singleTask->processedSize << std::endl;
+            // check fin..
+        }
+        auto size = singleTaskList.size();
+        if(size == 1){
+            task->status = singleTaskList[0]->status;
+            task->processedSize = singleTaskList[0]->processedSize;
+            task->fileSize = singleTaskList[0]->fileSize;
+            task->progress = (static_cast<int>(task->processedSize * 100 / task->fileSize));
+            if(task->progress > 100){
+                task->progress = 100;
+            }
+            if(task->progress < 0){
+                task->progress = 0;
             }
         }
     }
+    if(check){
+        auto upDiff = upSize - lastUpSize;
+        auto downDiff = downSize - lastDownSize;
+        lastUpSize = upSize;
+        lastDownSize = downSize;
+        if(upDiff < 0){
+            upDiff = 0;
+        }
+        if(downDiff < 0){
+            downDiff = 0;
+        }
+        downSpeed = downDiff / timeDiff;
+        upSpeed = upDiff / timeDiff;
+        lastRefreshTime = current;
+    }
     //uint needAdd = totalTaskLimit - workingTaskCount;
+    downCount = downWorkingTaskCount;
+    upCount = upWorkingTaskCount;
     for (auto task : taskList) {
         auto singleTaskList = task->task;
         for(auto singleTask : singleTaskList){
             //delete singleTask;
             if (singleTask->status == file_download_status::pretending) {
                 //workingTaskCount++;
-                this->StartInnerDownload(singleTask);
-                auto needAdd = totalTaskLimit - workingTaskCount;
+                auto needAdd = totalTaskLimit - downWorkingTaskCount;
                 if(needAdd < 1){
                     return;
                 }else{
-                    singleTask->status = file_download_status::downloading;
-                    workingTaskCount++;
+                    singleTask->status = file_download_status::info;
+                    this->StartInnerDownload(singleTask);
+                    //singleTask->status = file_download_status::downloading;
+                    downWorkingTaskCount++;
                 }
             }
         }
     }
 
-    ReportStatus();
+
+
+    //ReportStatus();
 }
 
 void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
@@ -283,7 +347,9 @@ void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
         //SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
         if(v.success && v.result.has_field(_XPLATSTR("downloadAddress"))){
             urlTask->hash = v.result.at(_XPLATSTR("storeId")).as_string();
+            urlTask->status = file_download_status::downloading;
             this->DownloadSingleFile(v.result, v.result.at(_XPLATSTR("downloadAddress")).as_string(),urlTask);
+
         }
         else{
             urlTask->status = file_download_status::failed;
@@ -298,7 +364,8 @@ void FileDownloadModelEx::AddRefreshListener(const utility::string_t &key, wxWin
 void FileDownloadModelEx::ForceRefresh(wxWindow *window) {
     //Use PPLX
     pplx::create_task([&]() {
-        //return response;
+        // return response;
+        // std::cout << "REPORT_STATUS" << std::endl;
         this->ReportStatus();
     });
 }
@@ -321,6 +388,9 @@ web::json::value FileDownloadModelEx::CreateJsonReport() {
         reportTask[_XPLATSTR("size")] = web::json::value::number(task->fileSize);
         reportTask[_XPLATSTR("direction")] = web::json::value::number(task->direction);
         reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->fileCount);
+        reportTask[_XPLATSTR("status")] = web::json::value::number(task->status);
+        reportTask[_XPLATSTR("progress")] = web::json::value::number(task->progress);
+
         //reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->);
         value.push_back(reportTask);
     }
@@ -330,12 +400,28 @@ web::json::value FileDownloadModelEx::CreateJsonReport() {
 
 void FileDownloadModelEx::ReportStatus() {
     if (!refreshListener.empty()) {
-        for (auto x : refreshListener) {
+        for (auto &x : refreshListener) {
             ResponseEntity responseEntity;
             responseEntity.status = 200;
             responseEntity.success = true;
             responseEntity.result = CreateJsonReport();
-            SendCommonThreadEvent(x.second, USER_DOWNLOADING_LIST_REFRESH, responseEntity, false);
+            SendCommonThreadEvent(x.second, USER_SYNC_LIST_REFRESH, responseEntity, false);
         }
     }
+}
+
+void FileDownloadModelEx::ReportSpeed(wxWindow* window) {
+    pplx::create_task([&,window]() {
+        ResponseEntity responseEntity;
+        responseEntity.status = 200;
+        responseEntity.success = true;
+        web::json::value reportTask;
+        reportTask[_XPLATSTR("upCount")] = web::json::value::number(this->upCount);
+        reportTask[_XPLATSTR("downCount")] = web::json::value::number(this->downCount);
+        reportTask[_XPLATSTR("upSpeed")] = web::json::value::number(this->upSpeed);
+        reportTask[_XPLATSTR("downSpeed")] = web::json::value::number(this->downSpeed);
+        responseEntity.result = reportTask;
+        SendCommonThreadEvent(window, USER_SYNC_SPEED_REFRESH, responseEntity, false);
+    });
+
 }

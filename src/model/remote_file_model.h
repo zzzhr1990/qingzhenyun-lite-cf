@@ -14,8 +14,9 @@
 #endif
 
 #ifndef WX_PRECOMP
-#include "../common/common_event_ids.h"
+#include "wx/wx.h"
 #endif
+#include "../common/common_event_ids.h"
 
 class RemoteFileModel {
 public:

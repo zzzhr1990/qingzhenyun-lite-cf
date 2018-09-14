@@ -46,15 +46,13 @@ static wxString Utf8MD5(const wxString& str) {
 	unsigned char digest[16];
 	const char* string = str.data();
 
-	//printf("string length: %d\n", strlen(string));
-
 	MD5_CTX ctx;
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, string, strlen(string));
 	MD5_Final(digest, &ctx);
-
-	char mdString[33];
-	for (int i = 0; i < 16; i++)
+    //MD5_DIGEST_LENGTH
+	char mdString[MD5_DIGEST_LENGTH * 2 + 1];
+	for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
 		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
 	return wxString::FromAscii(mdString);
 
@@ -104,51 +102,12 @@ static void WcsBin2Hex( unsigned char * src, int len, char * hex )
         sprintf( &hex[j], "%02x", src[i] );
 }
 
-static std::string Base64Encode(const unsigned char *input, int length, bool with_new_line, bool url_safe)
+/*
+static std::string Base64Encode(const unsigned char* input)
 {
-    BIO * b64 = nullptr;
-    BUF_MEM * bptr = nullptr;
-
-    b64 = BIO_new(BIO_f_base64());
-    if(!with_new_line) {
-        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
-    }
-    b64 = BIO_push(b64, BIO_new(BIO_s_mem()));
-    BIO_write(b64, input, length);
-    BIO_flush(b64);
-    BIO_get_mem_ptr(b64, &bptr);
-
-    std::stringstream ss;
-    ss << bptr->data;
-    BIO_free_all(b64);
-    if (url_safe) {
-        //ss.str().replace("+=/",'-_~');
-        auto str = ss.str();
-        for (char &i : str) {
-            if (i == '+') {
-                i = '-';
-            }
-            if (i == '=') {
-                i = '_';
-            }
-            if (i == '/') {
-                i = '~';
-            }
-        }
-        return str;
-    }
-    return ss.str();
-    /*
-    char * buff = (char *)malloc(bptr->length + 1);
-    memset(buff, 0,bptr->length + 1 );
-    memcpy(buff, bptr->data, bptr->length);
-    buff[bptr->length] = 0;
-    memcpy(xxx, buff, bptr->length);
-    BIO_free_all(b64);
-    return xxx;
-     */
+    //utility::conversions::to_base64(std::vector<const unsigned char>(std::begin(input), std::end(input)))
 }
-
+*/
 
 
 
@@ -251,7 +210,30 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                     }
                 }
                 //unsigned char * enc_output ;
-                auto res = Base64Encode(finalDigest, SHA_DIGEST_LENGTH + 1, false, true);
+                //auto res = Base64Encode(finalDigest);
+                std::vector<unsigned char > v(std::begin(finalDigest), std::end(finalDigest));
+                auto base64 = utility::conversions::to_base64(v);
+                //char * ch = base64.data();
+                for (char &i : base64) {
+                    if (i == '+') {
+                        i = '-';
+                    }
+                    /*
+                    if (i == '=') {
+                        i = '_';
+                    }
+                     */
+                    if (i == '/') {
+                        i = '_';
+                    }
+                }
+                //base64.replace();
+                //const char* data = base64.c_str();
+                /*
+                auto data = base64.replace( base64.begin(), base64.end(), '+', '-')
+                .replace(base64.begin(), base64.end(), '=', '_')
+                .replace(base64.begin(), base64.end(), '/', '~');
+                 */
                 /*
                 if( urlTask->hash == utility::conversions::to_string_t(res)){
                     urlTask->status = file_download_status::finished;
@@ -260,7 +242,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                 }
                  */
                 //free(res);
-                *resultD = utility::conversions::to_string_t(res);
+                *resultD = base64;
                 return outFile.close();
             });
     try {

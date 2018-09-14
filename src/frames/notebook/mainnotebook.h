@@ -28,6 +28,7 @@
 ////@begin forward declarations
 class MyRemoteFilePanel;
 class OfflineDownloadTaskPanel;
+class SyncPanel;
 ////@end forward declarations
 
 /*!
@@ -35,12 +36,7 @@ class OfflineDownloadTaskPanel;
  */
 
 ////@begin control identifiers
-//#define ID_NOTEBOOK 10012
-#define ID_SYNC_TASK_PANEL 10025
-#define SYMBOL_MAINNOTEBOOK_STYLE wxNB_DEFAULT
-#define SYMBOL_MAINNOTEBOOK_IDNAME ID_NOTEBOOK
-#define SYMBOL_MAINNOTEBOOK_SIZE wxDefaultSize
-#define SYMBOL_MAINNOTEBOOK_POSITION wxDefaultPosition
+#include "../../util/simple_timer.h"
 ////@end control identifiers
 
 
@@ -97,8 +93,10 @@ private:
 	
     MyRemoteFilePanel* myRemoteFilePanel = nullptr;
 	OfflineDownloadTaskPanel* offlineDownloadTaskPanel = nullptr;
+    SyncPanel* syncPanel = nullptr;
 	bool inited = false;
-	
+	SimpleTimer timer;
+	void TimerTick();
 ////@begin MainNotebook member variables
 ////@end MainNotebook member variables
 };

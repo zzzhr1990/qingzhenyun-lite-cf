@@ -221,7 +221,7 @@ void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event
 		if (itemIndex >= count) {
 			return;
 		}
-		auto fileData = list.at(itemIndex);
+		auto fileData = list.at(static_cast<web::json::array::size_type>(itemIndex));
 		if (fileData.is_null()) {
 			return;
 		}
@@ -305,13 +305,6 @@ void OfflineDownloadTaskPanel::OnSizeChanged( wxSizeEvent &event) {
 	}
 	//mainListCtrl->Hide();
 	int panelWidth = mainListCtrl->GetSize().GetWidth();
-	/*
-	 *mainListCtrl->AppendColumn(_("TaskName"), wxLIST_FORMAT_LEFT);
-	mainListCtrl->AppendColumn(_("TaskSize"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("Progress"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("Status"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("CreateTime"), wxLIST_FORMAT_CENTER, 160);
-	 */
 	auto sizeWidth = mainListCtrl->GetColumnWidth(1);
 	//auto fileNameWidth = mainListCtrl->GetColumnWidth(1);
 	auto progressWidth = mainListCtrl->GetColumnWidth(2);
@@ -339,7 +332,7 @@ void OfflineDownloadTaskPanel::OnUserRemoteTaskActivated(const wxListEvent &even
 	if (index >= count) {
 		return;
 	}
-	auto fileData = list.at(index);
+	auto fileData = list.at(static_cast<web::json::array::size_type>(index));
 	if (fileData.is_null()) {
 		return;
 	}
@@ -347,11 +340,11 @@ void OfflineDownloadTaskPanel::OnUserRemoteTaskActivated(const wxListEvent &even
 		utility::string_t currentPath = fileData.at(U("filePath")).as_string();
 		// USER_GOTO_DIRECTORY
 		if (!currentPath.empty()) {
-			wxThreadEvent event(wxEVT_THREAD, this->GetId());
+			wxThreadEvent xEvent(wxEVT_THREAD, this->GetId());
 			// event.SetString(COMMON_THREAD_EVENT_STRING);
-			event.SetInt(USER_GOTO_DIRECTORY);
-			event.SetString(currentPath);
-			wxQueueEvent(this, event.Clone());
+			xEvent.SetInt(USER_GOTO_DIRECTORY);
+			xEvent.SetString(currentPath);
+			wxQueueEvent(this, xEvent.Clone());
 		}
 		
 	}

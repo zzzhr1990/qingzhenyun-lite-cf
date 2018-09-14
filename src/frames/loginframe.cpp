@@ -126,13 +126,13 @@ void LoginFrame::CreateControls()
     wxStaticText* itemStaticText6 = new wxStaticText( itemPanel1, wxID_STATIC, _("User/Phone"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer5->Add(itemStaticText6, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    inputTextCtrl = new wxTextCtrl( itemPanel1, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    inputTextCtrl = new wxTextCtrl( itemPanel1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer5->Add(inputTextCtrl, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText8 = new wxStaticText( itemPanel1, wxID_STATIC, _("Password"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer5->Add(itemStaticText8, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    passwordTextCtrl = new wxTextCtrl( itemPanel1, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxDefaultSize,wxTE_PASSWORD );
+    passwordTextCtrl = new wxTextCtrl( itemPanel1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,wxTE_PASSWORD );
 
     itemFlexGridSizer5->Add(passwordTextCtrl, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 

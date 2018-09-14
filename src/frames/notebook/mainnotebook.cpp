@@ -24,12 +24,16 @@
 #include "wx/imaglist.h"
 #include "my_remote_file.h"
 #include "offline_download_task_panel.h"
+#include "sync_panel.h"
 ////@end includes
 
 #include "mainnotebook.h"
 #include "../../common/common_event_ids.h"
 #include "../../model/remote_file_model.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
+#include "../../model/file_download_model.h"
+#include "../mainframe.h"
+#include "../../util/common_util.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -91,6 +95,7 @@ bool MainNotebook::Create(wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 MainNotebook::~MainNotebook()
 {
 ////@begin MainNotebook destruction
+    timer.Expire();
 ////@end MainNotebook destruction
 }
 
@@ -102,6 +107,7 @@ MainNotebook::~MainNotebook()
 void MainNotebook::Init()
 {
 ////@begin MainNotebook member initialisation
+
 ////@end MainNotebook member initialisation
 }
 
@@ -124,6 +130,11 @@ void MainNotebook::CreateControls()
 	offlineDownloadTaskPanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     this->AddPage(offlineDownloadTaskPanel, _("Offline Download Task"));
 
+    syncPanel = new SyncPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    syncPanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    this->AddPage(syncPanel, _("Sync Task"));
+
+    /*
     wxPanel* itemPanel21 = new wxPanel( itemNotebook1, ID_SYNC_TASK_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemPanel21->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     wxBoxSizer* itemBoxSizer22 = new wxBoxSizer(wxVERTICAL);
@@ -136,12 +147,25 @@ void MainNotebook::CreateControls()
     wxStaticText* itemStaticText8 = new wxStaticText( itemPanel21, wxID_STATIC, _("This function is not available now."), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer7->Add(itemStaticText8, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
+
     this->AddPage(itemPanel21, _("Sync Task"));
+     */
 	offlineDownloadTaskPanel->Bind(wxEVT_THREAD, &MainNotebook::OnThreadEvent, this);
 
 		// you could specify a macro backend here like
 		//  wxMEDIABACKEND_WMP10);
 		//        wxT("wxPDFMediaBackend"));
+    auto task = [this](){
+        wxThreadEvent event(wxEVT_THREAD);
+        auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        event.SetTimestamp(ts);
+        //event.SetId(this->GetId());
+        event.SetInt(PAGE_TIMER_TICK);
+        //event.SetPayload(v);
+        //std::cout << "Tick0" << std::endl;
+        wxQueueEvent(this->offlineDownloadTaskPanel, event.Clone());
+    };
+    timer.StartTimer(2000,task);
 ////@end MainNotebook content construction
 }
 
@@ -152,7 +176,7 @@ void MainNotebook::CreateControls()
 void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
 	switch (event.GetInt()) {
 	case USER_GOTO_DIRECTORY: {
-		auto path = event.GetString();
+		auto& path = event.GetString();
 		auto &model = RemoteFileModel::Instance();
 		model.SetCurrentPage(1);
 		model.SetCurrentPath(path);
@@ -160,7 +184,26 @@ void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
 		RefreshCurrentPage();
 		break;
 	}
+	case PAGE_TIMER_TICK:{
+        TimerTick();
+        break;
+	}
+	case USER_SYNC_SPEED_REFRESH:{
+        const auto & data = event.GetPayload<ResponseEntity>();
+        auto* main = (MainFrame*)this->GetParent();
+        const auto & value = data.result;
+        auto upSpeed = value.at(U("upSpeed")).as_number().to_uint64();
+        auto downSpeed = value.at(U("downSpeed")).as_number().to_uint64();
 
+        auto upCount = value.at(U("upCount")).as_integer();
+        auto downCount = value.at(U("downCount")).as_integer();
+        auto cs = (upCount == 0 && downCount == 0) ? _T("Wait") : _T("Sync");
+        main->SetStatusText(wxString::Format(_T("%s - Up(%d):%s/s, Down(%d):%s/s"),cs,
+                upCount,ConvertSizeToDisplay(upSpeed),
+                downCount, ConvertSizeToDisplay(downSpeed)),1);
+
+	    break;
+	}
 	default:
 		event.Skip();
 	}
@@ -212,13 +255,15 @@ void MainNotebook::RefreshCurrentPage(int selection) {
 		case 1:
 			offlineDownloadTaskPanel->RefreshData();
 			break;
+        case 2:
+            syncPanel->RefreshData();
+            break;
         default:
             return;
     }
 }
 
 void MainNotebook::OnNoteBookChange(wxBookCtrlEvent &event) {
-
 	event.Skip();
 	RefreshCurrentPage(event.GetSelection());
 
@@ -226,4 +271,23 @@ void MainNotebook::OnNoteBookChange(wxBookCtrlEvent &event) {
 
 void MainNotebook::UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity) {
 	myRemoteFilePanel->UpdateSpaceCapacity(spaceUsed, spaceCapacity);
+}
+
+void MainNotebook::TimerTick() {
+    auto selection = this->GetSelection();
+    switch (selection){
+        case 0:
+            //myRemoteFilePanel->RefreshData();
+            break;
+        case 1:
+            //offlineDownloadTaskPanel->RefreshData();
+            break;
+        case 2:
+            syncPanel->RefreshData();
+            break;
+        default:
+            break;
+    }
+
+    FileDownloadModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
 }

@@ -27,8 +27,10 @@ enum {
 	USER_GOTO_DIRECTORY = 3004,
 	USER_REMOTE_TASK_URL_PARSED = 4002,
 	USER_REMOTE_TASK_URL_START = 4003,
-    USER_DOWNLOADING_LIST_REFRESH = 4004,
-	USER_PREVIEW_INFO = 5002
+    USER_SYNC_LIST_REFRESH = 4004,
+    USER_SYNC_SPEED_REFRESH = 4005,
+	USER_PREVIEW_INFO = 5002,
+    PAGE_TIMER_TICK = 5003
 };
 
 static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const ResponseEntity & v, const bool & checkMessage=false) {

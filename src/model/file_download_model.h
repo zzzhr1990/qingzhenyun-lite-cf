@@ -31,6 +31,8 @@ public:
     virtual void AddRefreshListener(const utility::string_t &key, wxWindow *window) = 0;
 
     virtual void ForceRefresh(wxWindow *window) = 0;
+
+    virtual void ReportSpeed(wxWindow* window) = 0;
 private:
     //void DownloadSingleFile(const web::json::value & value);
     //DownloadTask downloadTask;
