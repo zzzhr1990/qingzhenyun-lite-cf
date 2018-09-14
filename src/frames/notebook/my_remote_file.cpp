@@ -11,7 +11,6 @@
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/filename.h>
-#include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
 #pragma hdrstop
@@ -39,7 +38,6 @@
 #include "../../resources/copy.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
-#include "../../util/common_util.h"
 ////@end XPM images
 
 
@@ -373,7 +371,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 
             if (dialog.ShowModal() == wxID_OK)
             {
-                FileDownloadModel::Instance().StartDownloadFile(fileData, dialog.GetPath());
+                FileDownloadModel::Instance().StartDownloadFile(fileData, dialog.GetPath(), fileModel.GetCurrentPath());
             }
 
             /*
