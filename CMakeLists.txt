@@ -17,6 +17,7 @@ endif()
 
 if(MSVC)
     include(${CMAKE_SOURCE_DIR}/winmsvc.cmake)
+#	find_package(Boost REQUIRED filesystem)
 else(MSVC)
     set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
     find_package(wxWidgets REQUIRED COMPONENTS net core base)

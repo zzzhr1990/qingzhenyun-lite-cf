@@ -366,8 +366,9 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
         if (event.GetId() == ID_DOWNLOAD_FILE) {
             wxString dirHome;
             wxGetHomeDir(&dirHome);
+			//long style = wxDD_DEFAULT_STYLE,
 
-            wxDirDialog dialog(this, wxT("Testing directory picker"), dirHome);
+            wxDirDialog dialog(this, _("Select Directory"), dirHome, wxDD_DEFAULT_STYLE, wxDefaultPosition, wxDefaultSize,_T("Select Directory"));
 
             if (dialog.ShowModal() == wxID_OK)
             {

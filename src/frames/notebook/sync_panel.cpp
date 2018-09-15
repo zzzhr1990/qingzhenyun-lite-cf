@@ -203,7 +203,66 @@ void SyncPanel::OnTaskActivated(const wxListEvent &event) {
 }
 
 void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
+	// get selected
+	long itemIndex = -1;
+	std::vector<long> selectedItems;
+	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
+		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
+		// Got the selected item index
+		//wxLogDebug(listControl->GetItemText(itemIndex));
+		// got
+		//auto list = fileModel.GetCurrentList();
+		long count = currentList.size();
+		if (itemIndex >= count) {
+			break;
+		}
+		auto& fileData = currentList.at(itemIndex);
+		if (fileData.is_null()) {
+			break;
+		}
 
+		if (itemIndex > -1) {
+			selectedItems.push_back(itemIndex);
+		}
+	}
+	if (selectedItems.empty()) {
+		return;
+	}
+	if (event.GetId() == ID_VIEW_D_OPEN_IN_EXPLORER) {
+		auto &path = currentList.at(selectedItems.at(0)).at(U("localDirectory")).as_string();
+		wxString arg = path;
+		wxString command = _T("explorer");
+		command += ' ';
+		bool quote;
+		if (arg.empty())
+		{
+			// we need to quote empty arguments, otherwise they'd just
+			// disappear
+			quote = true;
+		}
+		else // non-empty
+		{
+			// escape any quotes present in the string to avoid interfering
+			// with the command line parsing in the child process
+			arg.Replace("\"", "\\\"", true /* replace all */);
+
+			// and quote any arguments containing the spaces to prevent them from
+			// being broken down
+			quote = arg.find_first_of(" \t") != wxString::npos;
+		}
+
+		if (quote) {
+			command += '\"' + arg + '\"';
+		}
+		else {
+			command += arg;
+		}
+		//Windows - explorer
+		//mac - open
+		//	linux - konqueror or whatever gnome uses(nautilus ? )
+		
+		wxExecute(command, wxEXEC_ASYNC, NULL);
+	}
 }
 
 void SyncPanel::RefreshData() {

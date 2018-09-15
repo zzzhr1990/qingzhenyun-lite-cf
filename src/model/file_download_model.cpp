@@ -49,6 +49,7 @@ struct DownloadTask{
     utility::size64_t fileSize;
     utility::size64_t processedSize;
     utility::string_t localPath;
+	utility::string_t localDirectory;
     web::http::message_direction::direction direction;
     utility::string_t filename;
     utility::string_t remotePath;
@@ -134,6 +135,7 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
         task->fileCount = 0;
         task->fileSize = 0;
         task->processedSize = 0;
+		task->localDirectory = localUrl;
         task->localPath = localUrl.append(task->filename);
         task->type = value.at(_XPLATSTR("type")).as_integer();
         task->status = file_download_status::pretending;
@@ -165,6 +167,7 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
         };
         this->taskList.push_back(task);
     } catch (std::exception &e){
+		std::cout << e.what() << std::endl;
         auto singleTaskList = task->task;
         for(auto singleTask : singleTaskList){
             delete singleTask;
@@ -254,9 +257,9 @@ FileDownloadModelEx::~FileDownloadModelEx() {
 }
 
 void FileDownloadModelEx::CheckTaskStatus() {
-    uint upWorkingTaskCount = 0;
-    uint downWorkingTaskCount = 0;
-    uint totalTaskLimit = 5;
+    unsigned int upWorkingTaskCount = 0;
+	unsigned int downWorkingTaskCount = 0;
+	unsigned int totalTaskLimit = 5;
     long current = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     auto timeDiff = current - lastRefreshTime;
     bool check = timeDiff > 0;
@@ -384,13 +387,14 @@ web::json::value FileDownloadModelEx::CreateJsonReport() {
         reportTask[_XPLATSTR("name")] = web::json::value::string(task->filename);
         reportTask[_XPLATSTR("type")] = web::json::value::number(task->type);
         reportTask[_XPLATSTR("localPath")] = web::json::value::string(task->localPath);
+		reportTask[_XPLATSTR("localDirectory")] = web::json::value::string(task->localDirectory);
         reportTask[_XPLATSTR("remotePath")] = web::json::value::string(task->remotePath);
         reportTask[_XPLATSTR("size")] = web::json::value::number(task->fileSize);
         reportTask[_XPLATSTR("direction")] = web::json::value::number(task->direction);
         reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->fileCount);
         reportTask[_XPLATSTR("status")] = web::json::value::number(task->status);
         reportTask[_XPLATSTR("progress")] = web::json::value::number(task->progress);
-
+		//localDirectory
         //reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->);
         value.push_back(reportTask);
     }

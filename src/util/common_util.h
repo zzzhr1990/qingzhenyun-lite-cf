@@ -132,8 +132,8 @@ static char * Base64Decode(const unsigned char * input, size_t length, bool with
 }
 
 static size_t WcsBlockCount(utility::size64_t fileLength) {
-    int BLOCK_BITS = 22;
-    int BLOCK_SIZE = 1 << BLOCK_BITS;
+    unsigned int BLOCK_BITS = 22;
+	unsigned int BLOCK_SIZE = 1 << BLOCK_BITS;
 
     return ((fileLength + (BLOCK_SIZE - 1)) >> BLOCK_BITS);
 }
@@ -148,7 +148,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
     auto task = Concurrency::streams::file_buffer<uint8_t>::open(filePath, std::ios::in).then(
             [=](Concurrency::streams::streambuf<uint8_t> outFile) {
                 utility::size64_t size = outFile.size();
-                auto blockCount = WcsBlockCount(size);
+                const auto blockCount = WcsBlockCount(size);
                 unsigned char finalDigest[SHA_DIGEST_LENGTH + 1];
                 if (blockCount <= 1) {
                     auto fSize = size;
@@ -170,12 +170,13 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                         finalDigest[i + 1] = tempDigest[i];
                     }
                 } else {
-                    int BLOCK_BITS = 22;
-                    int BLOCK_SIZE = 1 << BLOCK_BITS;//2^22 = 4M
-                    unsigned char rec[SHA_DIGEST_LENGTH * blockCount];
+                    unsigned int BLOCK_BITS = 22;
+					unsigned int BLOCK_SIZE = 1 << BLOCK_BITS;//2^22 = 4M
+                    //unsigned char rec[];
+					std::vector<unsigned char> rec = std::vector<unsigned char>(SHA_DIGEST_LENGTH * blockCount);
                     unsigned char tempDigest[SHA_DIGEST_LENGTH];
                     finalDigest[0] = BYTE_OVER_4;
-                    int i, cnt = 0;
+					unsigned int i, cnt = 0;
                     outFile.set_buffer_size(1024, std::ios::in);
                     auto fSize = size;
                     for (i = 0; i < blockCount; i++) {
@@ -203,7 +204,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                     unsigned char fDigest[SHA_DIGEST_LENGTH];
                     SHA_CTX shaCtx;
                     SHA1_Init(&shaCtx);
-                    SHA1_Update(&shaCtx, rec, SHA_DIGEST_LENGTH * blockCount);
+                    SHA1_Update(&shaCtx, rec.data(), SHA_DIGEST_LENGTH * blockCount);
                     SHA1_Final(fDigest, &shaCtx);
                     for (i = 0; i < SHA_DIGEST_LENGTH; ++i) {//0x96
                         finalDigest[i + 1] = fDigest[i];
@@ -214,19 +215,17 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                 std::vector<unsigned char > v(std::begin(finalDigest), std::end(finalDigest));
                 auto base64 = utility::conversions::to_base64(v);
                 //char * ch = base64.data();
-                for (char &i : base64) {
+				
+                for (auto &i : base64) {
                     if (i == '+') {
                         i = '-';
                     }
-                    /*
-                    if (i == '=') {
-                        i = '_';
-                    }
-                     */
+
                     if (i == '/') {
                         i = '_';
                     }
                 }
+				
                 //base64.replace();
                 //const char* data = base64.c_str();
                 /*
@@ -250,6 +249,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
         return result;
     }
     catch (std::exception &e) {
+		std::cout << e.what() << std::endl;
         return result;
     }
 }
