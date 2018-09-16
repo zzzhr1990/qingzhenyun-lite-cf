@@ -381,7 +381,42 @@ void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
 
 void FileDownloadModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
 	//Request File info
-	
+	auto&filePath = urlTask->localPath;
+	web::json::value request;
+	request[_XPLATSTR("path")] = web::json::value::string(urlTask->remotePath);
+	// calc hash
+	auto file_hash = WcsFileHash(filePath);
+	if (file_hash.empty()) {
+		urlTask->status = file_download_status::failed;
+		return;
+	}
+	urlTask->hash = file_hash;
+	request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
+	CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then([&, urlTask](ResponseEntity v) {
+		//SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
+		// && v.result.has_field(_XPLATSTR("downloadAddress"))) {
+		//urlTask->hash = v.result.at(_XPLATSTR("storeId")).as_string();
+		//urlTask->status = file_download_status::proccessing;
+		//this->DownloadSingleFile(v.result, v.result.at(_XPLATSTR("downloadAddress")).as_string(), urlTask);
+		if (v.success){
+			if (v.result.has_field(_XPLATSTR("token"))) {
+				auto &token = v.result.at(_XPLATSTR("token")).as_string();
+				auto &uploadUrl = v.result.at(_XPLATSTR("uploadUrl")).as_string();
+			}
+			else {
+				if (v.result.has_field(_XPLATSTR("storeId"))) {
+					urlTask->status = file_download_status::finished;
+					urlTask->processedSize = urlTask->fileSize;
+				}
+				else {
+					urlTask->status = file_download_status::failed;
+				}
+			}
+		}
+		else {
+			urlTask->status = file_download_status::failed;
+		}
+	});
 }
 
 void FileDownloadModelEx::AddRefreshListener(const utility::string_t &key, wxWindow *window) {
