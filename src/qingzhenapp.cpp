@@ -66,6 +66,16 @@ QingzhenApp::QingzhenApp()
     Init();
 }
 
+#ifdef __WXMAC__
+
+void QingzhenApp::MacOpenFiles(const wxArrayString & fileNames )
+{
+	// Called when a user drags files over our app
+	//mainF->DoOpenFile(fileNames[0], true /* new page */);
+	mainWindow->DoOpenFiles(fileNames);
+}
+
+#endif // __WXMAC__
 
 /*
  * Member initialisation
@@ -99,7 +109,7 @@ bool QingzhenApp::OnInit()
 #if wxUSE_GIF
 	wxImage::AddHandler(new wxGIFHandler);
 #endif
-	MainFrame* mainWindow = new MainFrame(nullptr);
+	mainWindow = new MainFrame(nullptr);
 	mainWindow->Show(true);
 ////@end QingzhenApp initialisation
 

@@ -291,3 +291,7 @@ void MainNotebook::TimerTick() {
 
     FileDownloadModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
 }
+
+void MainNotebook::DoOpenFiles(const wxArrayString &fileNames) {
+    myRemoteFilePanel->DoOpenFiles(fileNames);
+}

@@ -105,6 +105,8 @@ public:
 
 	void RefreshListData(const ResponseEntity& res);
     void OnCtrlListMenuClicked(const wxCommandEvent &event);
+
+	void DoOpenFiles(const wxArrayString &fileNames);
 ////@begin NyRemoteFilePanel event handler declarations
 
 ////@end NyRemoteFilePanel event handler declarations

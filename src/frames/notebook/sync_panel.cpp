@@ -8,6 +8,7 @@
 #include "../../model/file_download_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
+#include <wx/platinfo.h>
 
 IMPLEMENT_DYNAMIC_CLASS( SyncPanel, wxPanel )
 
@@ -216,7 +217,7 @@ void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 		if (itemIndex >= count) {
 			break;
 		}
-		auto& fileData = currentList.at(itemIndex);
+		auto& fileData = currentList.at(static_cast<web::json::array::size_type>(itemIndex));
 		if (fileData.is_null()) {
 			break;
 		}
@@ -229,9 +230,19 @@ void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 		return;
 	}
 	if (event.GetId() == ID_VIEW_D_OPEN_IN_EXPLORER) {
-		auto &path = currentList.at(selectedItems.at(0)).at(U("localDirectory")).as_string();
+		auto &path = currentList.at(static_cast<web::json::array::size_type>(selectedItems.at(0))).at(U("localDirectory")).as_string();
 		wxString arg = path;
-		wxString command = _T("explorer");
+		wxString command;
+        auto system = wxPlatformInfo::Get().GetOperatingSystemId();
+        if(system & wxOS_WINDOWS){
+            command = wxT("explorer");
+        }
+        else if (system & wxOS_MAC) {
+            command = wxT("open");
+        } else{
+            wxMessageBox(_("It seems you are using Unix/Linux system, we can't determine your file explorer, set it first."));
+            return;
+        }
 		command += ' ';
 		bool quote;
 		if (arg.empty())
@@ -261,7 +272,7 @@ void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 		//mac - open
 		//	linux - konqueror or whatever gnome uses(nautilus ? )
 		
-		wxExecute(command, wxEXEC_ASYNC, NULL);
+		wxExecute(command, wxEXEC_ASYNC, nullptr);
 	}
 }
 

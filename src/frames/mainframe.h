@@ -99,7 +99,7 @@ public:
     //void MainFrame::ShowLogWindow(wxCommandEvent& WXUNUSED(event));
 
 
-
+    void DoOpenFiles(const wxArrayString & fileNames );
 
 
 

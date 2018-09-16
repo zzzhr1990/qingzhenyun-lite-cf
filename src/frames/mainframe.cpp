@@ -321,3 +321,7 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
     }
     //
 }
+
+void MainFrame::DoOpenFiles(const wxArrayString &fileNames) {
+    mainNotebook->DoOpenFiles(fileNames);
+}

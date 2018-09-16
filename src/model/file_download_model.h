@@ -25,6 +25,9 @@ public:
 
     virtual void StartDownloadFile(const web::json::value &value, const utility::string_t &downloadPath,
                                    const utility::string_t &currentPath) = 0;
+
+    virtual void StartUploadFile(const wxArrayString &fileNames,
+                                   const utility::string_t &currentPath) = 0;
     //void DownloadTestFile(const utility::string_t& url);
     //void TestFunction();
 

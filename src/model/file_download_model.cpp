@@ -80,6 +80,11 @@ public:
 
     void StartDownloadFile(const web::json::value &value, const utility::string_t &downloadPath,
                            const utility::string_t &currentPath) override;
+    void StartUploadFile(const wxArrayString &fileNames,
+                         const utility::string_t &currentPath) override;
+
+
+
     ~FileDownloadModelEx();
 private:
     void DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask);
@@ -305,12 +310,8 @@ void FileDownloadModelEx::CheckTaskStatus() {
         auto downDiff = downSize - lastDownSize;
         lastUpSize = upSize;
         lastDownSize = downSize;
-        if(upDiff < 0){
-            upDiff = 0;
-        }
-        if(downDiff < 0){
-            downDiff = 0;
-        }
+
+
         downSpeed = downDiff / timeDiff;
         upSpeed = upDiff / timeDiff;
         lastRefreshTime = current;
@@ -427,5 +428,9 @@ void FileDownloadModelEx::ReportSpeed(wxWindow* window) {
         responseEntity.result = reportTask;
         SendCommonThreadEvent(window, USER_SYNC_SPEED_REFRESH, responseEntity, false);
     });
+
+}
+
+void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const utility::string_t &currentPath) {
 
 }

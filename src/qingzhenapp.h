@@ -47,6 +47,10 @@ class QingzhenApp: public wxApp
 
 public:
     /// Constructor
+#ifdef __WXMAC__
+
+    void MacOpenFiles(const wxArrayString & fileNames ) override;
+#endif
     QingzhenApp();
 
     void Init();
@@ -64,7 +68,8 @@ public:
 ////@begin QingzhenApp member function declarations
 
 ////@end QingzhenApp member function declarations
-
+private:
+    MainFrame* mainWindow = nullptr;
 ////@begin QingzhenApp member variables
 ////@end QingzhenApp member variables
 };

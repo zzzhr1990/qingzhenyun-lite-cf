@@ -66,6 +66,8 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
+    void DoOpenFiles(const wxArrayString &fileNames);
+
 ////@begin MainNotebook event handler declarations
 
 ////@end MainNotebook event handler declarations

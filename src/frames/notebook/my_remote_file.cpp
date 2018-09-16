@@ -38,6 +38,9 @@
 #include "../../resources/copy.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
+
+#include "wx/dnd.h"         // drag and drop for the playlist
+
 ////@end XPM images
 
 
@@ -58,7 +61,31 @@ BEGIN_EVENT_TABLE( MyRemoteFilePanel, wxPanel )
 ////@end NyRemoteFilePanel event table entries
 
 END_EVENT_TABLE()
+//
 
+// ----------------------------------------------------------------------------
+// wxPlayListDropTarget
+//
+//  Drop target for playlist (i.e. allows users to drag a file from explorer into
+//  the playlist to add that file)
+// ----------------------------------------------------------------------------
+#if wxUSE_DRAG_AND_DROP
+class wxPlayListDropTarget : public wxFileDropTarget
+{
+public:
+    wxPlayListDropTarget( MyRemoteFilePanel& panel) : m_book(panel){}
+    ~wxPlayListDropTarget(){}
+    virtual bool OnDropFiles(wxCoord WXUNUSED(x), wxCoord WXUNUSED(y),
+                             const wxArrayString& files)
+    {
+        m_book.DoOpenFiles(files);
+
+        return true;
+    }
+    //wxListCtrl& m_list;
+    MyRemoteFilePanel& m_book;
+};
+#endif
 
 /*
  * MyRemoteFilePanel constructors
@@ -171,6 +198,10 @@ void MyRemoteFilePanel::CreateControls()
     mainListCtrl->AppendColumn(_("FileSize"),wxLIST_FORMAT_CENTER);
     mainListCtrl->AppendColumn(_("FileType"),wxLIST_FORMAT_CENTER);
 	mainListCtrl->AppendColumn(_("CreateTime"), wxLIST_FORMAT_CENTER, 160);
+
+#if wxUSE_DRAG_AND_DROP
+    mainListCtrl->SetDropTarget(new wxPlayListDropTarget(*itemPanel1));
+#endif
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer4, 0, wxGROW, 5);
@@ -760,4 +791,16 @@ void MyRemoteFilePanel::UpdateSpaceCapacity(const long & spaceUsed, const long &
 	this->spaceUsed = spaceUsed;
 	this->spaceCapacity = spaceCapacity;
 	capacityText->SetLabel(wxString::Format(_("%s / %s"), ConvertSizeToDisplay(spaceUsed), ConvertSizeToDisplay(spaceCapacity)));
+}
+
+void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
+    /*
+    for (size_t i = 0; i < fileNames.GetCount(); ++i)
+    {
+        // m_list.AddToPlayList(files[i]);
+        //std::cout << "Drag file:" << fileNames[i] << std::endl;
+        auto path = RemoteFileModel::Instance().GetCurrentPath();
+    }
+     */
+    FileDownloadModel::Instance().StartUploadFile(fileNames,RemoteFileModel::Instance().GetCurrentPath());
 }

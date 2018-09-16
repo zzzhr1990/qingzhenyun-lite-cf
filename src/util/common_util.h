@@ -122,9 +122,9 @@ static char * Base64Decode(const unsigned char * input, size_t length, bool with
     if(!with_new_line) {
         BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
     }
-    bmem = BIO_new_mem_buf(input, length);
+    bmem = BIO_new_mem_buf(input, static_cast<int>(length));
     bmem = BIO_push(b64, bmem);
-    BIO_read(bmem, buffer, length);
+    BIO_read(bmem, buffer, static_cast<int>(length));
 
     BIO_free_all(bmem);
 
@@ -133,7 +133,7 @@ static char * Base64Decode(const unsigned char * input, size_t length, bool with
 
 static size_t WcsBlockCount(utility::size64_t fileLength) {
     unsigned int BLOCK_BITS = 22;
-	unsigned int BLOCK_SIZE = 1 << BLOCK_BITS;
+	auto BLOCK_SIZE = static_cast<unsigned int>(1 << BLOCK_BITS);
 
     return ((fileLength + (BLOCK_SIZE - 1)) >> BLOCK_BITS);
 }
@@ -171,7 +171,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                     }
                 } else {
                     unsigned int BLOCK_BITS = 22;
-					unsigned int BLOCK_SIZE = 1 << BLOCK_BITS;//2^22 = 4M
+					auto BLOCK_SIZE = static_cast<unsigned int>(1 << BLOCK_BITS);//2^22 = 4M
                     //unsigned char rec[];
 					std::vector<unsigned char> rec = std::vector<unsigned char>(SHA_DIGEST_LENGTH * blockCount);
                     unsigned char tempDigest[SHA_DIGEST_LENGTH];
