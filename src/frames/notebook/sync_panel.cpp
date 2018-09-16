@@ -341,16 +341,19 @@ void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & upda
         }
         else {
             if (status == 0) {
-                mainListCtrl->SetItem(cur, 3, _T("Pretending"));
+                mainListCtrl->SetItem(cur, 3, _T("Wait"));
             }
             else if (status == 1) {
-                mainListCtrl->SetItem(cur, 3, _T("Downloading"));
+                mainListCtrl->SetItem(cur, 3, _T("Process"));
             }
             else if (status == 2) {
                 mainListCtrl->SetItem(cur, 3, _T("Finish"));
             }
+			else if (status == 3) {
+				mainListCtrl->SetItem(cur, 3, _T("Info"));
+			}
             else {
-                mainListCtrl->SetItem(cur, 3, _T("Unknown"));
+                mainListCtrl->SetItem(cur, 3, wxString::Format(wxT("Unknown %d"),status));
             }
         }
 

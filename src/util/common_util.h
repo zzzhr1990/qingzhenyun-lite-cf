@@ -138,6 +138,10 @@ static size_t WcsBlockCount(utility::size64_t fileLength) {
     return ((fileLength + (BLOCK_SIZE - 1)) >> BLOCK_BITS);
 }
 
+static void WcsStartPost(const utility::string_t &filePath, const utility::string_t &token, const utility::string_t &url) {
+
+}
+
 static utility::string_t WcsFileHash(const utility::string_t &filePath) {
 
     utility::string_t result;
