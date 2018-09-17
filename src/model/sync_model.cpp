@@ -19,18 +19,35 @@ using namespace web::http::client;
 #endif
 #include <tbb/concurrent_vector.h>
 
-
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "../util/simple_timer.h"
 #include "../util/common_util.h"
 #include "../common/common_event_ids.h"
 #include <wx/filename.h>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <wx/dir.h>
+
 enum file_download_status {
     pretending = 0,
     proccessing = 1,
     finished = 2,
     failed = -1,
-    info = 3
+    info = 3,
+    retry = 4
+};
+
+enum sync_download_error {
+    none = 0,
+    unknown = -1,
+    token_api_error = 2,
+    hash_not_match = 5,
+    calc_hash_fail = 6,
+    url_api_error = 3,
+    upload_part_error = 7,
+    local_error = 4
 };
 
 struct SingleUrlTask{
@@ -42,6 +59,8 @@ struct SingleUrlTask{
     utility::string_t remotePath;
     utility::string_t hash;
     int status;
+    int error;
+    int retryCount;
 };
 
 struct DownloadTask{
@@ -53,16 +72,17 @@ struct DownloadTask{
     web::http::message_direction::direction direction;
     utility::string_t filename;
     utility::string_t remotePath;
+    int error;
     int fileCount;
     int type;
     int status;
     int progress;
 };
 
-#include "file_download_model.h"
-class FileDownloadModelEx:public FileDownloadModel{
+#include "sync_model.h"
+class SyncModelEx:public SyncModel{
 public:
-    FileDownloadModelEx():timer(){
+    SyncModelEx():timer(){
         auto x = [&]() {
             if(!checking){
                 checking = true;
@@ -85,11 +105,12 @@ public:
 
 
 
-    ~FileDownloadModelEx();
+    ~SyncModelEx();
 private:
     void DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask);
     void StartInnerDownload(SingleUrlTask* urlTask);
 	void StartInnerUpload(SingleUrlTask* urlTask);
+    void StartUploadFile(SingleUrlTask* urlTask, const utility::string_t& postUrl, const utility::string_t& token, const utility::string_t& path);
     void CheckTaskStatus(); //
     void ReportStatus();
 
@@ -108,13 +129,13 @@ private:
 };
 
 
-FileDownloadModel& FileDownloadModel::Instance() {
-    static FileDownloadModelEx c;
+SyncModel& SyncModel::Instance() {
+    static SyncModelEx c;
     return c;
 
 }
 
-void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const utility::string_t &downloadPath,
+void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility::string_t &downloadPath,
                                             const utility::string_t &currentPath) {
     utility::string_t localUrl = downloadPath;
     localUrl.push_back(boost::filesystem::path::preferred_separator);
@@ -155,6 +176,7 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
             auto singleTask = new SingleUrlTask();
             try {
                 // add new task...
+                singleTask->retryCount = 5;
                 singleTask->processedSize = 0;
                 singleTask->fileSize = value.at(_XPLATSTR("size")).as_number().to_uint64();
                 task->fileSize = singleTask->fileSize;
@@ -183,7 +205,7 @@ void FileDownloadModelEx::StartDownloadFile(const web::json::value &value, const
     //return;
 }
 
-void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask) {
+void SyncModelEx::DownloadSingleFile(const web::json::value &value,const utility::string_t &url,SingleUrlTask *urlTask) {
     //Okay,Starting Download...
     const method mtd = methods::GET;
     auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
@@ -233,15 +255,16 @@ void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const
 
         urlTask->status = file_download_status::finished;
     }catch (std::exception &ex){
-        std::cout << "Download failed:" << ex.what() << std::endl;
         urlTask->status = file_download_status::failed;
+        urlTask->error = sync_download_error::unknown;
         return;
     }
     // check hash
     auto data = WcsFileHash(urlTask->localPath);
     if (urlTask->hash != data) {
-        std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;
+        //std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;
         urlTask->status = file_download_status::failed;
+        urlTask->error = sync_download_error::hash_not_match;
     } else {
         urlTask->status = file_download_status::finished;
     }
@@ -249,7 +272,7 @@ void FileDownloadModelEx::DownloadSingleFile(const web::json::value &value,const
 
 
 
-FileDownloadModelEx::~FileDownloadModelEx() {
+SyncModelEx::~SyncModelEx() {
     timer.Expire();
     for (auto task : taskList) {
         // use first and second
@@ -262,7 +285,7 @@ FileDownloadModelEx::~FileDownloadModelEx() {
 
 }
 
-void FileDownloadModelEx::CheckTaskStatus() {
+void SyncModelEx::CheckTaskStatus() {
     unsigned int upWorkingTaskCount = 0;
 	unsigned int downWorkingTaskCount = 0;
 	unsigned int downloadTaskLimit = 5;
@@ -274,37 +297,97 @@ void FileDownloadModelEx::CheckTaskStatus() {
     size64_t downSize = 0;
     for (auto task : taskList) {
         auto singleTaskList = task->task;
+        //auto size = singleTaskList.size();
+        bool needChange = false;
+        bool processing = false;
+        utility::size64_t processedSize = 0;
+        utility::size64_t fileSize = 0;
+        //int progress = 0;
+        int error = 0;
+        int status = task->status;
+        bool allFinish = true;
         for(auto singleTask : singleTaskList){
             //delete singleTask;
+            if(status != file_download_status::finished){
+                needChange = true;
+                if(singleTask->status != file_download_status::finished){
+                    status = singleTask->status;
+                    if(singleTask->status == file_download_status::proccessing || singleTask->status == file_download_status::info){
+                        processing = true;
+                    }
+                    allFinish = false;
+                }
 
+                processedSize += singleTask->processedSize;
+                fileSize += singleTask->fileSize;
+                error = singleTask->error;
+                //progress = (static_cast<int>(task->fileSize > 0 ? (task->processedSize * 100 / task->fileSize) : 0));
+
+                /*
+                if(size == 1){
+                    task->status = singleTaskList[0]->status;
+                    task->processedSize = singleTaskList[0]->processedSize;
+                    task->fileSize = singleTaskList[0]->fileSize;
+                    task->
+                    if(task->progress > 100){
+                        task->progress = 100;
+                    }
+                    if(task->progress < 0){
+                        task->progress = 0;
+                    }
+                    task->error = singleTaskList[0]->error;
+                }else{
+
+                }*/
+            }
             if(singleTask->direction == message_direction::download){
-                if(singleTask->status == file_download_status::proccessing){
+                if(singleTask->status == file_download_status::proccessing || singleTask->status == file_download_status::info){
                     downWorkingTaskCount++;
                 }
                 downSize += singleTask->processedSize;
             }else{
-                if(singleTask->status == file_download_status::proccessing){
+                if(singleTask->status == file_download_status::proccessing || singleTask->status == file_download_status::info){
                     upWorkingTaskCount++;
                 }
                 upSize += singleTask->processedSize;
+
             }
             //singleTask->processedSize
             //std::cout << singleTask->filename << std::endl;
             //std::cout << singleTask->processedSize << std::endl;
             // check fin..
+
         }
-        auto size = singleTaskList.size();
-        if(size == 1){
-            task->status = singleTaskList[0]->status;
-            task->processedSize = singleTaskList[0]->processedSize;
-            task->fileSize = singleTaskList[0]->fileSize;
-            task->progress = (static_cast<int>(task->processedSize * 100 / task->fileSize));
-            if(task->progress > 100){
-                task->progress = 100;
+
+        //change status...
+        if(needChange){
+            if(allFinish){
+                task->status = file_download_status::finished;
+            }else{
+                if(processing){
+                    task->status = file_download_status::proccessing;
+                }else{
+                    task->status = status;
+                }
+
             }
-            if(task->progress < 0){
-                task->progress = 0;
+            if(error != 0){
+                task->error = error;
             }
+            if(fileSize > 0){
+                task->fileSize = fileSize;
+            }
+            if(processedSize > 0){
+                task->processedSize = processedSize;
+            }
+            int progress = (static_cast<int>(task->fileSize > 0 ? (task->processedSize * 100 / task->fileSize) : 0));
+            if(progress > 100){
+                progress = 100;
+            }
+            if(progress < 0){
+                progress = 0;
+            }
+            task->progress = progress;
         }
     }
     if(check){
@@ -352,7 +435,6 @@ void FileDownloadModelEx::CheckTaskStatus() {
 					}
 				}
             }
-
         }
     }
 
@@ -361,7 +443,7 @@ void FileDownloadModelEx::CheckTaskStatus() {
     //ReportStatus();
 }
 
-void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
+void SyncModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
     //Request File info
     web::json::value request;
     request[_XPLATSTR("path")] = web::json::value::string(urlTask->remotePath);
@@ -375,11 +457,12 @@ void FileDownloadModelEx::StartInnerDownload(SingleUrlTask *urlTask) {
         }
         else{
             urlTask->status = file_download_status::failed;
+            urlTask->error = sync_download_error::url_api_error;
         }
     });
 }
 
-void FileDownloadModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
+void SyncModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
 	//Request File info
 	auto&filePath = urlTask->localPath;
 	web::json::value request;
@@ -388,11 +471,12 @@ void FileDownloadModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
 	auto file_hash = WcsFileHash(filePath);
 	if (file_hash.empty()) {
 		urlTask->status = file_download_status::failed;
+        urlTask->error = sync_download_error::calc_hash_fail;
 		return;
 	}
 	urlTask->hash = file_hash;
 	request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
-	CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then([&, urlTask](ResponseEntity v) {
+	CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then([&, urlTask, filePath](ResponseEntity v) {
 		//SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
 		// && v.result.has_field(_XPLATSTR("downloadAddress"))) {
 		//urlTask->hash = v.result.at(_XPLATSTR("storeId")).as_string();
@@ -402,6 +486,8 @@ void FileDownloadModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
 			if (v.result.has_field(_XPLATSTR("token"))) {
 				auto &token = v.result.at(_XPLATSTR("token")).as_string();
 				auto &uploadUrl = v.result.at(_XPLATSTR("uploadUrl")).as_string();
+                urlTask->status = file_download_status::proccessing;
+                this->StartUploadFile(urlTask, uploadUrl, token,filePath);
 			}
 			else {
 				if (v.result.has_field(_XPLATSTR("storeId"))) {
@@ -410,20 +496,23 @@ void FileDownloadModelEx::StartInnerUpload(SingleUrlTask *urlTask) {
 				}
 				else {
 					urlTask->status = file_download_status::failed;
+                    urlTask->error = sync_download_error::url_api_error;
 				}
 			}
 		}
 		else {
+		    std::cout << "Get TOKEN FAIL" << std::endl;
 			urlTask->status = file_download_status::failed;
+            urlTask->error = sync_download_error::token_api_error;
 		}
 	});
 }
 
-void FileDownloadModelEx::AddRefreshListener(const utility::string_t &key, wxWindow *window) {
+void SyncModelEx::AddRefreshListener(const utility::string_t &key, wxWindow *window) {
     refreshListener[key] = window;
 }
 
-void FileDownloadModelEx::ForceRefresh(wxWindow *window) {
+void SyncModelEx::ForceRefresh(wxWindow *window) {
     //Use PPLX
     pplx::create_task([&]() {
         // return response;
@@ -432,7 +521,7 @@ void FileDownloadModelEx::ForceRefresh(wxWindow *window) {
     });
 }
 
-web::json::value FileDownloadModelEx::CreateJsonReport() {
+web::json::value SyncModelEx::CreateJsonReport() {
     web::json::array response = web::json::value::array().as_array();
 
     //web::json::value postParameters = web::json::value::array();
@@ -453,6 +542,7 @@ web::json::value FileDownloadModelEx::CreateJsonReport() {
         reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->fileCount);
         reportTask[_XPLATSTR("status")] = web::json::value::number(task->status);
         reportTask[_XPLATSTR("progress")] = web::json::value::number(task->progress);
+        reportTask[_XPLATSTR("error")] = web::json::value::number(task->error);
 		//localDirectory
         //reportTask[_XPLATSTR("fileCount")] = web::json::value::number(task->);
         value.push_back(reportTask);
@@ -461,7 +551,7 @@ web::json::value FileDownloadModelEx::CreateJsonReport() {
     //resp[0] = response;
 }
 
-void FileDownloadModelEx::ReportStatus() {
+void SyncModelEx::ReportStatus() {
     if (!refreshListener.empty()) {
         for (auto &x : refreshListener) {
             ResponseEntity responseEntity;
@@ -473,7 +563,7 @@ void FileDownloadModelEx::ReportStatus() {
     }
 }
 
-void FileDownloadModelEx::ReportSpeed(wxWindow* window) {
+void SyncModelEx::ReportSpeed(wxWindow* window) {
     pplx::create_task([&,window]() {
         ResponseEntity responseEntity;
         responseEntity.status = 200;
@@ -489,7 +579,7 @@ void FileDownloadModelEx::ReportSpeed(wxWindow* window) {
 
 }
 
-void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const utility::string_t &currentPath) {
+void SyncModelEx::StartUploadFile(const wxArrayString &fileNames, const utility::string_t &currentPath) {
 	// do it async
 	
 	pplx::create_task([&,fileNames, currentPath]() {
@@ -501,9 +591,9 @@ void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const 
 			//std::cout << "Drag file:" << fileNames[i] << std::endl;
 			auto task = new DownloadTask();
 			auto path = fileNames[i];
-			auto& file = wxFileName(path);
-			auto &name = file.GetName();
-			auto remote = currentPath + "/" + name;
+			const auto& file = wxFileName(path);
+			const auto& name = file.GetFullName();
+			const auto& remote = currentPath + "/" + name;
 
 			task->remotePath = remote;
 			task->direction = message_direction::upload;
@@ -511,16 +601,20 @@ void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const 
 			task->fileCount = 0;
 			task->fileSize = 0;
 			task->processedSize = 0;
-			task->localDirectory = file.GetHomeDir();
+
 			task->localPath = path;
+            task->localDirectory = path.BeforeLast(wxFileName::GetPathSeparator());
 			task->type = 0;
 			task->status = file_download_status::pretending;
 
-			
-			if (!file.IsDir()) {
+			//std::cout << "file " << path << " type" << file.IsDir() << " size:" << file.GetSize() << std::endl;
+			//wxFile1.
+
+			if (file.Exists(wxFILE_EXISTS_REGULAR)) {
 				if (file.IsFileReadable()) {
 					// add file direct to upload list
 					auto singleTask = new SingleUrlTask();
+                    singleTask->retryCount = 5;
 					singleTask->processedSize = 0;
 					singleTask->fileSize = file.GetSize().ToULong();
 					task->fileSize = singleTask->fileSize;
@@ -534,12 +628,63 @@ void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const 
 				else {
 					continue;
 				}
+			} else if (file.Exists(wxFILE_EXISTS_DIR)) {
+                if (file.IsDirReadable()) {
+                    //file.get
+                    wxDir dir(path);
+                    //dir.
+                    wxArrayString childFolders;
+                    // wxDIR_FILES | wxDIR_HIDDEN
+                    wxDir::GetAllFiles(path,&childFolders,wxEmptyString);
+
+                    for (size_t ix = 0; ix < childFolders.GetCount(); ++ix) {
+                        auto filePath = childFolders[ix];
+                        auto relativePath = filePath.SubString(path.length(),filePath.length());
+                        // Create Requests..
+                        wxFileName single = wxFileName(filePath);
+                        if (single.Exists(wxFILE_EXISTS_REGULAR)) {
+                            if (single.IsFileReadable()) {
+                                // add file direct to upload list
+                                auto singleTask = new SingleUrlTask();
+                                singleTask->retryCount = 5;
+                                singleTask->processedSize = 0;
+                                singleTask->fileSize = single.GetSize().ToULong();
+                                task->fileSize += singleTask->fileSize;
+                                task->fileCount += 1;
+                                singleTask->direction = task->direction;
+                                singleTask->filename = single.GetFullName();
+                                singleTask->remotePath = task->remotePath + relativePath;
+                                singleTask->localPath = filePath;
+                                task->task.push_back(singleTask);
+                            }
+                            else {
+                                continue;
+                            }
+                        }
+
+                    }
+                }
 			}
 			else {
+
 				// is dir, not support now.
+				/*
 				if (file.IsDirReadable()) {
 					//file.get
+                    wxDir dir(path);
+                    dir.
 				}
+				 */
+				/*
+                wxArrayString *childFolders = new wxArrayString;
+				wxDir::GetAllFiles(path,childFolders);
+
+                for (size_t ix = 0; ix < childFolders->GetCount(); ++ix) {
+                    // m_list.AddToPlayList(files[i]);
+                    std::cout << "Child file:" << std::endl;
+                }
+                */
+
 			}
 			
 			if (task->fileCount > 0) {
@@ -550,4 +695,92 @@ void FileDownloadModelEx::StartUploadFile(const wxArrayString &fileNames, const 
 			}
 		}
 	});
+}
+
+void SyncModelEx::StartUploadFile(SingleUrlTask *urlTask, const utility::string_t& postUrl, const utility::string_t& token,const utility::string_t& path) {
+
+    bool success = false;
+    auto task = Concurrency::streams::file_buffer<uint8_t>::open(path, std::ios::in).then(
+            [=,&success](Concurrency::streams::streambuf<uint8_t> outFile) {
+                utility::size64_t fileSize = outFile.size();
+                const size_t BLOCK_SIZE = 1024 * 1024 * 4 ;
+                outFile.set_buffer_size(1024);
+                size_t restBytes = fileSize;
+                boost::uuids::uuid id = boost::uuids::random_generator()();
+                auto batch = boost::lexical_cast<string_t>(id);
+                auto blockSuccess = true;
+                int idx = 0;
+                //std::vector<string_t> blocks;
+                string_t blocks;
+                while (restBytes > 0 && blockSuccess){
+                    auto readSize = restBytes > BLOCK_SIZE ? BLOCK_SIZE : restBytes;
+                    //blocks.push_back(readSize);
+                    std::vector<uint8_t> bufferVector = ReadFileToVector(outFile, readSize);
+                    string_t blkUrl = wxString::Format(wxT("%s/mkblk/%lld/%d"),postUrl,readSize, idx);
+                    auto client = CreateWcsClient(blkUrl);
+                    auto request = CreateWcsRequest();
+                    //headers.add(header_names::content_length, firstBlock);
+                    request.headers().add(header_names::content_type, _XPLATSTR("application/octet-stream"));
+                    //UploadBatch
+                    request.headers().add(_XPLATSTR("UploadBatch"), batch);
+                    request.headers().add(_XPLATSTR("Authorization"), token);
+                    //Do Post.
+                    request.set_body(bufferVector);
+                    //Send...
+                    json::value createBlkResult = client.request(request).get().extract_json(true).get();
+                    utility::stringstream_t stream;
+                    createBlkResult.serialize(stream);
+                    restBytes -= readSize;
+                    if(createBlkResult.has_field(_XPLATSTR("ctx"))){
+                        blocks += createBlkResult.at(_XPLATSTR("ctx")).as_string();
+                        if(restBytes > 0){
+                            blocks += _XPLATSTR(",");
+                        }
+                        urlTask->processedSize = fileSize - restBytes;
+                    } else{
+                        blockSuccess = false;
+                    }
+
+                    idx++;
+                }
+
+                if(blockSuccess){
+
+                    string_t blkUrl = wxString::Format(wxT("%s/mkfile/%lld"),postUrl,fileSize);
+
+                    auto client = CreateWcsClient(blkUrl);
+                    auto request = CreateWcsRequest();
+                    request.headers().add(header_names::content_type, _XPLATSTR("text/plain"));
+                    request.headers().add(_XPLATSTR("UploadBatch"), batch);
+                    request.headers().add(_XPLATSTR("Authorization"), token);
+                    request.set_body(blocks);
+                    json::value mkFileResult = client.request(request).get().extract_json(true).get();
+                    if(mkFileResult.has_field(_XPLATSTR("hash"))){
+                        if(mkFileResult.at(_XPLATSTR("hash")).as_string() == urlTask->hash){
+                            success = true;
+
+                        }
+                    }else{
+                        success = false;
+                    }
+                }
+
+                // TODO:CONFIRM CLOSED
+                return outFile.close();
+            });
+    try {
+        task.get();
+        //return result;
+        if(success){
+            urlTask->processedSize = urlTask->fileSize;
+            urlTask->status = file_download_status ::finished;
+        }else{
+            urlTask->status = file_download_status::failed;
+            urlTask->error = sync_download_error::upload_part_error;
+        }
+    }
+    catch (std::exception &e) {
+        urlTask->status = file_download_status::failed;
+        urlTask->error = sync_download_error::unknown;
+    }
 }

@@ -1,16 +1,16 @@
 
-#include "remote_download_task_model.h"
+#include "offine_task_model.h"
 #include "cpprest/http_client.h"
 #include "../util/common_api.h"
 #include "../common/common_event_ids.h"
 
-RemoteDownloadTaskModel& RemoteDownloadTaskModel::Instance() {
-	static RemoteDownloadTaskModel c;
+OfflineDownloadTaskModel& OfflineDownloadTaskModel::Instance() {
+	static OfflineDownloadTaskModel c;
 	return c;
 
 }
 
-void RemoteDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const int &pageSize) {
+void OfflineDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const int &pageSize) {
 	web::json::value request;
 	//request[U("path")] = web::json::value::string(path.empty() ? current_path : path);
 	request[U("page")] = web::json::value::number(page > 0 ? page : current_page);
@@ -27,7 +27,7 @@ void RemoteDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const 
 
 }
 
-void RemoteDownloadTaskModel::StartUrl(wxWindow* handler, const utility::string_t& url) {
+void OfflineDownloadTaskModel::StartUrl(wxWindow* handler, const utility::string_t& url) {
 	web::json::value request;
 	request[U("url")] = web::json::value::string(url);
 	CommonApi::Instance().PostData(U("/v1/offline/parseUrl"), request).then([handler](ResponseEntity v) {
@@ -36,7 +36,7 @@ void RemoteDownloadTaskModel::StartUrl(wxWindow* handler, const utility::string_
 
 }
 
-void RemoteDownloadTaskModel::StartTask(wxWindow* handler,const utility::string_t& taskHash, const utility::string_t& savePath,const utility::string_t& copyFile) {
+void OfflineDownloadTaskModel::StartTask(wxWindow* handler,const utility::string_t& taskHash, const utility::string_t& savePath,const utility::string_t& copyFile) {
 	web::json::value request;
 	request[U("taskHash")] = web::json::value::string(taskHash);
 	request[U("savePath")] = web::json::value::string(savePath);
@@ -47,7 +47,7 @@ void RemoteDownloadTaskModel::StartTask(wxWindow* handler,const utility::string_
 
 }
 
-void RemoteDownloadTaskModel::UpdateCurrent(const int &page,
+void OfflineDownloadTaskModel::UpdateCurrent(const int &page,
 	const int &pageSize, const int &totalPage, const web::json::array& list) {
 	this->current_page = page;
 	this->current_page_size = pageSize;

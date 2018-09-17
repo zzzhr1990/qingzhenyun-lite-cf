@@ -26,7 +26,7 @@
 
 #include "my_remote_file.h"
 #include "../../model/remote_file_model.h"
-#include "../../model/file_download_model.h"
+#include "../../model/sync_model.h"
 #include "../../util/common_util.h"
 
 ////@begin XPM images
@@ -403,7 +403,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 
             if (dialog.ShowModal() == wxID_OK)
             {
-                FileDownloadModel::Instance().StartDownloadFile(fileData, dialog.GetPath(), fileModel.GetCurrentPath());
+                SyncModel::Instance().StartDownloadFile(fileData, dialog.GetPath(), fileModel.GetCurrentPath());
             }
 
             /*
@@ -440,7 +440,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
             // Got the selected item index
             //wxLogDebug(listControl->GetItemText(itemIndex));
             // got
-            auto & fileModel = RemoteDownloadTaskModel::Instance();
+            auto & fileModel = OfflineDownloadTaskModel::Instance();
             auto list = fileModel.GetCurrentList();
             long count = list.size();
             if (itemIndex >= count) {
@@ -802,5 +802,5 @@ void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
         auto path = RemoteFileModel::Instance().GetCurrentPath();
     }
      */
-    FileDownloadModel::Instance().StartUploadFile(fileNames,RemoteFileModel::Instance().GetCurrentPath());
+    SyncModel::Instance().StartUploadFile(fileNames,RemoteFileModel::Instance().GetCurrentPath());
 }

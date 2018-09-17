@@ -28,7 +28,7 @@ pplx::task<ResponseEntity> CommonApi::PostData(const utility::string_t &uri, con
         try
         {
             auto json_response = response_task.get();
-            auto json = json_response.extract_json();
+            auto json = json_response.extract_json(true);
             auto v = json.get();
             if (v.has_field(U("token"))) {
                 utility::string_t new_token = v.at(U("token")).as_string();

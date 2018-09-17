@@ -9,9 +9,9 @@
 #include "wx/wx.h"
 #endif
 #include "cpprest/http_client.h"
-class RemoteDownloadTaskModel  {
+class OfflineDownloadTaskModel  {
 public:
-	static RemoteDownloadTaskModel& Instance();
+	static OfflineDownloadTaskModel& Instance();
 
 	int GetCurrentPage() {
 		return current_page;

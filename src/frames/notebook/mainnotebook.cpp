@@ -31,7 +31,7 @@
 #include "../../common/common_event_ids.h"
 #include "../../model/remote_file_model.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
-#include "../../model/file_download_model.h"
+#include "../../model/sync_model.h"
 #include "../mainframe.h"
 #include "../../util/common_util.h"
 
@@ -289,7 +289,7 @@ void MainNotebook::TimerTick() {
             break;
     }
 
-    FileDownloadModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
+    SyncModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
 }
 
 void MainNotebook::DoOpenFiles(const wxArrayString &fileNames) {

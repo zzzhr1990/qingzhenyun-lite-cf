@@ -24,6 +24,7 @@
 #include <openssl/buffer.h>
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
+#include <boost/uuid/uuid.hpp>
 
 static wxString ConvertSizeToDisplay(int64_t size){
     const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
@@ -131,6 +132,41 @@ static char * Base64Decode(const unsigned char * input, size_t length, bool with
     return buffer;
 }
 
+static std::vector<uint8_t > ReadFileToVector(Concurrency::streams::streambuf<uint8_t> & outFile,const size_t & size){
+    std::vector<uint8_t> bufferVector = std::vector<uint8_t >(size);
+    // create block 0, read block data.
+    size_t read = 0;
+    uint8_t buffer[1024];
+    while (read < size){
+        auto data = outFile.getn(buffer, 1024).get();
+        for(auto i = 0; i < data; i++){
+            bufferVector[ i+read ] = buffer[i];
+        }
+        read += data;
+    }
+    return bufferVector;
+}
+
+static web::http::client::http_client CreateWcsClient(const utility::string_t& url){
+    // = ;
+    web::http::client::http_client_config config;
+    config.set_timeout(std::chrono::seconds(30));
+    config.set_chunksize(1024 * 4);
+
+    web::http::client::http_client client(url, config);
+
+    return client;
+}
+
+static web::http::http_request CreateWcsRequest(const web::http::method& mtd = web::http::methods::POST){
+    // = ;
+    web::http::http_request request(mtd);
+    auto & headers = request.headers();
+    headers.add(web::http::header_names::accept, _XPLATSTR("application/json"));
+    return request;
+}
+
+
 static size_t WcsBlockCount(utility::size64_t fileLength) {
     unsigned int BLOCK_BITS = 22;
 	auto BLOCK_SIZE = static_cast<unsigned int>(1 << BLOCK_BITS);
@@ -229,22 +265,7 @@ static utility::string_t WcsFileHash(const utility::string_t &filePath) {
                         i = '_';
                     }
                 }
-				
-                //base64.replace();
-                //const char* data = base64.c_str();
-                /*
-                auto data = base64.replace( base64.begin(), base64.end(), '+', '-')
-                .replace(base64.begin(), base64.end(), '=', '_')
-                .replace(base64.begin(), base64.end(), '/', '~');
-                 */
-                /*
-                if( urlTask->hash == utility::conversions::to_string_t(res)){
-                    urlTask->status = file_download_status::finished;
-                }else{
-                    urlTask->status = file_download_status::failed;
-                }
-                 */
-                //free(res);
+
                 *resultD = base64;
                 return outFile.close();
             });

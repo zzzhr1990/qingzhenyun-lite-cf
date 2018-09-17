@@ -19,9 +19,9 @@
 
 #endif
 
-class FileDownloadModel {
+class SyncModel {
 public:
-    static FileDownloadModel& Instance();
+    static SyncModel& Instance();
 
     virtual void StartDownloadFile(const web::json::value &value, const utility::string_t &downloadPath,
                                    const utility::string_t &currentPath) = 0;
