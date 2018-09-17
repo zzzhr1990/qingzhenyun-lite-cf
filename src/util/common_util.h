@@ -132,15 +132,19 @@ static char * Base64Decode(const unsigned char * input, size_t length, bool with
     return buffer;
 }
 
-static std::vector<uint8_t > ReadFileToVector(Concurrency::streams::streambuf<uint8_t> & outFile,const size_t & size){
+static std::vector<uint8_t > ReadFileToVector(Concurrency::streams::streambuf<uint8_t> & outFile,const utility::size64_t & size){
     std::vector<uint8_t> bufferVector = std::vector<uint8_t >(size);
     // create block 0, read block data.
     size_t read = 0;
     uint8_t buffer[1024];
     while (read < size){
         auto data = outFile.getn(buffer, 1024).get();
-        for(auto i = 0; i < data; i++){
-            bufferVector[ i+read ] = buffer[i];
+        for(size_t i = 0; i < data; i++){
+			auto currentReadIndex = i + read;
+			if (currentReadIndex >= size) {
+				return bufferVector;
+			}
+			bufferVector[currentReadIndex] = buffer[i];
         }
         read += data;
     }
@@ -167,15 +171,26 @@ static web::http::http_request CreateWcsRequest(const web::http::method& mtd = w
 }
 
 
-static size_t WcsBlockCount(utility::size64_t fileLength) {
-    unsigned int BLOCK_BITS = 22;
-	auto BLOCK_SIZE = static_cast<unsigned int>(1 << BLOCK_BITS);
+static utility::size64_t WcsBlockCount(utility::size64_t fileLength) {
+	utility::size64_t BLOCK_BITS = 22;
+	utility::size64_t BLOCK_SIZE = 1 << BLOCK_BITS;
 
     return ((fileLength + (BLOCK_SIZE - 1)) >> BLOCK_BITS);
 }
 
 static void WcsStartPost(const utility::string_t &filePath, const utility::string_t &token, const utility::string_t &url) {
 
+}
+
+static utility::string_t WcsFileHash2(const utility::string_t &filePath) {
+	utility::string_t result;
+	auto task = Concurrency::streams::file_buffer<uint8_t>::open(filePath, std::ios::in).then([](Concurrency::streams::streambuf<uint8_t> outFile) {
+		//outFile.nextc()
+		utility::size64_t size = outFile.size();
+		return outFile.close();
+	});
+	task.get();
+	return result;
 }
 
 static utility::string_t WcsFileHash(const utility::string_t &filePath) {

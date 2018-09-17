@@ -29,6 +29,9 @@ using namespace web::http::client;
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <wx/dir.h>
+#ifdef __WXWINDOWS__
+#pragma comment(lib, "bcrypt.lib")
+#endif // __WXWINDOWS__
 
 enum file_download_status {
     pretending = 0,
@@ -209,7 +212,6 @@ void SyncModelEx::DownloadSingleFile(const web::json::value &value,const utility
     //Okay,Starting Download...
     const method mtd = methods::GET;
     auto fileBuffer = std::make_shared<streambuf<uint8_t>>();
-    // utility::size64_t upsize = 0, downsize = 0;
     streams::ostream responseStream = streams::bytestream::open_ostream<std::vector<uint8_t>>();
     http_client_config config;
     config.set_timeout(std::chrono::seconds(30));
@@ -219,24 +221,8 @@ void SyncModelEx::DownloadSingleFile(const web::json::value &value,const utility
     msg.set_progress_handler(
             [&,urlTask](message_direction::direction direction, utility::size64_t so_far)
             {
-                //std::cout << "Progress called..." << so_far << std::endl;
-                //calls += 1;
-
-                //if (direction == message_direction::upload)
                 urlTask->processedSize = so_far;
-                //std::cout<< "Setting Download:" << urlTask->processedSize << std::endl;
-                //else
-                //    urlTask->processedSize = so_far;
 
-
-                /*
-                if(urlTask->fileSize > 0){
-                    std::cout << "Progress ...(" << so_far * 100 / urlTask->fileSize << "):" << so_far << std::endl;
-                }
-                 */
-
-                //msg.body()
-                //msg.get_response()
             });
     auto cx = file_buffer<uint8_t>::open(urlTask->localPath, std::ios::out).then([=,&client,&msg](streambuf<uint8_t> outFile) {
                 *fileBuffer = outFile;
@@ -257,6 +243,7 @@ void SyncModelEx::DownloadSingleFile(const web::json::value &value,const utility
     }catch (std::exception &ex){
         urlTask->status = file_download_status::failed;
         urlTask->error = sync_download_error::unknown;
+		std::cout << ex.what() << std::endl;
         return;
     }
     // check hash
@@ -616,7 +603,7 @@ void SyncModelEx::StartUploadFile(const wxArrayString &fileNames, const utility:
 					auto singleTask = new SingleUrlTask();
                     singleTask->retryCount = 5;
 					singleTask->processedSize = 0;
-					singleTask->fileSize = file.GetSize().ToULong();
+					singleTask->fileSize = file.GetSize().GetValue();
 					task->fileSize = singleTask->fileSize;
 					task->fileCount = 1;
 					singleTask->direction = task->direction;
@@ -648,7 +635,7 @@ void SyncModelEx::StartUploadFile(const wxArrayString &fileNames, const utility:
                                 auto singleTask = new SingleUrlTask();
                                 singleTask->retryCount = 5;
                                 singleTask->processedSize = 0;
-                                singleTask->fileSize = single.GetSize().ToULong();
+                                singleTask->fileSize = single.GetSize().GetValue();
                                 task->fileSize += singleTask->fileSize;
                                 task->fileCount += 1;
                                 singleTask->direction = task->direction;
@@ -703,14 +690,13 @@ void SyncModelEx::StartUploadFile(SingleUrlTask *urlTask, const utility::string_
     auto task = Concurrency::streams::file_buffer<uint8_t>::open(path, std::ios::in).then(
             [=,&success](Concurrency::streams::streambuf<uint8_t> outFile) {
                 utility::size64_t fileSize = outFile.size();
-                const size_t BLOCK_SIZE = 1024 * 1024 * 4 ;
+				utility::size64_t BLOCK_SIZE = 1024 * 1024 * 4 ;
                 outFile.set_buffer_size(1024);
-                size_t restBytes = fileSize;
+				utility::size64_t restBytes = fileSize;
                 boost::uuids::uuid id = boost::uuids::random_generator()();
                 auto batch = boost::lexical_cast<string_t>(id);
                 auto blockSuccess = true;
                 int idx = 0;
-                //std::vector<string_t> blocks;
                 string_t blocks;
                 while (restBytes > 0 && blockSuccess){
                     auto readSize = restBytes > BLOCK_SIZE ? BLOCK_SIZE : restBytes;
@@ -728,8 +714,6 @@ void SyncModelEx::StartUploadFile(SingleUrlTask *urlTask, const utility::string_
                     request.set_body(bufferVector);
                     //Send...
                     json::value createBlkResult = client.request(request).get().extract_json(true).get();
-                    utility::stringstream_t stream;
-                    createBlkResult.serialize(stream);
                     restBytes -= readSize;
                     if(createBlkResult.has_field(_XPLATSTR("ctx"))){
                         blocks += createBlkResult.at(_XPLATSTR("ctx")).as_string();
@@ -759,9 +743,13 @@ void SyncModelEx::StartUploadFile(SingleUrlTask *urlTask, const utility::string_
                         if(mkFileResult.at(_XPLATSTR("hash")).as_string() == urlTask->hash){
                             success = true;
 
-                        }
+                        }//success failed
+						else {
+							success = false;
+						}
                     }else{
                         success = false;
+						urlTask->error = sync_download_error::calc_hash_fail;
                     }
                 }
 
@@ -776,11 +764,15 @@ void SyncModelEx::StartUploadFile(SingleUrlTask *urlTask, const utility::string_
             urlTask->status = file_download_status ::finished;
         }else{
             urlTask->status = file_download_status::failed;
-            urlTask->error = sync_download_error::upload_part_error;
+			if (urlTask->error == sync_download_error::none) {
+				urlTask->error = sync_download_error::upload_part_error;
+			}
+            
         }
     }
     catch (std::exception &e) {
         urlTask->status = file_download_status::failed;
         urlTask->error = sync_download_error::unknown;
+		std::cout << e.what() << std::endl;
     }
 }
