@@ -2,7 +2,9 @@
 // Created by zzzhr on 2018/9/10.
 //
 #include "../util/common_api.h"
-
+#ifdef __WXWINDOWS__
+#pragma comment(lib, "bcrypt.lib")
+#endif // __WXWINDOWS__
 using namespace web::http;
 using namespace web::http::client;
 using namespace concurrency::streams;
@@ -14,10 +16,16 @@ using namespace web::http;
 using namespace web::http::client;
 
 //using namespace functional::http::utilities;
-
+#ifdef U
+#undef U
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/uuid/uuid.hpp>
+#ifdef U
+#undef U
+#endif
+#define U(x) _XPLATSTR(x)
+#endif
 #include "../util/simple_timer.h"
 #include "../util/common_util.h"
 #include "../common/common_event_ids.h"
@@ -193,9 +201,6 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
             });
     try {
         cx.get();
-        // calc tags..
-
-        urlTask->status = wcs::file_download_status::finished;
     } catch (std::exception &ex) {
         urlTask->status = wcs::file_download_status::failed;
         urlTask->error = wcs::sync_download_error::unknown;
@@ -204,6 +209,12 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
     }
     // check hash
     utility::string_t data;
+	const auto &file = wxFileName(urlTask->localPath);
+	if (file.GetSize() < urlTask->fileSize) {
+		urlTask->status = wcs::file_download_status::failed;
+		urlTask->error = wcs::sync_download_error::size_not_match;
+		return;
+	}
     wcs::WcsToolbox::HashFile(urlTask->localPath,data,urlTask);
     if (urlTask->hash != data) {
         //std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;

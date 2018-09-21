@@ -88,7 +88,7 @@ public:
 
     void RefreshCurrentPage(int selection = -1);
 
-	void UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity);
+	void UpdateSpaceCapacity(const long long & spaceUsed, const long long & spaceCapacity);
 
 private:
 	void OnNoteBookChange(wxBookCtrlEvent & event);

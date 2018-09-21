@@ -207,13 +207,14 @@ void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 	// get selected
 	long itemIndex = -1;
 	std::vector<long> selectedItems;
+	long count = currentList.size();
 	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
 		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
 		// Got the selected item index
 		//wxLogDebug(listControl->GetItemText(itemIndex));
 		// got
 		//auto list = fileModel.GetCurrentList();
-		long count = currentList.size();
+		
 		if (itemIndex >= count) {
 			break;
 		}

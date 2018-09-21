@@ -50,6 +50,7 @@ class MyRemoteFilePanel;
 #define ID_BITMAPBUTTON7 10023
 #define ID_DOWNLOAD_FILE 6404
 #define ID_DELETE_FILE 6405
+#define ID_VIEW_FILE_DETAIL 6406
 
 ////@end control identifiers
 
@@ -80,7 +81,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    void RefreshData();
+    void RefreshData(const bool& force = false);
 
     void OnThreadEvent(wxThreadEvent& event);
 
@@ -123,7 +124,7 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
-	void UpdateSpaceCapacity(const long& spaceUsed = 0, const long& spaceCapacity = 0);
+	void UpdateSpaceCapacity(const long long& spaceUsed = 0, const long long& spaceCapacity = 0);
 
 ////@begin NyRemoteFilePanel member variables
 private:
@@ -139,11 +140,12 @@ private:
 	wxBitmapButton* parentBtn = nullptr;
 	AddDirectoryDialog * addDirectoryDialog = nullptr;
     void OnItemRightClick(const wxListEvent & event);
-	long spaceUsed = 0;
-	long spaceCapacity = 0;
+	long long spaceUsed = 0;
+	long long spaceCapacity = 0;
 	wxStaticText* capacityText = nullptr;
 	VideoPreviewFrame * videoPreviewFrame = nullptr;
     wxMenu* menu = nullptr;
+	bool waitPage = false;
 ////@end NyRemoteFilePanel member variables
 };
 

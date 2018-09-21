@@ -1,16 +1,22 @@
 //
 // Created by zzzhr on 2018/9/19.
 //
-#ifdef __WXWINDOWS__
-#pragma comment(lib, "bcrypt.lib")
-#endif // __WXWINDOWS__
+
 #include "wcs_toolbox.h"
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
+#ifdef U
+#undef U
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#ifdef U
+#undef U
+#endif
+#define U(x) _XPLATSTR(x)
+#endif
+#include <openssl/sha.h>
 #include <thread>
 
 std::vector<unsigned char> wcs::WcsToolbox::ReadVectorFromStream(std::istream &iss, const size_t &maxBufferSize) {
@@ -149,9 +155,7 @@ wcs::WcsToolbox::PostBlock(web::http::client::http_client &client, const utility
                            const utility::string_t &batch) {
     // PB
     auto readSize = buffer.size();
-    utility::stringstream_t stream;
-    stream << boost::format(_XPLATSTR("/mkblk/%1%/%2%")) % readSize % blockIndex;
-    auto postUrl = stream.str();
+    auto postUrl = utility::conversions::to_string_t((boost::format("/mkblk/%1%/%2%") % readSize % blockIndex).str());
     int tryTimes = 10;
     while ( tryTimes > 0)
     {
@@ -168,7 +172,7 @@ wcs::WcsToolbox::PostBlock(web::http::client::http_client &client, const utility
             if (createBlkResult.has_field(_XPLATSTR("ctx"))) {
                 return createBlkResult.at(_XPLATSTR("ctx")).as_string();
             }else{
-                std::cout << "Post failed" << createBlkResult.serialize() << std::endl;
+                std::cout << createBlkResult.serialize().c_str() << std::endl;
             }
         }catch (std::exception &e){
             std::cout << "Make block fail: " << e.what() << std::endl;
@@ -183,10 +187,10 @@ utility::string_t
 wcs::WcsToolbox::MakeFile(web::http::client::http_client &client, const utility::string_t &uploadToken,
                           const utility::string_t &batch, const utility::string_t &blocks,
                           const utility::size64_t &size) {
-    utility::stringstream_t stream;
-    stream << boost::format(_XPLATSTR("/mkfile/%1%")) % size;
+    //utility::stringstream_t stream;
+    //stream << boost::format(_XPLATSTR("/mkfile/%1%")) % size;
     //string_t blkUrl = wxString::Format(wxT("/mkblk/%lld/%ld"), readSize, blockIndex);
-    auto postUrl = stream.str();
+    auto postUrl = utility::conversions::to_string_t((boost::format("/mkfile/%1%") % size).str());;
 
     int tryTimes = 10;
     while ( tryTimes > 0){
@@ -202,7 +206,7 @@ wcs::WcsToolbox::MakeFile(web::http::client::http_client &client, const utility:
             if (createFileResult.has_field(_XPLATSTR("hash"))) {
                 return createFileResult.at(_XPLATSTR("hash")).as_string();
             }else{
-                std::cout << "Post failed" << createFileResult.serialize() << std::endl;
+                std::cout << "Post failed" << createFileResult.serialize().c_str() << std::endl;
                 //return utility::string_t();
             }
         }catch (std::exception &e){
@@ -228,7 +232,7 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
     utility::size64_t readBytes = 0;
 
     std::filebuf in;
-    if (!in.open(filePath, std::ios::in)) {
+    if (!in.open(filePath, std::ios::in | std::ios::binary)) {
         std::cout << "fail to open file" << std::endl;
         if(task != nullptr){
             task ->status = wcs::file_download_status::failed;
@@ -307,7 +311,7 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
 utility::size64_t wcs::WcsToolbox::HashFile(const utility::string_t &filePath, utility::string_t &base64Result,
                                             wcs::SingleUrlTask *task) {
     std::filebuf in;
-    if (!in.open(filePath, std::ios::in)) {
+    if (!in.open(filePath, std::ios::in | std::ios::binary)) {
         std::cout << "fail to open file" << std::endl;
         if(task != nullptr){
             task ->status = wcs::file_download_status::failed;

@@ -40,6 +40,7 @@
 #include "../../resources/copy.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
+#include "../userfile/filedetail.h"
 
 #include "wx/dnd.h"         // drag and drop for the playlist
 
@@ -131,6 +132,7 @@ MyRemoteFilePanel::~MyRemoteFilePanel() {
 ////@begin NyRemoteFilePanel destruction
     menu->Destroy(ID_DOWNLOAD_FILE);
     menu->Destroy(ID_DELETE_FILE);
+	menu->Destroy(ID_VIEW_FILE_DETAIL);
     delete menu;
 ////@end NyRemoteFilePanel destruction
 }
@@ -270,8 +272,10 @@ void MyRemoteFilePanel::CreateControls() {
     newDirectoryBtn->Bind(wxEVT_BUTTON, &MyRemoteFilePanel::NewDirectoryBtnClicked, this);
     //prevPageBtn->
     menu = new wxMenu();
+	menu->Append(ID_VIEW_FILE_DETAIL, _("File Detail"));
     menu->Append(ID_DOWNLOAD_FILE, _("Download file"));
     menu->Append(ID_DELETE_FILE, _("Delete file"));
+	
     menu->Bind(wxEVT_MENU, &MyRemoteFilePanel::OnCtrlListMenuClicked, this);
     mainListCtrl->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MyRemoteFilePanel::OnItemRightClick, this);
 ////@end NyRemoteFilePanel content construction
@@ -335,8 +339,12 @@ wxIcon MyRemoteFilePanel::GetIconResource(const wxString &name) {
 ////@end NyRemoteFilePanel icon retrieval
 }
 
-void MyRemoteFilePanel::RefreshData() {
+void MyRemoteFilePanel::RefreshData(const bool& force) {
+	if (!force && waitPage) {
+		return;
+	}
     auto &fileModel = RemoteFileModel::Instance();
+	waitPage = true;
     fileModel.GetPage(this);
 }
 
@@ -378,107 +386,91 @@ void MyRemoteFilePanel::OnItemRightClick(const wxListEvent &event) {
 }
 
 void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
-    long itemIndex = -1;
+	//// Get Select
+	long itemIndex = -1;
+	std::vector<long> selectedItems;
+	auto &fileModel = RemoteFileModel::Instance();
+	auto list = fileModel.GetCurrentList();
+	long count = list.size();
+	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
+		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
+		// Got the selected item index
+		//wxLogDebug(listControl->GetItemText(itemIndex));
+		// got
+		//auto list = fileModel.GetCurrentList();
+		
+		if (itemIndex >= count) {
+			break;
+		}
+		auto& fileData = list.at(static_cast<web::json::array::size_type>(itemIndex));
+		if (fileData.is_null()) {
+			break;
+		}
 
-    while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
-                                                  wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
-        // Got the selected item index
-        //wxLogDebug(listControl->GetItemText(itemIndex));
-        // got
-        auto &fileModel = RemoteFileModel::Instance();
-        auto list = fileModel.GetCurrentList();
-        long count = list.size();
-        if (itemIndex >= count) {
-            return;
-        }
-        auto fileData = list.at(itemIndex);
-        if (fileData.is_null()) {
-            return;
-        }
-        // found
-        if (event.GetId() == ID_DOWNLOAD_FILE) {
-            wxString dirHome;
-            wxGetHomeDir(&dirHome);
-            //long style = wxDD_DEFAULT_STYLE,
+		if (itemIndex > -1) {
+			selectedItems.push_back(itemIndex);
+		}
+	}
+	if (selectedItems.empty()) {
+		return;
+	}
+	//
+	if (event.GetId() == ID_DOWNLOAD_FILE) {
+		wxString dirHome;
+		wxGetHomeDir(&dirHome);
+		//long style = wxDD_DEFAULT_STYLE,
+		//auto = list.at(fileData)
+		wxDirDialog dialog(this, _("Select Directory"), dirHome, wxDD_DEFAULT_STYLE, wxDefaultPosition,
+			wxDefaultSize, _T("Select Directory"));
 
-            wxDirDialog dialog(this, _("Select Directory"), dirHome, wxDD_DEFAULT_STYLE, wxDefaultPosition,
-                               wxDefaultSize, _T("Select Directory"));
+		if (dialog.ShowModal() == wxID_OK) {
+			for (auto idx : selectedItems) {
+				auto fileData = list.at(idx);
+				SyncModel::Instance().StartDownloadFile(fileData, dialog.GetPath(), fileModel.GetCurrentPath());
+			}
+			
+		}
+	}
+	else if (event.GetId() == ID_DELETE_FILE) {
 
-            if (dialog.ShowModal() == wxID_OK) {
-                SyncModel::Instance().StartDownloadFile(fileData, dialog.GetPath(), fileModel.GetCurrentPath());
-            }
+		if (selectedItems.size() < 2) {
+			if (selectedItems.size() > 0 && list.size() > 0) {
+				auto fileData = list.at(selectedItems[0]);
+				wxMessageDialog dialog(this, wxString::Format(_T("Delete file %s"), fileData.at(U("name")).as_string()), _("Confirm Delete File"), wxOK | wxCANCEL | wxCENTRE);
 
-            /*
-            if (fileData.has_field(U("detail"))) {
-                try
-                {
-                    web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
-                    if (data.has_field(U("url"))) {
-                        CopyTextToClipboard(data.at(U("url")).as_string());
-                        break;
-                    }
-                }
-                catch (const std::exception&)
-                {
-                    continue;
-                }
-            }
-             */
-            // Adding to download list...
-        } else if (event.GetId() == ID_DELETE_FILE) {
-            wxMessageDialog dialog(this, wxString::Format(_T("Delete file %s"),fileData.at(U("name")).as_string()),_("Confirm Delete File"),wxOK|wxCANCEL|wxCENTRE);
+				if (dialog.ShowModal() == wxID_OK) {
+					RemoteFileModel::Instance().DeleteFile(this, fileData.at(U("path")).as_string());
+					//SyncModel::Instance().StartDownloadFile(fileData, fileData.at(U("name")).as_string(), fileModel.GetCurrentPath());
+				}
+			}
 
-            if (dialog.ShowModal() == wxID_OK) {
-                RemoteFileModel::Instance().DeleteFile(this,fileData.at(U("path")).as_string());
-                //SyncModel::Instance().StartDownloadFile(fileData, fileData.at(U("name")).as_string(), fileModel.GetCurrentPath());
-            }
-            //ShowTaskDetail(fileData);
-        }
-        /*
-        else if (event.GetId() == ID_VIEW_TASK_DETAIL) {
-            ShowTaskDetail(fileData);
-        }
-         */
-    }
+			//ShowTaskDetail(fileData);
+		}
+		else {
+			wxMessageDialog dialog(this, wxString::Format(_T("Delete file %d files?"), selectedItems.size()), _("Confirm Delete Files"), wxOK | wxCANCEL | wxCENTRE);
 
-    /*
-    if (event.GetId() == ID_COPY_URL_TO_CLIP) {
-        long itemIndex = -1;
-
-        while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
-            wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
-            // Got the selected item index
-            //wxLogDebug(listControl->GetItemText(itemIndex));
-            // got
-            auto & fileModel = OfflineDownloadTaskModel::Instance();
-            auto list = fileModel.GetCurrentList();
-            long count = list.size();
-            if (itemIndex >= count) {
-                return;
-            }
-            auto fileData = list.at(itemIndex);
-            if (fileData.is_null()) {
-                return;
-            }
-
-            if (fileData.has_field(U("detail"))) {
-                try
-                {
-                    web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
-                    if (data.has_field(U("url"))) {
-                        CopyTextToClipboard(data.at(U("url")).as_string());
-                        break;
-                    }
-                }
-                catch (const std::exception&)
-                {
-                    continue;
-                }
-            }
-        }
-    }
-    */
-
+			if (dialog.ShowModal() == wxID_OK) {
+				auto json = web::json::value::array();
+				long i = 0;
+				for (auto idx : selectedItems) {
+					auto fileData = list.at(idx);
+					json[i] = fileData.at(U("path"));
+					i++;
+				}
+				RemoteFileModel::Instance().DeleteFiles(this, json);
+				//SyncModel::Instance().StartDownloadFile(fileData, fileData.at(U("name")).as_string(), fileModel.GetCurrentPath());
+			}
+		}
+	}
+	else if (event.GetId() == ID_VIEW_FILE_DETAIL) {
+		if (selectedItems.size() > 0 && list.size() > 0) {
+			auto fInfo = list.at(selectedItems[0]);
+			if (!fInfo.is_null()) {
+				auto fileDetailDialog = FileDetail(this, fInfo);
+				fileDetailDialog.ShowModal();
+			}
+		}
+	}
 }
 
 
@@ -650,6 +642,7 @@ void MyRemoteFilePanel::OnPageInputKillFocus(wxFocusEvent &event) {
 }
 
 void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
+	waitPage = false;
     if (payload.code == U("FILE_NOT_FOUND")) {
         wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
                      _("Cannot go to directory"), wxICON_INFORMATION);
@@ -680,8 +673,10 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
     }
     //
     web::json::array list = payload.result.at(U("list")).as_array();
+	
     // model->AppendItem( data ,1);
     auto model = &RemoteFileModel::Instance();
+	auto refresh = model->GetCurrentList().size() != list.size();
     auto dirInfo = payload.result.at(U("info"));
     auto currentPath = dirInfo.at(U("path")).as_string();
     auto currentId = dirInfo.at(U("uuid")).as_string();
@@ -695,8 +690,11 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
      */
     long cur = 0;
     //long index = 0;
-    mainListCtrl->Hide();
-    mainListCtrl->DeleteAllItems();
+	if (refresh) {
+		mainListCtrl->Hide();
+		mainListCtrl->DeleteAllItems();
+	}
+   
     for (const auto &i : list) {
         // create item
         wxListItem itemCol;
@@ -722,8 +720,12 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
                 itemCol.SetText(_T(" [-]"));
             }
         }
-
-        mainListCtrl->InsertItem(itemCol);
+		if (refresh) {
+			mainListCtrl->InsertItem(itemCol);
+		}
+		else {
+			mainListCtrl->SetItem(cur, 0, itemCol.GetText());
+		}
         // col1 filename
 
         mainListCtrl->SetItem(cur, 1, i.at(U("name")).as_string());
@@ -753,9 +755,12 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
          */
         cur++;
     }
-    mainListCtrl->Show();
-    ResetCurrentPathDisplay();
-    mainListCtrl->SetFocus();
+	if (refresh) {
+		mainListCtrl->Show();
+		mainListCtrl->SetFocus();
+	}
+   
+	ResetCurrentPathDisplay();
 
 }
 
@@ -799,7 +804,7 @@ void MyRemoteFilePanel::OnEndDrag(wxListEvent &event) {
 
 }
 
-void MyRemoteFilePanel::UpdateSpaceCapacity(const long &spaceUsed, const long &spaceCapacity) {
+void MyRemoteFilePanel::UpdateSpaceCapacity(const long long &spaceUsed, const long long &spaceCapacity) {
     this->spaceUsed = spaceUsed;
     this->spaceCapacity = spaceCapacity;
     capacityText->SetLabel(

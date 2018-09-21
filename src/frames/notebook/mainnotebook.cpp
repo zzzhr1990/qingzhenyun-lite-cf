@@ -269,7 +269,7 @@ void MainNotebook::OnNoteBookChange(wxBookCtrlEvent &event) {
 
 }
 
-void MainNotebook::UpdateSpaceCapacity(const long & spaceUsed, const long & spaceCapacity) {
+void MainNotebook::UpdateSpaceCapacity(const long long & spaceUsed, const long long & spaceCapacity) {
 	myRemoteFilePanel->UpdateSpaceCapacity(spaceUsed, spaceCapacity);
 }
 
@@ -277,7 +277,7 @@ void MainNotebook::TimerTick() {
     auto selection = this->GetSelection();
     switch (selection){
         case 0:
-            //myRemoteFilePanel->RefreshData();
+            myRemoteFilePanel->RefreshData();
             break;
         case 1:
             //offlineDownloadTaskPanel->RefreshData();

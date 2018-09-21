@@ -125,12 +125,14 @@ void TaskDetail::CreateControls()
     itemFlexGridSizer4->Add(itemStaticText5, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     taskNameTextCtrl = new wxTextCtrl( itemDialog1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	taskNameTextCtrl->SetEditable(false);
     itemFlexGridSizer4->Add(taskNameTextCtrl, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 	wxStaticText* TaskIditemStaticText = new wxStaticText( itemDialog1, wxID_STATIC, _("ID"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer4->Add(TaskIditemStaticText, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     taskIdTextCtrl = new wxTextCtrl( itemDialog1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	taskIdTextCtrl->SetEditable(false);
     itemFlexGridSizer4->Add(taskIdTextCtrl, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText9 = new wxStaticText( itemDialog1, wxID_STATIC, _("Status"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -150,6 +152,7 @@ void TaskDetail::CreateControls()
 
     pathStaticText = new wxTextCtrl( itemDialog1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer4->Add(pathStaticText, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+	pathStaticText->SetEditable(false);
 
     wxStaticText* itemStaticText1 = new wxStaticText( itemDialog1, wxID_STATIC, _("Mime"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer4->Add(itemStaticText1, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);

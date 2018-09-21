@@ -35,7 +35,8 @@ namespace wcs {
         url_api_error = 3,
         upload_part_error = 7,
         local_error = 4,
-        file_exception = 8
+        file_exception = 8,
+		size_not_match = 9
     };
 
     struct SingleUrlTask {
@@ -52,7 +53,7 @@ namespace wcs {
     };
 
     struct DownloadTask {
-        tbb::concurrent_vector<SingleUrlTask *> task;
+        tbb::concurrent_vector<SingleUrlTask*> task;
         utility::size64_t fileSize;
         utility::size64_t processedSize;
         utility::string_t localPath;
