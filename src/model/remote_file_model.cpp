@@ -89,3 +89,13 @@ void RemoteFileModel::GetFileInfo(wxWindow *handler, const utility::string_t &pa
     });
 
 }
+
+void RemoteFileModel::DeleteFile(wxWindow * handler, const utility::string_t & filePath) {
+
+    web::json::value request;
+    request[U("path")] = web::json::value::string(filePath);
+    CommonApi::Instance().PostData(U("/v1/files/remove"), request).then([handler](ResponseEntity v) {
+        //SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
+        SendCommonThreadEvent(handler, USER_REMOTE_FILE_DELETE, v, true);
+    });
+}

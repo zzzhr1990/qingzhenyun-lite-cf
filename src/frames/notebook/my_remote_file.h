@@ -49,6 +49,7 @@ class MyRemoteFilePanel;
 #define ID_BITMAPBUTTON6 10021
 #define ID_BITMAPBUTTON7 10023
 #define ID_DOWNLOAD_FILE 6404
+#define ID_DELETE_FILE 6405
 
 ////@end control identifiers
 

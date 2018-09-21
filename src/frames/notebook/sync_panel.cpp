@@ -342,20 +342,24 @@ void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & upda
             mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error:%d"),i.at(U("error")).as_integer()));
         }
         else {
-            if (status == 0) {
-                mainListCtrl->SetItem(cur, 3, _T("Wait"));
-            }
-            else if (status == 1) {
-                mainListCtrl->SetItem(cur, 3, _T("Process"));
-            }
-            else if (status == 2) {
-                mainListCtrl->SetItem(cur, 3, _T("Finish"));
-            }
-			else if (status == 3) {
-				mainListCtrl->SetItem(cur, 3, _T("Info"));
-			}
-            else {
-                mainListCtrl->SetItem(cur, 3, wxString::Format(wxT("Unknown %d"),status));
+            switch (status){
+                case 0:
+                    mainListCtrl->SetItem(cur, 3, _T("Wait"));
+                    break;
+                case 1:
+                    mainListCtrl->SetItem(cur, 3, _T("Process"));
+                    break;
+                case 2:
+                    mainListCtrl->SetItem(cur, 3, _T("Finish"));
+                    break;
+                case 3:
+                    mainListCtrl->SetItem(cur, 3, _T("Info"));
+                    break;
+                case 5:
+                    mainListCtrl->SetItem(cur, 3, _T("Hash"));
+                    break;
+                default:
+                    mainListCtrl->SetItem(cur, 3, wxString::Format(wxT("Unknown %d"),status));
             }
         }
 

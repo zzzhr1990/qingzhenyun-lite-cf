@@ -9,6 +9,6 @@
 #endif
 #include "tbb/concurrent_vector.h"
 
-#include "single_url_task.h"
+#include "task_info.h"
 
 #endif //QINGZHENYUN_LITE_DOWNLOAD_TASK_H
