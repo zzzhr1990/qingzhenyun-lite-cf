@@ -20,11 +20,18 @@
 #include <thread>
 
 std::vector<unsigned char> wcs::WcsToolbox::ReadVectorFromStream(std::istream &iss, const size_t &maxBufferSize) {
-    if (iss.eof()) {
-        return std::vector<unsigned char>(0);
-    }
-    size_t read = 0;
+    //if (iss.eof()) {
+    //    return std::vector<unsigned char>(0);
+    //}
+    //size_t read = 0;
     std::vector<unsigned char> buffer = std::vector<unsigned char>(maxBufferSize);
+	iss.read((char*)buffer.data(), maxBufferSize);
+	auto rs = static_cast<size_t>(iss.gcount());
+	if (rs != maxBufferSize) {
+		buffer.resize(rs);
+	}
+	
+	/***
     while (read < maxBufferSize && !iss.eof()) {
         auto readChar = static_cast<unsigned char>(iss.get());
 
@@ -38,6 +45,7 @@ std::vector<unsigned char> wcs::WcsToolbox::ReadVectorFromStream(std::istream &i
     if (read < maxBufferSize) {
         buffer.resize(read);
     }
+	**/
     return buffer;
 }
 
@@ -228,7 +236,7 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
     // 
     ////    file >> std::noskipws;
     ////    std::copy(std::istream_iterator<char>(file), std::istream_iterator<char>(), std::back_inserter(data));
-    utility::size64_t BLOCK_SIZE = 1024 * 1024 * 4;
+    size_t BLOCK_SIZE = 1024 * 1024 * 4;
     utility::size64_t readBytes = 0;
 
     std::filebuf in;
@@ -321,7 +329,7 @@ utility::size64_t wcs::WcsToolbox::HashFile(const utility::string_t &filePath, u
     }
     std::istream iss(&in);
     utility::size64_t MAX_BLOCK_SIZE = 1024 * 1024 * 4;
-    size_t MAX_BUFFER_SIZE = 1024;
+    size_t MAX_BUFFER_SIZE = 1024 * 1024;
     utility::size64_t fileSize = HashFileStream(iss, MAX_BLOCK_SIZE,MAX_BUFFER_SIZE,base64Result,task);
     in.close();
     return fileSize;

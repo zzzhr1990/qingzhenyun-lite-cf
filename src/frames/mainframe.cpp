@@ -313,8 +313,11 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
 			const ResponseEntity &r = event.GetPayload<ResponseEntity>();
 			long d = event.GetTimestamp();
 			time_t time = d;
-			SetStatusText(wxString::Format(_T("User info update at...%s"), ConvertTimeToDisplay(time), "%Y-%m-%d %H:%M"));
+			SetStatusText(wxString::Format(_("User info update at...%s"), ConvertTimeToDisplay(time), "%Y-%m-%d %H:%M"));
 			UserModel::Instance().SetUserInfo(r.result);
+			if (r.result.has_field(U("spaceUsed"))) {
+				mainNotebook->UpdateSpaceCapacity(r.result.at(U("spaceUsed")).as_number().to_int64(), r.result.at(U("spaceCapacity")).as_number().to_int64());
+			}
 		}
         default:
             event.Skip();

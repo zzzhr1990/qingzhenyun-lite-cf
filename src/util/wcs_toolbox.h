@@ -15,7 +15,7 @@ namespace wcs{
     class WcsToolbox {
     public:
         static std::vector<unsigned char> ReadVectorFromStream(std::istream &iss,const size_t& maxBufferSize = 1024);
-        static utility::size64_t ReadBlockFromStream(std::istream &iss,const utility::size64_t &blockSize,size_t &bufferSize, unsigned char *tempDigest);
+        static utility::size64_t ReadBlockFromStream(std::istream &iss,const utility::size64_t &blockSize,size_t &bufferSize,unsigned char *tempDigest);
         static utility::size64_t HashFile(const utility::string_t &filePath, utility::string_t & base64Result,SingleUrlTask *task);
         static utility::size64_t HashFileStream(std::istream &iss, const utility::size64_t &blockSize,size_t &bufferSize, utility::string_t & base64Result,SingleUrlTask *task);
         static utility::size64_t PostFile(const utility::string_t &uploadUrl, const utility::string_t &filePath,const utility::string_t &uploadToken, SingleUrlTask *task = nullptr);

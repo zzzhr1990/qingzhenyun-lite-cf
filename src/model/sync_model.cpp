@@ -464,8 +464,6 @@ void SyncModelEx::StartInnerUpload(wcs::SingleUrlTask *urlTask) {
         urlTask->error = wcs::sync_download_error::calc_hash_fail;
         return;
     }
-
-
     urlTask->hash = file_hash;
     request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
     CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then(
