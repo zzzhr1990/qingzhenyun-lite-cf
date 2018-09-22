@@ -32,6 +32,7 @@
 #include "../../model/remote_file_model.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
 #include "../../model/sync_model.h"
+#include "../../model/user_model.h"
 #include "../mainframe.h"
 #include "../../util/common_util.h"
 
@@ -250,7 +251,7 @@ void MainNotebook::RefreshCurrentPage(int selection) {
 	}
     switch (selection){
         case 0:
-            myRemoteFilePanel->RefreshData();
+            myRemoteFilePanel->RefreshData(true);
             break;
 		case 1:
 			offlineDownloadTaskPanel->RefreshData();
@@ -277,8 +278,10 @@ void MainNotebook::TimerTick() {
     auto selection = this->GetSelection();
     switch (selection){
         case 0:
-            myRemoteFilePanel->RefreshData();
-            break;
+			if (UserModel::Instance().IsUserLogin()) {
+				myRemoteFilePanel->RefreshData(false);
+				break;
+			}
         case 1:
             //offlineDownloadTaskPanel->RefreshData();
             break;

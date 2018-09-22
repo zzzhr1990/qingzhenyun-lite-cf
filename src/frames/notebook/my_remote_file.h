@@ -81,7 +81,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    void RefreshData(const bool& force = false);
+    void RefreshData(const bool& force = true);
 
     void OnThreadEvent(wxThreadEvent& event);
 
