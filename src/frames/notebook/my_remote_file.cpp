@@ -353,6 +353,7 @@ void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
     switch (event.GetInt()) {
         case USER_REMOTE_FILE_PAGE_DATA: {
             auto payload = event.GetPayload<ResponseEntity>();
+            //if(!payload.success)
             RefreshListData(payload);
             break;
         }
@@ -447,7 +448,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 			//ShowTaskDetail(fileData);
 		}
 		else {
-			wxMessageDialog dialog(this, wxString::Format(_T("Delete file %d files?"), selectedItems.size()), _("Confirm Delete Files"), wxOK | wxCANCEL | wxCENTRE);
+			wxMessageDialog dialog(this, wxString::Format(_T("Delete file %ld files?"), selectedItems.size()), _("Confirm Delete Files"), wxOK | wxCANCEL | wxCENTRE);
 
 			if (dialog.ShowModal() == wxID_OK) {
 				auto json = web::json::value::array();
@@ -463,8 +464,8 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 		}
 	}
 	else if (event.GetId() == ID_VIEW_FILE_DETAIL) {
-		if (selectedItems.size() > 0 && list.size() > 0) {
-			auto fInfo = list.at(selectedItems[0]);
+		if (!selectedItems.empty() && list.size() > 0) {
+			auto fInfo = list.at(static_cast<web::json::array::size_type>(selectedItems[0]));
 			if (!fInfo.is_null()) {
 				auto fileDetailDialog = FileDetail(this, fInfo);
 				fileDetailDialog.ShowModal();
@@ -483,7 +484,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
         fileModel.GetPageById(this, fileModel.GetParent(), 1);
         return;
     }
-    auto fileData = list.at(index);
+    auto fileData = list.at(static_cast<web::json::array::size_type>(index));
     if (fileData.is_null()) {
         fileModel.GetPageById(this, fileModel.GetParent(), 1);
         return;
@@ -647,6 +648,9 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
         wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
                      _("Cannot go to directory"), wxICON_INFORMATION);
         RemoteFileModel::Instance().GetPage(this, U("/"), 1);
+        return;
+    }
+    if(!payload.success){
         return;
     }
     // check if a file

@@ -360,12 +360,18 @@ void SyncModelEx::CheckTaskStatus() {
     if (check) {
         auto upDiff = upSize - lastUpSize;
         auto downDiff = downSize - lastDownSize;
+        if(upDiff < 0){
+            upDiff = 0;
+        }
+        if(downDiff < 0){
+            downDiff = 0;
+        }
         lastUpSize = upSize;
         lastDownSize = downSize;
 
 
-        downSpeed = downDiff / timeDiff;
-        upSpeed = upDiff / timeDiff;
+        downSpeed = timeDiff < 1 ? 0 : (downDiff / timeDiff);
+        upSpeed = timeDiff < 1 ? 0 : (upDiff / timeDiff);
         lastRefreshTime = current;
     }
     //uint needAdd = totalTaskLimit - workingTaskCount;
@@ -456,6 +462,7 @@ void SyncModelEx::StartInnerUpload(wcs::SingleUrlTask *urlTask) {
     auto &filePath = urlTask->localPath;
     web::json::value request;
     request[_XPLATSTR("path")] = web::json::value::string(urlTask->remotePath);
+    request[_XPLATSTR("originalFilename")] = web::json::value::string(urlTask->filename);
     // calc hash
     auto file_hash = utility::string_t();
     wcs::WcsToolbox::HashFile(filePath,file_hash,urlTask);
