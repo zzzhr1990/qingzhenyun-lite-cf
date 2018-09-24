@@ -49,10 +49,14 @@ void UserModel::CheckUserAvailable(wxWindow* handler) {
     task.then([&, handler](ResponseEntity v){
         lastRefreshTime = 0;
         if(v.success){
+            if(!this->login){
+                this->login = true;
+            }
             SendCommonThreadEvent(handler,USER_REFRESH_RESPONSE,v);
             this->userInfo = v.result;
         }else{
             if(v.status > 400 && v.status < 500){
+                this->login = false;
                 SendCommonThreadEvent(handler,USER_LOGIN_FAILED_RESPONSE,v);
             }
         }
@@ -65,7 +69,11 @@ void UserModel::CheckToken(wxWindow* handler) {
         if(v.success){
             SendCommonThreadEvent(handler,USER_LOGIN_RESPONSE,v);
         }else{
-            SendCommonThreadEvent(handler,USER_LOGIN_FAILED_RESPONSE,v);
+            //this->login = false;
+            if(v.status > 400 && v.status < 500) {
+                this->login = false;
+                SendCommonThreadEvent(handler, USER_LOGIN_FAILED_RESPONSE, v);
+            }
         }
     });
 }
@@ -93,8 +101,10 @@ void UserModel::TryLogin(wxWindow *handler, const utility::string_t &value, cons
     task.then([&,handler](ResponseEntity v){
         if(v.success){
             //Send success event.
+            this->login = true;
             SendCommonThreadEvent(handler,USER_LOGIN_RESPONSE,v);
         }else{
+            this->login = false;
             SendCommonThreadEvent(handler,USER_LOGIN_FAILED_RESPONSE,v);
         }
     });
@@ -107,21 +117,21 @@ void UserModel::SetUserInfo(web::json::value v, const bool& login) {
     this->userInfo = v;
 	if (!this->currentToken.empty()) {
 		auto path = wxGetCwd() + wxFileName::GetPathSeparator() + "token.history";
-		wxTextFile tfile(path);
-		if (tfile.Exists()) {
-			if (tfile.Open(wxConvUTF8)) {
-				tfile.Clear();
-				tfile.AddLine(this->currentToken);
-				tfile.Write(wxTextFileType_None, wxConvUTF8);
-				tfile.Close();
+		wxTextFile tFile(path);
+		if (tFile.Exists()) {
+			if (tFile.Open(wxConvUTF8)) {
+				tFile.Clear();
+				tFile.AddLine(this->currentToken);
+				tFile.Write(wxTextFileType_None, wxConvUTF8);
+				tFile.Close();
 			}
 		}
 		else {
-			if (tfile.Create()) {
-				tfile.Clear();
-				tfile.AddLine(this->currentToken);
-				tfile.Write(wxTextFileType_None, wxConvUTF8);
-				tfile.Close();
+			if (tFile.Create()) {
+				tFile.Clear();
+				tFile.AddLine(this->currentToken);
+				tFile.Write(wxTextFileType_None, wxConvUTF8);
+				tFile.Close();
 			}
 		}
 	}
