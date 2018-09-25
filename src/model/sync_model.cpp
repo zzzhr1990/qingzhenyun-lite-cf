@@ -188,7 +188,7 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
                 urlTask->processedSize = so_far;
 
             });
-    auto cx = file_buffer<uint8_t>::open(urlTask->localPath, std::ios::out).then(
+    auto cx = file_buffer<uint8_t>::open(urlTask->localPath, std::ios::out | std::ios::binary).then(
                     [=, &client, &msg](streambuf<uint8_t> outFile) {
                         *fileBuffer = outFile;
                         msg.set_response_stream(outFile);
