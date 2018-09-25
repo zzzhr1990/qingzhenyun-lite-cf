@@ -14,42 +14,36 @@
 #ifndef _VIDEOPREVIEWFRAME_H_
 #define _VIDEOPREVIEWFRAME_H_
 
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
 
 /*!
  * Includes
  */
 
-////@begin includes
-#include "cpprest/http_client.h"
-#include "vlcpp/vlc.hpp"
+ ////@begin includes
+#include "wx/mediactrl.h"
+#include "wx/cshelp.h"
+#include "cpprest/json.h"
+#include <vlc/vlc.h>
+#include <climits>
+
 ////@end includes
 
 /*!
  * Forward declarations
  */
 
-////@begin forward declarations
-////@end forward declarations
+ ////@begin forward declarations
+ ////@end forward declarations
 
-/*!
- * Control identifiers
- */
+ /*!
+  * Control identifiers
+  */
 
-////@begin control identifiers
+  ////@begin control identifiers
 
 #define SYMBOL_VIDEOPREVIEWFRAME_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_VIDEOPREVIEWFRAME_TITLE _("VideoPreviewFrame")
-#define SYMBOL_VIDEOPREVIEWFRAME_IDNAME wxID_ANY
+#define SYMBOL_VIDEOPREVIEWFRAME_IDNAME ID_VIDEOPREVIEWFRAME
 #define SYMBOL_VIDEOPREVIEWFRAME_SIZE wxSize(640, 500)
 #define SYMBOL_VIDEOPREVIEWFRAME_POSITION wxDefaultPosition
 ////@end control identifiers
@@ -59,111 +53,58 @@
  * VideoPreviewFrame class declaration
  */
 
-class VideoPreviewFrame: public wxDialog
-{    
-    DECLARE_DYNAMIC_CLASS( VideoPreviewFrame )
-    DECLARE_EVENT_TABLE()
+class VideoPreviewFrame : public wxDialog
+{
+	DECLARE_DYNAMIC_CLASS(VideoPreviewFrame)
+	DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
-    VideoPreviewFrame();
-    VideoPreviewFrame(const utility::string_t& path, wxWindow* parent, wxWindowID id = SYMBOL_VIDEOPREVIEWFRAME_IDNAME, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE );
+	/// Constructors
+	VideoPreviewFrame();
+	VideoPreviewFrame(const utility::string_t &path,wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE);
 
-	
+	/// Creation
+	bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE);
 
-	
+	/// Destructor
+	~VideoPreviewFrame();
 
-    /// Creation
-    bool Create(wxWindow* parent, wxWindowID id = SYMBOL_VIDEOPREVIEWFRAME_IDNAME, const wxString& caption = SYMBOL_VIDEOPREVIEWFRAME_TITLE, const wxPoint& pos = SYMBOL_VIDEOPREVIEWFRAME_POSITION, const wxSize& size = SYMBOL_VIDEOPREVIEWFRAME_SIZE, long style = SYMBOL_VIDEOPREVIEWFRAME_STYLE );
+	/// Initialises member variables
+	void Init();
 
-    /// Destructor
-    ~VideoPreviewFrame();
+	/// Creates the controls and sizers
+	void CreateControls();
 
-    /// Initialises member variables
-    void Init();
+	////@begin VideoPreviewFrame event handler declarations
 
-    /// Creates the controls and sizers
-    void CreateControls();
+		/// wxEVT_CLOSE_WINDOW event handler for ID_VIDEOPREVIEWFRAME
+	void OnCloseWindow(wxCloseEvent& event);
 
-	void InitVLC();
 
-////@begin VideoPreviewFrame event handler declarations
+	////@end VideoPreviewFrame event handler declarations
 
-////@end VideoPreviewFrame event handler declarations
+	////@begin VideoPreviewFrame member function declarations
 
-////@begin VideoPreviewFrame member function declarations
+		/// Retrieves bitmap resources
+	wxBitmap GetBitmapResource(const wxString& name);
 
-    /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+	/// Retrieves icon resources
+	wxIcon GetIconResource(const wxString& name);
+	////@end VideoPreviewFrame member function declarations
 
-    /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
-////@end VideoPreviewFrame member function declarations
+		/// Should we show tooltips?
+	static bool ShowToolTips();
 
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-	void SetPath(const utility::string_t & path);
-	void GetVideoStream();
-	void Clean();
-	void PlayPreview(const web::json::array & array);
-////@begin VideoPreviewFrame member variables
+	////@begin VideoPreviewFrame member variables
 private:
 	wxWindow * playerWidget;
-	utility::string_t path;
-	wxBoxSizer* controllBarSizer = nullptr;
 	void OnThreadEvent(wxThreadEvent & event);
-    char *myargs[4] = {const_cast<char *>("--loop"), const_cast<char *>("--subsdec-encoding=GB18030"), const_cast<char *>("--subsdec-autodetect-utf8"), nullptr};
-	VLC::Instance instance = VLC::Instance(3, myargs);
-	VLC::MediaPlayer mp = VLC::MediaPlayer(instance);
-	int currentPercent = 0;
-	int currentTime = 0;
-    int totalTime = 0;
-	bool beginSeek = false;
-    bool volSeek = false;
-    void OnBeginSeek(wxScrollEvent& WXUNUSED(event));
-    void OnEndSeek(wxScrollEvent& WXUNUSED(event));
-	void StartSeek();
-    void OnBeginVol(wxScrollEvent& WXUNUSED(event));
-    void OnEndVol(wxScrollEvent& WXUNUSED(event));
-    void OnPlayBtnClick(wxCommandEvent& WXUNUSED(event));
-    void OnPlayerDClick(wxMouseEvent & WXUNUSED(event));//wxCommandEvent
-    void OnPlayerClick(wxMouseEvent & WXUNUSED(event));
-    void CheckPauseBtnClick();
-    wxSlider* progressSlider = nullptr;
-    wxSlider* volSlider = nullptr;
-    wxStaticText* playingTime = nullptr;
-    wxButton* playBtn = nullptr;
-	wxBoxSizer* mainBoxSizer = nullptr;
-    //VLC::EventManager::RegisteredEvent playPosEvent = nullptr;
-	// void OnCloseWindow(wxCloseEvent& event);
-	//mp.setHwnd(playerWidget->GetHandle());
-	//mp.setMedia(media);
-	//mp.setFullscreen(1);
-	//mp.play();
-	//
-	//VLC::Instance instance;
-	//VLC::Media media;
-	//VLC::MediaPlayer player;
-	
-	//mp.play();
-    wxStaticText* totalTimeText = nullptr;
-    VLC::EventManager::RegisteredEvent playPosEvent = nullptr;
-    VLC::EventManager::RegisteredEvent timeEvent = nullptr;
-    VLC::EventManager::RegisteredEvent lengthEvent = nullptr;
-    VLC::EventManager::RegisteredEvent bufferEvent = nullptr;
-    VLC::EventManager::RegisteredEvent playingEvent = nullptr;
-    VLC::EventManager::RegisteredEvent pauseEvent = nullptr;
-    VLC::EventManager::RegisteredEvent volEvent = nullptr;
-	VLC::EventManager::RegisteredEvent endEvent = nullptr;
-	void OnSliderScrollPageUp(wxScrollEvent& event);
-
-	/// wxEVT_SCROLL_PAGEDOWN event handler for ID_SLIDER
-	void OnSliderScrollPageDown(wxScrollEvent& event);
-	void RegisterEvents();
-    void UnloadEvents();
-
-////@end VideoPreviewFrame member variables
+	void PlayPreview(const web::json::array & array);
+	libvlc_media_player_t *media_player = nullptr;
+	libvlc_instance_t *vlc_inst = nullptr;
+	libvlc_event_manager_t *vlc_evt_man = nullptr;
+	////@end VideoPreviewFrame member variables
 };
 
 #endif
-    // _VIDEOPREVIEWFRAME_H_
+// _VIDEOPREVIEWFRAME_H_

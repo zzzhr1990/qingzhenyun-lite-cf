@@ -4,15 +4,8 @@
 
 #ifndef QINGZHENYUN_LITE_COMMON_EVENT_IDS_H
 #define QINGZHENYUN_LITE_COMMON_EVENT_IDS_H
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
+#include "common_wx.h"
 #include "../entity/response_entity.h"
-#endif
 // #define COMMON_THREAD_EVENT_STRING = "@@@event"
 enum {
     USER_AUTH_EXPIRED = 401,

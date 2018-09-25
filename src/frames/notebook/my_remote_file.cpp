@@ -521,10 +521,10 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
                         // Can't do it under windows, Under windows, we have to search plugins manually.
                     }
                     auto videoPreviewFrame = VideoPreviewFrame(currentPath, this);
-					videoPreviewFrame.GetVideoStream();
+					//videoPreviewFrame.GetVideoStream();
 					videoPreviewFrame.ShowModal();
 					//std::cout << "exit" << std::endl;
-					videoPreviewFrame.Clean();
+					//videoPreviewFrame.Clean();
 					//
 					
                 ///} else {
