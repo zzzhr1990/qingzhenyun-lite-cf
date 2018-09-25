@@ -143,7 +143,7 @@ private:
 	long long spaceUsed = 0;
 	long long spaceCapacity = 0;
 	wxStaticText* capacityText = nullptr;
-	VideoPreviewFrame * videoPreviewFrame = nullptr;
+	//VideoPreviewFrame * videoPreviewFrame = nullptr;
     wxMenu* menu = nullptr;
 	bool waitPage = false;
 ////@end NyRemoteFilePanel member variables

@@ -153,11 +153,12 @@ void VideoPreviewFrame::Clean(){
 	}
 	this->UnloadEvents();
 	mp.media().reset();
+	playerWidget->Destroy();
 	// std::cout << "START STOP" << std::endl;
-	std::thread([this](){
-		this->mp.stop();
+	//std::thread([this](){
+	mp.stop();
 	//	std::cout << "STOP - STOP" << std::endl;
-	}).detach();
+	//}).detach();
 	//mp.stop();
 	//std::cout << "END STOP" << std::endl;
     //mp.media().reset();

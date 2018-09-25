@@ -502,7 +502,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
         if (fileData.has_field(U("preview"))) {
             int preview = fileData.at(U("preview")).as_integer();
             if (preview == 1000) {
-                if (videoPreviewFrame == nullptr) {
+                ///if (videoPreviewFrame == nullptr) {
                     auto system = wxPlatformInfo::Get().GetOperatingSystemId();
                     if (system & wxOS_MAC) {
                         auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
@@ -520,14 +520,17 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
 #endif // !__WINDOWS__
                         // Can't do it under windows, Under windows, we have to search plugins manually.
                     }
-                    videoPreviewFrame = new VideoPreviewFrame(currentPath, this);
-                } else {
-                    videoPreviewFrame->SetPath(currentPath);
-                }
-                videoPreviewFrame->GetVideoStream();
-                videoPreviewFrame->ShowModal();
-                //std::cout << "exit" << std::endl;
-                videoPreviewFrame->Clean();
+                    auto videoPreviewFrame = VideoPreviewFrame(currentPath, this);
+					videoPreviewFrame.GetVideoStream();
+					videoPreviewFrame.ShowModal();
+					//std::cout << "exit" << std::endl;
+					videoPreviewFrame.Clean();
+					//
+					
+                ///} else {
+                ///    videoPreviewFrame->SetPath(currentPath);
+                ///}
+                
                 //std::cout << "exit3" << std::endl;
             }
         }
