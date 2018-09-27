@@ -19,6 +19,7 @@
 
 ////@begin includes
 #include "wx/notebook.h"
+#include "../../common/wx_common.h"
 ////@end includes
 
 /*!

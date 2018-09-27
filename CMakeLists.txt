@@ -56,7 +56,7 @@ if(MSVC)
 #		PATH ${PROJECT_BINARY_DIR} FORCE)
 	#ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
 	#	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/bin/windows/i686/dll/*.dll" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-	#	COMMENT "copying dlls ¡­"
+	#	COMMENT "copying dlls ï¿½ï¿½"
 	#)
 	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 		file(GLOB dll_SRC
@@ -84,5 +84,5 @@ if(MSVC)
 	add_dependencies(${PROJECT_NAME} CopyDLLs)
     target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${dll_LIB} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 else()
-    target_link_libraries(${PROJECT_NAME} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib" "/Applications/VLC.app/Contents/MacOS/lib/libvlccore.9.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(${PROJECT_NAME} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/usr/local/opt/mpv/lib/libmpv.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 endif()

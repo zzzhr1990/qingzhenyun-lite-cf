@@ -20,10 +20,12 @@
  */
 
  ////@begin includes
+#include "../../common/wx_common.h"
 #include "cpprest/json.h"
 #include <climits>
 #include <mpv/client.h>
 #include "../../util/simple_timer.h"
+#include "../../common/common_event_ids.h"
 ////@end includes
 
 /*!
@@ -55,7 +57,29 @@ class VideoPreviewFrame : public wxDialog
 {
 	DECLARE_DYNAMIC_CLASS(VideoPreviewFrame)
 	DECLARE_EVENT_TABLE()
+	/*
+    static void wakeup(void *ctx)
+    {
+        // This callback is invoked from any mpv thread (but possibly also
+        // recursively from a thread that is calling the mpv API). Just notify
+        // the Qt GUI thread to wake up (so that it can process events with
+        // mpv_wait_event()), and return as quickly as possible.
 
+
+        VideoPreviewFrame *mainwindow = (VideoPreviewFrame *)ctx;
+        //mainwindow->CheckTimer();
+        wxThreadEvent event(wxEVT_THREAD);
+        //auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        //event.SetTimestamp(ts);
+        //event.SetId(this->GetId());
+        event.SetInt(VIDEO_PLAYER_WAKEUP);
+        //event.SetPayload(v);
+        //std::cout << "Tick0" << std::endl;
+        wxQueueEvent(mainwindow, event.Clone());
+
+        //emit mainwindow->mpv_events();
+    }
+    */
 public:
 	/// Constructors
 	VideoPreviewFrame();
@@ -78,6 +102,7 @@ public:
 		/// wxEVT_CLOSE_WINDOW event handler for ID_VIDEOPREVIEWFRAME
 	void OnCloseWindow(wxCloseEvent& event);
 
+    void CheckTimer();
 
 	////@end VideoPreviewFrame event handler declarations
 
@@ -92,17 +117,21 @@ public:
 
 		/// Should we show tooltips?
 	static bool ShowToolTips();
+    void CloseInner();
 
 	////@begin VideoPreviewFrame member variables
 private:
-	void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event);
+	void OnThreadEvent(wxThreadEvent & event);
 	wxTextCtrl* logTextCtrl = nullptr;
 	void printLog(utility::string_t log);
-	void VideoPreviewFrame::PlayPreview(const web::json::array & array);
+	void PlayPreview(const web::json::array & array);
 	mpv_handle* ctx = nullptr;
-	void CheckTimer();
-	SimpleTimer time = SimpleTimer();
-	bool continuePlay = true;
+
+	bool emitEvent = true;
+
+	//SimpleTimer time = SimpleTimer();
+	//bool continuePlay = true;
+
 };
 
 #endif

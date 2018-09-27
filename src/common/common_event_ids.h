@@ -24,7 +24,10 @@ enum {
     USER_SYNC_LIST_REFRESH = 4004,
     USER_SYNC_SPEED_REFRESH = 4005,
 	USER_PREVIEW_INFO = 5002,
-    PAGE_TIMER_TICK = 5003
+    PAGE_TIMER_TICK = 5003,
+    VIDEO_LOG_MESSAGE = 5004,
+    VIDEO_PREVIEW_FRAME_CLOSE = 5005,
+    VIDEO_PLAYER_WAKEUP = 5006
 };
 
 static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const ResponseEntity & v, const bool & checkMessage=false) {

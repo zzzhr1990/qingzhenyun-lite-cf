@@ -18,6 +18,7 @@
  */
 
 ////@begin includes
+#include "../../common/wx_common.h"
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"
 #include "../userfile/add_directory_dialog.h"
@@ -146,6 +147,7 @@ private:
 	//VideoPreviewFrame * videoPreviewFrame = nullptr;
     wxMenu* menu = nullptr;
 	bool waitPage = false;
+	VideoPreviewFrame* previewFrame = nullptr;
 ////@end NyRemoteFilePanel member variables
 };
 

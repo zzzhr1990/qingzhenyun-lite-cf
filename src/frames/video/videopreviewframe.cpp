@@ -68,7 +68,26 @@ IMPLEMENT_DYNAMIC_CLASS(VideoPreviewFrame, wxDialog)
 	 * VideoPreviewFrame constructors
 	 */
 
-	VideoPreviewFrame::VideoPreviewFrame()
+	static void wakeup(void *ctx)
+	{
+		// This callback is invoked from any mpv thread (but possibly also
+		// recursively from a thread that is calling the mpv API). Just notify
+		// the Qt GUI thread to wake up (so that it can process events with
+		// mpv_wait_event()), and return as quickly as possible.
+		VideoPreviewFrame *mainwindow = (VideoPreviewFrame *)ctx;
+		//mainwindow->CheckTimer();
+		wxThreadEvent event(wxEVT_THREAD);
+		//auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		//event.SetTimestamp(ts);
+		//event.SetId(this->GetId());
+		event.SetInt(VIDEO_PLAYER_WAKEUP);
+		//event.SetPayload(v);
+		//std::cout << "Tick0" << std::endl;
+		wxQueueEvent(mainwindow, event.Clone());
+	}
+
+
+VideoPreviewFrame::VideoPreviewFrame()
 {
 	Init();
 }
@@ -78,15 +97,13 @@ VideoPreviewFrame::VideoPreviewFrame(const utility::string_t &path, wxWindow* pa
 	Init();
 	Create(parent, id, caption, pos, size, style);
 	ctx = mpv_create();
-	this->time.StartTimer(200, [&] {this->CheckTimer(); });
+	//this->time.StartTimer(200, [&] {this->CheckTimer(); });
 	printLog(_XPLATSTR("Preview file: ") + path);
 	if (ctx == nullptr) {
 		printLog(_XPLATSTR("Create player failed. "));
 	}
-	else if (ctx == NULL) {
-		printLog(_XPLATSTR("Create player failed. "));
-	}
 	else {
+
 		printLog(_XPLATSTR("Create player success. "));
 		mpv_set_option_string(ctx, "title",utility::conversions::to_utf8string(path).c_str());
 		mpv_set_option_string(ctx, "force-media-title", utility::conversions::to_utf8string(path).c_str());
@@ -196,6 +213,29 @@ bool VideoPreviewFrame::ShowToolTips()
 void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 {
 	switch (event.GetInt()) {
+		case VIDEO_LOG_MESSAGE:
+			this->logTextCtrl->AppendText(event.GetString() + _XPLATSTR("\n"));
+			this->logTextCtrl->LineDown();
+			break;
+		case VIDEO_PLAYER_WAKEUP:
+			//this->CheckTimer();
+			//mpv_wakeup(ctx);
+			while (ctx) {
+				mpv_event *eventx = mpv_wait_event(ctx, 0);
+				if (eventx->event_id == MPV_EVENT_NONE)
+					break;
+				//handle_mpv_event(event);
+				std::cout << "HANDLE_WAKEUP" << std::endl;
+				//mpv_event *eventX = mpv_wait_event(ctx, 0);
+				if (eventx->event_id == MPV_EVENT_SHUTDOWN) {
+					mpv_detach_destroy(ctx);
+					ctx = nullptr;
+					this->Close();
+				}
+				this->logTextCtrl->AppendText(utility::conversions::to_string_t(mpv_event_name(eventx->event_id)) + _XPLATSTR("\n") );
+				this->logTextCtrl->LineDown();
+			}
+			break;
 	case USER_PREVIEW_INFO:
 	{
 		auto payload = event.GetPayload<ResponseEntity>();
@@ -232,8 +272,22 @@ void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 
 void VideoPreviewFrame::printLog(utility::string_t log)
 {
-	this->logTextCtrl->AppendText(log + _XPLATSTR("\n"));
-	this->logTextCtrl->LineDown();
+	/*
+	this->CallAfter([&]{
+		this->logTextCtrl->AppendText(log + _XPLATSTR("\n"));
+		this->logTextCtrl->LineDown();
+	});
+	 */
+	wxThreadEvent event(wxEVT_THREAD);
+	auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	event.SetTimestamp(ts);
+	//event.SetId(this->GetId());
+	event.SetInt(VIDEO_LOG_MESSAGE);
+	event.SetString(log);
+	//event.SetPayload(v);
+	//std::cout << "Tick0" << std::endl;
+	wxQueueEvent(this, event.Clone());
+
 }
 
 
@@ -263,15 +317,17 @@ void VideoPreviewFrame::PlayPreview(const web::json::array & array)
 		mpv_set_option_string(ctx, "input-default-bindings", "yes");
 		mpv_set_option_string(ctx, "input-vo-keyboard", "yes");
 		mpv_set_option_string(ctx, "keep-open", "yes");
+        mpv_set_option_string(ctx, "on-top", "yes");
+        mpv_set_option_string(ctx, "on-top-level", "system");
 		//keep-open
 		int val = 1;
 		mpv_set_option(ctx, "osc", MPV_FORMAT_FLAG, &val);
-
+		mpv_set_wakeup_callback(ctx, wakeup, this);
 		// Done setting up options.
 		mpv_initialize(ctx);
 		const std::string& xx = utility::conversions::to_utf8string(url);
 		// Play this file.
-		const char *cmd[] = { "loadfile", xx.c_str(),NULL };
+		const char *cmd[] = { "loadfile", xx.c_str(), nullptr };
 		mpv_command(ctx, cmd);
 		//instance =
 		/*
@@ -306,33 +362,7 @@ void VideoPreviewFrame::PlayPreview(const web::json::array & array)
 	}
 }
 
-void VideoPreviewFrame::CheckTimer()
-{
-	if (ctx == nullptr) {
-		return;
-	}
-	if (ctx == NULL) {
-		return;
-	}
-	mpv_event *event = mpv_wait_event(ctx, 0);
-	if (event->event_id == MPV_EVENT_NONE) {
-		return;
-	}
-	printLog(_XPLATSTR("Player event: ") + utility::conversions::to_string_t(mpv_event_name(event->event_id)));
-	if (event->event_id == MPV_EVENT_SHUTDOWN) {
-		continuePlay = false;
-		mpv_terminate_destroy(ctx);
-		ctx = nullptr;
-		//this->Close();
-		this->CallAfter([&] {time.Expire(); ctx = nullptr; this->Close(); });
-	}
-	
 
-	/*
-	if (event->event_id == MPV_EVENT_IDLE)
-		break;
-		*/
-}
 
 
 /*
@@ -376,19 +406,36 @@ void VideoPreviewFrame::OnCloseWindow(wxCloseEvent& event)
 		//mpv_terminate_destroy(ctx);
 		//ctx = nullptr;
 		//this->CallAfter([&] {this->Close(true); });
-		
-		mpv_terminate_destroy(ctx);
-		this->CallAfter([&] {time.Expire(); ctx = nullptr; this->Close(); });
+		//mpv_command()
+		const char *cmd[] = { "quit", nullptr };
+		mpv_command(ctx,cmd);
+		//mpv_detach_destroy(ctx);
 		return;
+		//this->CallAfter([&] {time.Expire(); ctx = nullptr; this->Close(); });
 	}
-	else {
-		time.Expire();
-		event.Skip();
+	event.Skip();
+	//this->Destroy();
+
+
+	wxThreadEvent closeEvt(wxEVT_THREAD);
+	//auto ts = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	//event.SetTimestamp(ts);
+	//event.SetId(this->GetId());
+	closeEvt.SetInt(VIDEO_PREVIEW_FRAME_CLOSE);
+	//event.SetString(log);
+	//event.SetPayload(v);
+	//std::cout << "Tick0" << std::endl;
+	if(emitEvent){
+		wxQueueEvent(this->GetParent(), closeEvt.Clone());
 	}
-	
-	
+
 	//this->Close();
 	////@end wxEVT_CLOSE_WINDOW event handler for ID_VIDEOPREVIEWFRAME in VideoPreviewFrame. 
+}
+
+void VideoPreviewFrame::CloseInner() {
+	emitEvent = false;
+	this->Close();
 }
 
 

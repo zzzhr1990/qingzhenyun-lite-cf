@@ -369,6 +369,14 @@ void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
             fileModel.GetPage(this);
             break;
         }
+        case VIDEO_PREVIEW_FRAME_CLOSE:
+            if(previewFrame != nullptr){
+                //previewFrame->Close();
+                previewFrame->Destroy();
+                delete previewFrame;
+                previewFrame = nullptr;
+            }
+            break;
         default:
             event.Skip();
     }
@@ -505,6 +513,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
             int preview = fileData.at(U("preview")).as_integer();
             if (preview == 1000) {
                 ///if (videoPreviewFrame == nullptr) {
+ /*
                     auto system = wxPlatformInfo::Get().GetOperatingSystemId();
                     if (system & wxOS_MAC) {
                         auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
@@ -522,9 +531,19 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
 #endif // !__WINDOWS__
                         // Can't do it under windows, Under windows, we have to search plugins manually.
                     }
-                    auto videoPreviewFrame = VideoPreviewFrame(currentPath, this);
+                    */
+                    if(previewFrame != nullptr){
+                        previewFrame->CloseInner();
+                        previewFrame->Destroy();
+                        delete previewFrame;
+                        previewFrame = nullptr;
+                    }
+
+                    previewFrame = new VideoPreviewFrame(currentPath, this);
+                previewFrame->Iconize(false);
+                previewFrame->Raise();
 					//videoPreviewFrame.GetVideoStream();
-					videoPreviewFrame.ShowModal();
+                    previewFrame->Show();
 					//std::cout << "exit" << std::endl;
 					//videoPreviewFrame.Clean();
 					//

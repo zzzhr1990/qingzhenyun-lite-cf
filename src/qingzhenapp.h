@@ -56,10 +56,10 @@ public:
     void Init();
 
     /// Initialises the application
-    virtual bool OnInit();
+    bool OnInit() override;
 
     /// Called on exit
-    virtual int OnExit();
+    int OnExit() override;
 
 ////@begin QingzhenApp event handler declarations
 
