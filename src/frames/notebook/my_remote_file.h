@@ -18,7 +18,7 @@
  */
 
 ////@begin includes
-#include "../../common/wx_common.h"
+#include "../../common/common_wx.h"
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"
 #include "../userfile/add_directory_dialog.h"

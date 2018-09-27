@@ -20,7 +20,7 @@
  */
 
  ////@begin includes
-#include "../../common/wx_common.h"
+#include "../../common/common_wx.h"
 #include "cpprest/json.h"
 #include <climits>
 #include <mpv/client.h>
