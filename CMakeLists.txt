@@ -35,25 +35,9 @@ message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #    "*.h"
 #    "*.cpp"
 #)
-if(MSVC)
-    include_directories(
-         "D:\\vlc-x86\\vlc-3.0.4\\sdk\\include"
-	    "D:\\vlcpp"
-    )
-
-    link_directories(
-        "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link"
-    )
-elseif(APPLE)
-    include_directories(
-            "/Applications/VLC.app/Contents/MacOS/include"
-            "/Users/zzzhr/Downloads/libvlcpp-master/vlcpp"
-    )
-
-    link_directories(
-            "/Applications/VLC.app/Contents/MacOS/lib"
-    )
-endif()
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/include"
+)
 find_package(TBB CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h src/*.xpm)
@@ -64,12 +48,41 @@ file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h s
 #    endif()
 #ENDFOREACH()
 if(MSVC)
+#	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+#		${PROJECT_SOURCE_DIR}/bin/windows/i686/lib CACHE
+#		PATH ${PROJECT_BINARY_DIR} FORCE)
+#	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+#		${PROJECT_SOURCE_DIR}/bin/windows/i686/dll CACHE
+#		PATH ${PROJECT_BINARY_DIR} FORCE)
+	#ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+	#	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/bin/windows/i686/dll/*.dll" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+	#	COMMENT "copying dlls бн"
+	#)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		file(GLOB dll_SRC
+			"bin/windows/x86_64/dll/*.dll"
+			)
+		file(GLOB dll_LIB
+			"bin/windows/x86_64/lib/*.lib"
+			)
+	else()
+		file(GLOB dll_SRC
+			"bin/windows/i686/dll/*.dll"
+			)
+		file(GLOB dll_LIB
+			"bin/windows/i686/lib/*.lib"
+			)
+	endif()
+	add_custom_target(CopyDLLs
+		COMMAND ${CMAKE_COMMAND} -E copy ${dll_SRC} "${CMAKE_BINARY_DIR}"
+	)
     add_executable(${PROJECT_NAME} WIN32 ${SRCS} "icon.rc" "sample.ico")
 else(MSVC)
     add_executable(${PROJECT_NAME} ${SRCS})
 endif()
 if(MSVC)
-    target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlc.lib" "D:\\vlc-x86\\vlc-3.0.4\\sdk\\link\\libvlccore.lib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+	add_dependencies(${PROJECT_NAME} CopyDLLs)
+    target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${dll_LIB} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 else()
     target_link_libraries(${PROJECT_NAME} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib" "/Applications/VLC.app/Contents/MacOS/lib/libvlccore.9.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 endif()

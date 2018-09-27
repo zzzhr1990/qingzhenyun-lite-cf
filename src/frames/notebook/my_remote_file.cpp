@@ -44,6 +44,8 @@
 
 #include "wx/dnd.h"         // drag and drop for the playlist
 
+
+
 ////@end XPM images
 
 

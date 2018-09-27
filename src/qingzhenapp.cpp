@@ -84,6 +84,7 @@ void QingzhenApp::MacOpenFiles(const wxArrayString & fileNames )
 void QingzhenApp::Init()
 {
 ////@begin QingzhenApp member initialisation
+	
 ////@end QingzhenApp member initialisation
 }
 

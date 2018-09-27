@@ -20,12 +20,10 @@
  */
 
  ////@begin includes
-#include "wx/mediactrl.h"
-#include "wx/cshelp.h"
 #include "cpprest/json.h"
-#include <vlc/vlc.h>
 #include <climits>
-
+#include <mpv/client.h>
+#include "../../util/simple_timer.h"
 ////@end includes
 
 /*!
@@ -97,13 +95,14 @@ public:
 
 	////@begin VideoPreviewFrame member variables
 private:
-	wxWindow * playerWidget;
-	void OnThreadEvent(wxThreadEvent & event);
-	void PlayPreview(const web::json::array & array);
-	libvlc_media_player_t *media_player = nullptr;
-	libvlc_instance_t *vlc_inst = nullptr;
-	libvlc_event_manager_t *vlc_evt_man = nullptr;
-	////@end VideoPreviewFrame member variables
+	void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event);
+	wxTextCtrl* logTextCtrl = nullptr;
+	void printLog(utility::string_t log);
+	void VideoPreviewFrame::PlayPreview(const web::json::array & array);
+	mpv_handle* ctx = nullptr;
+	void CheckTimer();
+	SimpleTimer time = SimpleTimer();
+	bool continuePlay = true;
 };
 
 #endif
