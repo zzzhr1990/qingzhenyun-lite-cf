@@ -533,10 +533,11 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
                     }
                     */
                     if(previewFrame != nullptr){
-                        previewFrame->CloseInner();
-                        previewFrame->Destroy();
-                        delete previewFrame;
-                        previewFrame = nullptr;
+                        previewFrame->Close();
+                        //previewFrame->Destroy();
+                        //delete previewFrame;
+                        //previewFrame = nullptr;
+						return;
                     }
 
                     previewFrame = new VideoPreviewFrame(currentPath, this);

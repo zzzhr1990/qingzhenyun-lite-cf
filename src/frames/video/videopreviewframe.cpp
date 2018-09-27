@@ -225,15 +225,19 @@ void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 				if (eventx->event_id == MPV_EVENT_NONE)
 					break;
 				//handle_mpv_event(event);
-				std::cout << "HANDLE_WAKEUP" << std::endl;
+				//std::cout << "HANDLE_WAKEUP" << std::endl;
 				//mpv_event *eventX = mpv_wait_event(ctx, 0);
 				if (eventx->event_id == MPV_EVENT_SHUTDOWN) {
+					closing = true;
 					mpv_detach_destroy(ctx);
 					ctx = nullptr;
 					this->Close();
 				}
-				this->logTextCtrl->AppendText(utility::conversions::to_string_t(mpv_event_name(eventx->event_id)) + _XPLATSTR("\n") );
-				this->logTextCtrl->LineDown();
+				if (!closing) {
+					this->logTextCtrl->AppendText(utility::conversions::to_string_t(mpv_event_name(eventx->event_id)) + _XPLATSTR("\n"));
+					this->logTextCtrl->LineDown();
+				}
+				
 			}
 			break;
 	case USER_PREVIEW_INFO:
@@ -249,7 +253,7 @@ void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 					// do preview
 					
 					
-					printLog(utility::conversions::to_string_t((boost::format("Get preview size: %1% ") % preview.size()).str()));
+					printLog(wxString::Format(_("Get preview size: %lld "), preview.size()));
 					PlayPreview(preview);
 				}
 				else {
@@ -299,10 +303,11 @@ void VideoPreviewFrame::PlayPreview(const web::json::array & array)
 	int idx = 0;
 	for (const auto& i : array) {
 		auto c = i.at(U("clear")).as_integer();
+		printLog(wxString::Format(wxT("Preview: %d : %s") , idx , i.at(U("resolution")).as_string()));
 		if (c > clear) {
 			t = i.at(U("url")).as_string();
 			clear = c;
-			printLog(utility::conversions::to_string_t((boost::format("Preview: %1% : %2%") % idx % i.at(U("resolution")).as_string().c_str()).str()));
+			
 			//printLog(utility::conversions::to_string_t((boost::format(" : %1% ")).str()));
 			idx++;
 			//
@@ -398,6 +403,7 @@ wxIcon VideoPreviewFrame::GetIconResource(const wxString& name)
 
 void VideoPreviewFrame::OnCloseWindow(wxCloseEvent& event)
 {
+	closing = true;
 	////@begin wxEVT_CLOSE_WINDOW event handler for ID_VIDEOPREVIEWFRAME in VideoPreviewFrame.
 		// Before editing this code, remove the block markers.
 	//wxMessageBox(_(""));
@@ -428,6 +434,7 @@ void VideoPreviewFrame::OnCloseWindow(wxCloseEvent& event)
 	if(emitEvent){
 		wxQueueEvent(this->GetParent(), closeEvt.Clone());
 	}
+
 
 	//this->Close();
 	////@end wxEVT_CLOSE_WINDOW event handler for ID_VIDEOPREVIEWFRAME in VideoPreviewFrame. 

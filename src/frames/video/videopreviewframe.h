@@ -128,6 +128,7 @@ private:
 	mpv_handle* ctx = nullptr;
 
 	bool emitEvent = true;
+	bool closing = false;
 
 	//SimpleTimer time = SimpleTimer();
 	//bool continuePlay = true;
