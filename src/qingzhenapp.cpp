@@ -97,7 +97,14 @@ bool QingzhenApp::OnInit()
 ////@begin QingzhenApp initialisation
 	// Remove the comment markers above and below this block
 	// to make permanent changes to the code.
-
+	checker = new wxSingleInstanceChecker();
+	if (checker->IsAnotherRunning())
+	{
+		wxMessageBox(_("Another program instance is already running, aborting."),_("Warning"));
+		delete checker; // OnExit() won't be called if we return false
+		checker = nullptr;
+		return false;
+	}
 #if wxUSE_XPM
 	wxImage::AddHandler(new wxXPMHandler);
 #endif
@@ -110,6 +117,20 @@ bool QingzhenApp::OnInit()
 #if wxUSE_GIF
 	wxImage::AddHandler(new wxGIFHandler);
 #endif
+	// Load Locate
+	auto language = wxLANGUAGE_CHINESE_SIMPLIFIED;
+	locale = new wxLocale;
+	auto success = locale->Init(language, wxLOCALE_DONT_LOAD_DEFAULT);
+	//
+	if (success) {
+		auto succ = locale->AddCatalog(this->GetAppName());
+		if (!succ) {
+			delete locale;
+			locale = nullptr;
+		}
+	}
+
+
 	mainWindow = new MainFrame(nullptr);
 	mainWindow->Show(true);
 ////@end QingzhenApp initialisation
@@ -125,6 +146,12 @@ bool QingzhenApp::OnInit()
 int QingzhenApp::OnExit()
 {    
 ////@begin QingzhenApp cleanup
+	if (checker != nullptr) {
+		delete checker;
+	}
+	if (locale != nullptr) {
+		delete locale;
+	}
 	return wxApp::OnExit();
 ////@end QingzhenApp cleanup
 }

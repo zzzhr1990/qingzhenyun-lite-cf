@@ -25,7 +25,7 @@
 //#include "../../model/remote_download_task_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
-
+#include "../../util/listctrlutil.h"
 ////@end XPM images
 
 
@@ -90,6 +90,7 @@ OfflineDownloadTaskPanel::~OfflineDownloadTaskPanel()
 ////@begin OfflineDownloadTaskPanel destruction
 	menu->Destroy(ID_COPY_URL_TO_CLIP);
 	menu->Destroy(ID_VIEW_TASK_DETAIL);
+	menu->Destroy(ID_DELETE_SELECT_TASKS);
 	// menu->Detach();
 	delete menu;
 ////@end OfflineDownloadTaskPanel destruction
@@ -189,6 +190,7 @@ void OfflineDownloadTaskPanel::CreateControls()
 	menu = new wxMenu();
 	menu->Append(ID_VIEW_TASK_DETAIL, _("View task detail"));
 	menu->Append(ID_COPY_URL_TO_CLIP, _("Copy task url to clipboard"));
+	menu->Append(ID_DELETE_SELECT_TASKS, _("Delete selected task"));
 	menu->Bind(wxEVT_MENU, &OfflineDownloadTaskPanel::OnCtrlListMenuClicked, this);
 ////@end OfflineDownloadTaskPanel content construction
 }
@@ -208,45 +210,62 @@ bool OfflineDownloadTaskPanel::ShowToolTips()
  */
 // wxListEvent
 void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
-	long itemIndex = -1;
-
-	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
-		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
-		// Got the selected item index
-		//wxLogDebug(listControl->GetItemText(itemIndex));
-		// got
-		auto & fileModel = OfflineDownloadTaskModel::Instance();
-		auto list = fileModel.GetCurrentList();
-		long count = list.size();
-		if (itemIndex >= count) {
+	
+	auto & fileModel = OfflineDownloadTaskModel::Instance();
+	auto list = fileModel.GetCurrentList();
+	long count = list.size();
+	auto selectedItem = GetCurrentSelectItems(mainListCtrl);
+	if (selectedItem.empty()) {
+		return;
+	}
+	if (event.GetId() == ID_COPY_URL_TO_CLIP) {
+		auto selectedIndex = selectedItem[0];
+		if (selectedIndex >= count) {
 			return;
 		}
-		auto fileData = list.at(static_cast<web::json::array::size_type>(itemIndex));
-		if (fileData.is_null()) {
-			return;
-		}
-		// found
-		if (event.GetId() == ID_COPY_URL_TO_CLIP) {
-			if (fileData.has_field(U("detail"))) {
-				try
-				{
-					web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
-					if (data.has_field(U("url"))) {
-						CopyTextToClipboard(data.at(U("url")).as_string());
-						break;
-					}
+		auto fileData = list.at(static_cast<web::json::array::size_type>(selectedIndex));
+		if (fileData.has_field(U("detail"))) {
+			try
+			{
+				web::json::value data = web::json::value::parse(fileData.at(U("detail")).as_string());
+				if (data.has_field(U("url"))) {
+					CopyTextToClipboard(data.at(U("url")).as_string());
+					return;
 				}
-				catch (const std::exception&)
-				{
-					continue;
+			}
+			catch (const std::exception&)
+			{
+				return;
+			}
+		}
+	}
+	else if (event.GetId() == ID_VIEW_TASK_DETAIL) {
+		auto selectedIndex = selectedItem[0];
+		if (selectedIndex >= count) {
+			return;
+		}
+		auto fileData = list.at(static_cast<web::json::array::size_type>(selectedIndex));
+		ShowTaskDetail(fileData);
+		return;
+	}
+	else if (event.GetId() == ID_DELETE_SELECT_TASKS) {
+		auto json = web::json::value::array();
+		long i = 0;
+		for (auto &selectedIndex : selectedItem) {
+			if (selectedIndex < count) {
+				auto fileData = list.at(static_cast<web::json::array::size_type>(selectedIndex));
+				if (fileData.has_field(U("taskId"))) {
+					//auto taskId =.as_string();
+					json[i] = fileData.at(U("taskId"));
+					i++;
 				}
 			}
 		}
-		else if (event.GetId() == ID_VIEW_TASK_DETAIL) {
-			ShowTaskDetail(fileData);
+		if (i > 0) {
+			fileModel.DeleteTasks(this, json);
 		}
+		return;
 	}
-	
 	/*
 	if (event.GetId() == ID_COPY_URL_TO_CLIP) {
 		long itemIndex = -1;
@@ -443,6 +462,12 @@ void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
 		remoteModel.GetPage(this);
 		break;
 	}
+	case USER_REMOTE_TASK_DELETE:
+	{
+		auto & remoteModel = OfflineDownloadTaskModel::Instance();
+		remoteModel.GetPage(this);
+		break;
+	}
 	case USER_REMOTE_TASK_URL_PARSED:
 	{
 		auto payload = event.GetPayload<ResponseEntity>();
@@ -467,23 +492,20 @@ void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
 }
 
 void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
+	mainListCtrl->Freeze();
 	auto model = &OfflineDownloadTaskModel::Instance();
 	web::json::array list = payload.result.at(U("list")).as_array();
+	auto refresh = model->GetCurrentList().size() != list.size();
 	auto currentPage = payload.result.at(U("page")).as_integer();
 	auto currentPageSize = payload.result.at(U("pageSize")).as_integer();
 	auto totalPage = payload.result.at(U("totalPage")).as_integer();
 	//const utility::string_t &patent
 	model->UpdateCurrent(currentPage, currentPageSize, totalPage,list);
-	/*
-	mainListCtrl->AppendColumn(_("TaskName"), wxLIST_FORMAT_LEFT);
-	mainListCtrl->AppendColumn(_("TaskSize"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("Progress"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("Status"), wxLIST_FORMAT_CENTER);
-	mainListCtrl->AppendColumn(_("CreateTime"), wxLIST_FORMAT_CENTER, 160);
-	*/
 	long cur = 0;
-	mainListCtrl->Hide();
-	mainListCtrl->DeleteAllItems();
+	if (refresh) {
+		mainListCtrl->Hide();
+		mainListCtrl->DeleteAllItems();
+	}
 	for (const auto& i : list) {
 		// create item
 		wxListItem itemCol;
@@ -492,7 +514,12 @@ void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
 		itemCol.SetColumn(0);
 		
 		itemCol.SetText(i.at(U("name")).as_string());
-		mainListCtrl->InsertItem(itemCol);
+		if (refresh) {
+			mainListCtrl->InsertItem(itemCol);
+		}
+		else {
+			mainListCtrl->SetItem(cur, 0, itemCol.GetText());
+		}
 		// col1 taskname
 
 		// col 2 file size
@@ -531,9 +558,12 @@ void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
 
 		cur++;
 	}
-	mainListCtrl->Show();
+	if (refresh) {
+		mainListCtrl->Show();
+		mainListCtrl->SetFocus();
+	}
+	mainListCtrl->Thaw();
 	ResetCurrentPathDisplay();
-	mainListCtrl->SetFocus();
 }
 
 //void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {

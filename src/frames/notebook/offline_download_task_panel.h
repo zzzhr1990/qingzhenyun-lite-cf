@@ -59,6 +59,7 @@ class OfflineDownloadTaskPanel;
 #define SYMBOL_OFFLINEDOWNLOADTASKPANEL_POSITION wxDefaultPosition
 #define ID_COPY_URL_TO_CLIP 6401
 #define ID_VIEW_TASK_DETAIL 6402
+#define ID_DELETE_SELECT_TASKS 6403
 ////@end control identifiers
 
 

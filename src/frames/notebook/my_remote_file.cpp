@@ -403,6 +403,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 	auto &fileModel = RemoteFileModel::Instance();
 	auto list = fileModel.GetCurrentList();
 	long count = list.size();
+	long currentIdx = 0;
 	while ((itemIndex = mainListCtrl->GetNextItem(itemIndex,
 		wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND) {
 		// Got the selected item index
@@ -420,6 +421,10 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 
 		if (itemIndex > -1) {
 			selectedItems.push_back(itemIndex);
+		}
+		currentIdx++;
+		if (currentIdx > 99999) {
+			break;
 		}
 	}
 	if (selectedItems.empty()) {
@@ -451,14 +456,11 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 
 				if (dialog.ShowModal() == wxID_OK) {
 					RemoteFileModel::Instance().DeleteFile(this, fileData.at(U("path")).as_string());
-					//SyncModel::Instance().StartDownloadFile(fileData, fileData.at(U("name")).as_string(), fileModel.GetCurrentPath());
 				}
 			}
-
-			//ShowTaskDetail(fileData);
 		}
 		else {
-			wxMessageDialog dialog(this, wxString::Format(_T("Delete file %ld files?"), selectedItems.size()), _("Confirm Delete Files"), wxOK | wxCANCEL | wxCENTRE);
+			wxMessageDialog dialog(this, wxString::Format(_T("Delete file %s files?"), std::to_string(selectedItems.size())), _("Confirm Delete Files"), wxOK | wxCANCEL | wxCENTRE);
 
 			if (dialog.ShowModal() == wxID_OK) {
 				auto json = web::json::value::array();
@@ -469,7 +471,6 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 					i++;
 				}
 				RemoteFileModel::Instance().DeleteFiles(this, json);
-				//SyncModel::Instance().StartDownloadFile(fileData, fileData.at(U("name")).as_string(), fileModel.GetCurrentPath());
 			}
 		}
 	}
@@ -702,7 +703,7 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
     }
     //
     web::json::array list = payload.result.at(U("list")).as_array();
-	
+	mainListCtrl->Freeze();
     // model->AppendItem( data ,1);
     auto model = &RemoteFileModel::Instance();
 	auto refresh = model->GetCurrentList().size() != list.size();
@@ -790,7 +791,7 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
 	}
    
 	ResetCurrentPathDisplay();
-
+	mainListCtrl->Thaw();
 }
 
 void MyRemoteFilePanel::OnSizeChanged(wxSizeEvent &event) {

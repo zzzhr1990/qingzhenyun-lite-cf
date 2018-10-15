@@ -80,6 +80,13 @@ if(MSVC)
 else(MSVC)
     add_executable(${PROJECT_NAME} ${SRCS})
 endif()
+#file(GLOB mo_SRC
+#		"trans/*.mo"
+#)
+#add_custom_target(CopyMos
+#	COMMAND ${CMAKE_COMMAND} -E copy ${mo_SRC} "${CMAKE_BINARY_DIR}"
+#)
+#add_dependencies(${PROJECT_NAME} CopyMos)
 if(MSVC)
 	add_dependencies(${PROJECT_NAME} CopyDLLs)
     target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${dll_LIB} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)

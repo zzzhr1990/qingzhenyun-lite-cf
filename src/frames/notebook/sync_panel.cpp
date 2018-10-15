@@ -101,7 +101,7 @@ void SyncPanel::CreateControls() {
     itemBoxSizer8->Add(itemBoxSizer12, 1, wxALIGN_CENTER_VERTICAL, 5);
 
 
-    wxStaticText* itemStaticText13 = new wxStaticText( itemPanel2, wxID_STATIC, _("Upload:0kb/s Download:0kb/s"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxStaticText* itemStaticText13 = new wxStaticText( itemPanel2, wxID_STATIC, _("DO NOT DOWNLOAD ANY ILLEGAL FILES"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer12->Add(itemStaticText13, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
 
@@ -302,6 +302,7 @@ void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & upda
 
 
     //
+	mainListCtrl->Freeze();
     long cur = 0;
     if(updateAll){
         mainListCtrl->Hide();
@@ -380,6 +381,7 @@ void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & upda
         //ResetCurrentPathDisplay();
         mainListCtrl->SetFocus();
     }
+	mainListCtrl->Thaw();
     currentList = list;
 }
 

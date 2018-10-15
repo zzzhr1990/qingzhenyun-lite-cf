@@ -31,6 +31,7 @@ public:
 	void GetPage(wxWindow* handler, const int &page = -1, const int &pageSize = -1);
 	void StartUrl(wxWindow * handler, const utility::string_t& url);
 	void StartTask(wxWindow * handler, const utility::string_t& taskHash, const utility::string_t & savePath,const utility::string_t& copyFile);
+	void DeleteTasks(wxWindow * handler, const web::json::value & tasks);
 	void UpdateCurrent(const int &page, const int &pageSize, const int &totalPage, const web::json::array& list);
 	web::json::array GetCurrentList() {
 		return this->currentList;

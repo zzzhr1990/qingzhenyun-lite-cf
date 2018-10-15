@@ -36,7 +36,8 @@ namespace wcs {
         upload_part_error = 7,
         local_error = 4,
         file_exception = 8,
-		size_not_match = 9
+		size_not_match = 9,
+		file_system_error = 10
     };
 
     struct SingleUrlTask {

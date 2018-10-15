@@ -253,7 +253,7 @@ void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 					// do preview
 					
 					
-					printLog(wxString::Format(_("Get preview size: %lld "), preview.size()));
+					printLog(wxString::Format(_("Get preview size: %s "), std::to_string(preview.size())));
 					PlayPreview(preview);
 				}
 				else {

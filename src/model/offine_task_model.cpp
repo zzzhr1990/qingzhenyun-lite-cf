@@ -47,6 +47,18 @@ void OfflineDownloadTaskModel::StartTask(wxWindow* handler,const utility::string
 
 }
 
+void OfflineDownloadTaskModel::DeleteTasks(wxWindow *handler, const web::json::value &filePaths) {
+
+	web::json::value request;
+	//auto pathArray = web::json::value::object().array();
+	request[U("taskId")] = filePaths;
+	CommonApi::Instance().PostData(U("/v1/offline/remove"), request).then([handler](ResponseEntity v) {
+		//SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
+		SendCommonThreadEvent(handler, USER_REMOTE_TASK_DELETE, v, true);
+	});
+}
+
+
 void OfflineDownloadTaskModel::UpdateCurrent(const int &page,
 	const int &pageSize, const int &totalPage, const web::json::array& list) {
 	this->current_page = page;

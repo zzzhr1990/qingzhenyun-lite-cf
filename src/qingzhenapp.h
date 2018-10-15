@@ -20,6 +20,7 @@
 ////@begin includes
 #include "wx/image.h"
 #include "./frames/mainframe.h"
+#include <wx/snglinst.h>
 ////@end includes
 
 /*!
@@ -70,6 +71,8 @@ public:
 ////@end QingzhenApp member function declarations
 private:
     MainFrame* mainWindow = nullptr;
+	wxLocale* locale = nullptr;
+	wxSingleInstanceChecker* checker = nullptr;
 ////@begin QingzhenApp member variables
 ////@end QingzhenApp member variables
 };

@@ -36,6 +36,8 @@ public:
     virtual void ForceRefresh(wxWindow *window) = 0;
 
     virtual void ReportSpeed(wxWindow* window) = 0;
+
+	virtual bool isAllFinished() = 0;
 private:
     //void DownloadSingleFile(const web::json::value & value);
     //DownloadTask downloadTask;

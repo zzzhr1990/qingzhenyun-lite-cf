@@ -32,6 +32,7 @@
 #include "../model/user_model.h"
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
+#include "../model/sync_model.h"
 ////@end XPM images
 
 
@@ -237,6 +238,12 @@ bool MainFrame::ShowToolTips()
 }
 
 void MainFrame::OnClose(wxCloseEvent& event){
+	if (!SyncModel::Instance().isAllFinished()) {
+		if (wxOK != wxMessageBox(_("It seems you are syncing files, are you sure?"), _("Confirm close"), wxOK | wxCANCEL | wxICON_ASTERISK)) {
+			event.Veto();
+			return;
+		}
+	}
     event.Skip();
     UserModel::Instance().Terminate();
 }

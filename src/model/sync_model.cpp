@@ -63,6 +63,9 @@ public:
 
     void StartUploadFile(const wxArrayString &fileNames,
                          const utility::string_t &currentPath) override;
+	bool isAllFinished() override {
+		return allFinished;
+	}
 
 
     ~SyncModelEx();
@@ -79,6 +82,7 @@ private:
 
     void CheckTaskStatus(); //
     void ReportStatus();
+	void ListCurrentFile(const utility::string_t &current, wcs::DownloadTask *task, const utility::string_t &basePath);
 
     long lastRefreshTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     size64_t lastUpSize = 0;
@@ -137,6 +141,10 @@ void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility
         task->progress = 0;
         if (task->type == 1) {
             std::cout << "Explorer all files" << std::endl;
+			this->ListCurrentFile(task->remotePath, task, task->remotePath);
+			if (task->task.size() == 0) {
+				task->status = wcs::file_download_status::finished;
+			}
         } else {
             // DownloadSingleFile(value);
             // Adding single file to task.
@@ -153,7 +161,16 @@ void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility
                 singleTask->remotePath = task->remotePath;
                 singleTask->localPath = task->localPath;
                 task->task.push_back(singleTask);
+				
                 //std::cout << "Adding new task:" << singleTask->localPath << std::endl;
+				/*
+				
+				web::json::value request;
+				//auto pathArray = web::json::value::object().array();
+				request[U("path")] = filePaths;
+				CommonApi::Instance().PostData(U("/v1/files/remove"), request)
+					*/
+
             } catch (std::exception &e) {
                 delete singleTask;
                 throw e;
@@ -172,6 +189,62 @@ void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility
     //return;
 }
 
+void SyncModelEx::ListCurrentFile(const utility::string_t &current, wcs::DownloadTask *task, const utility::string_t &basePath) {
+	web::json::value request;
+	//auto pathArray = web::json::value::object().array();
+	request[U("path")] = web::json::value::string(current);
+	auto data = CommonApi::Instance().PostData(U("/v1/files/list"), request).get();
+	if (data.success) {
+		for (const auto &item : data.result.as_array()) {
+			const auto &path = item.at(_XPLATSTR("path")).as_string();
+			if (item.at(_XPLATSTR("type")) == 1) {
+				this->ListCurrentFile(path, task, basePath);
+			}
+			else {
+				//Adding path...
+				auto localPath = task->localPath + path.substr(basePath.size());
+				auto singleTask = new wcs::SingleUrlTask();
+				try {
+					// add new task...
+					singleTask->retryCount = 5;
+					singleTask->processedSize = 0;
+					singleTask->fileSize = item.at(_XPLATSTR("size")).as_number().to_uint64();
+					//task->fileSize = singleTask->fileSize;
+					task->fileCount += 1;
+					singleTask->direction = task->direction;
+					singleTask->filename = item.at(_XPLATSTR("name")).as_string();
+					singleTask->remotePath = path;
+					
+					//wxFile::
+					auto sep = wxFileName::GetPathSeparator();
+					if (sep != '/') {
+						for (auto &i : localPath) {
+							if (i == '/') {
+								i = sep;
+							}
+						}
+					}
+					singleTask->localPath = localPath;
+					task->task.push_back(singleTask);
+					//std::cout << "Adding new task:" << singleTask->localPath << std::endl;
+					/*
+
+					web::json::value request;
+					//auto pathArray = web::json::value::object().array();
+					request[U("path")] = filePaths;
+					CommonApi::Instance().PostData(U("/v1/files/remove"), request)
+						*/
+
+				}
+				catch (std::exception &e) {
+					delete singleTask;
+					throw e;
+				}
+			}
+		}
+	}
+}
+
 void
 SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::string_t &url, wcs::SingleUrlTask *urlTask) {
     //Okay,Starting Download...
@@ -188,6 +261,26 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
                 urlTask->processedSize = so_far;
 
             });
+	//wxFile::
+	auto lastflag = urlTask->localPath.find_last_of(wxFileName::GetPathSeparator());
+	if (lastflag > 0) {
+		auto fileDir = urlTask->localPath.substr(0, lastflag);
+		std::cout << fileDir << std::endl;
+		wxFileName single = wxFileName(fileDir);
+		if (single.Exists(wxFILE_EXISTS_REGULAR)) {
+			urlTask->status = wcs::file_download_status::failed;
+			urlTask->error = wcs::sync_download_error::file_system_error;
+			return;
+		}
+		if (!single.Exists(wxFILE_EXISTS_DIR)) {
+			auto succ = wxFileName::Mkdir(fileDir, wxPATH_MKDIR_FULL);
+			if(!succ){
+				urlTask->status = wcs::file_download_status::failed;
+				urlTask->error = wcs::sync_download_error::file_system_error;
+				return;
+			}
+		}
+	}
     auto cx = file_buffer<uint8_t>::open(urlTask->localPath, std::ios::out | std::ios::binary).then(
                     [=, &client, &msg](streambuf<uint8_t> outFile) {
                         *fileBuffer = outFile;
