@@ -30,7 +30,36 @@ static wxString ConvertSizeToDisplay(int64_t size){
     const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     int i = 0;
     while (size > 1024 && i < 9) {
-        size /= 1024;
+        auto qSize = size / 1024;
+
+        if(qSize < 100){
+            if(qSize < 10){
+                // 2w
+                auto remain = (size - qSize * 1024) * 100 / 1024;
+                if(remain > 0){
+                    if(remain > 9){
+                        i++;
+                        if(remain % 10 == 0){
+                            remain = remain / 10;
+                        }
+                        return wxString::Format(_T("%lld.%lld%s"), qSize,remain, units[i]);
+                    }
+                    else{
+                        i++;
+                        return wxString::Format(_T("%lld.0%lld%s"), qSize,remain, units[i]);
+                    }
+                }
+            } else{
+                // 1w
+                auto remain = (size - qSize * 1024) * 10 / 1024;
+                if(remain > 0){
+                    i++;
+                    return wxString::Format(_T("%lld.%lld%s"), qSize,remain, units[i]);
+                }
+            }
+        }
+
+        size = qSize;
         i++;
     }
     return wxString::Format(_T("%lld%s"), size, units[i]);
