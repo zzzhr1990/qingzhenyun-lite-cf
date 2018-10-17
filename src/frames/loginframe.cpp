@@ -114,7 +114,7 @@ void LoginFrame::CreateControls()
 
     wxNotebook* itemNotebook3 = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
 
-    wxPanel* itemPanel1 = new wxPanel( itemNotebook3, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* itemPanel1 = new wxPanel( itemNotebook3, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
     itemPanel1->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
     itemPanel1->SetSizer(itemBoxSizer3);

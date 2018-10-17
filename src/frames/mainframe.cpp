@@ -33,6 +33,7 @@
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
 #include "../model/sync_model.h"
+#include "userlogindialog.h"
 ////@end XPM images
 
 
@@ -198,6 +199,7 @@ void MainFrame::showLoginFrame(const wxString& text){
     }
     // std::cout << result << std::endl;
     // loginFrame->RequestUserAttention();
+
 }
 
 void MainFrame::OnWindowCreate(wxIdleEvent& event){
@@ -209,7 +211,9 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
         // check token validate
         UserModel::Instance().CheckToken(this);
     }
-
+	//UserLoginDialog * userLogin = new UserLoginDialog(this);
+	//userLogin->ShowModal();
+	//Check Version
 	
 
     //UserModel::Instance().IsUserLogin();
@@ -329,7 +333,8 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
         default:
             event.Skip();
     }
-    //
+    // 智障Windows，一半的代码都是给傻逼微软擦屁股
+	
 }
 
 void MainFrame::DoOpenFiles(const wxArrayString &fileNames) {

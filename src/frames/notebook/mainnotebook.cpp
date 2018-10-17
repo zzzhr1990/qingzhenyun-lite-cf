@@ -113,21 +113,21 @@ void MainNotebook::CreateControls()
 ////@begin MainNotebook content construction
     MainNotebook* itemNotebook1 = this;
 
-    myRemoteFilePanel = new MyRemoteFilePanel( itemNotebook1, ID_MY_REMOTE_FILE_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    myRemoteFilePanel = new MyRemoteFilePanel( itemNotebook1, ID_MY_REMOTE_FILE_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
     myRemoteFilePanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     myRemoteFilePanel->SetName(wxT("MyRemoteFiles"));
     this->AddPage(myRemoteFilePanel, _("My Remote Files"));
 
-    offlineDownloadTaskPanel = new OfflineDownloadTaskPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    offlineDownloadTaskPanel = new OfflineDownloadTaskPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	offlineDownloadTaskPanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     this->AddPage(offlineDownloadTaskPanel, _("Offline Download Task"));
 
-    syncPanel = new SyncPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    syncPanel = new SyncPanel( itemNotebook1, wxID_ANY, wxDefaultPosition, wxDefaultSize,wxTAB_TRAVERSAL );
     syncPanel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     this->AddPage(syncPanel, _("Sync Task"));
 
     /*
-    wxPanel* itemPanel21 = new wxPanel( itemNotebook1, ID_SYNC_TASK_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* itemPanel21 = new wxPanel( itemNotebook1, ID_SYNC_TASK_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
     itemPanel21->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     wxBoxSizer* itemBoxSizer22 = new wxBoxSizer(wxVERTICAL);
     itemPanel21->SetSizer(itemBoxSizer22);

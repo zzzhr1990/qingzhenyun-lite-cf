@@ -787,7 +787,6 @@ void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
     }
 	if (refresh) {
 		mainListCtrl->Show();
-		mainListCtrl->SetFocus();
 	}
    
 	ResetCurrentPathDisplay();
