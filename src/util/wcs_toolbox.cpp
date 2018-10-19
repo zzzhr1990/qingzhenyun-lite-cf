@@ -284,8 +284,11 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
             }
         }
 
-        // std::cout << "MKFILE" << std::endl;
         //Do MKFILE
+        if(blocks.empty()){
+            blocks = PostBlock(client,uploadToken, std::vector<unsigned char>(0), index,batch);
+        }
+
         utility::string_t fileHash = MakeFile(client,uploadToken,batch,blocks,readBytes);
         if(fileHash.empty()){
             task->status = wcs::file_download_status::failed;
@@ -295,6 +298,7 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
             if(task->hash != fileHash){
                 task->status = wcs::file_download_status::failed;
                 task->error = sync_download_error::none;
+                //std::cout << "File hash not match " << std::endl;
             }else {
                 task->error = sync_download_error::none;
                 task->fileSize = readBytes;

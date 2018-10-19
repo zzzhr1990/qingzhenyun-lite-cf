@@ -341,6 +341,7 @@ void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & upda
         int status = i.at(U("status")).as_integer();
 
         if (status < 0) {
+            std::cout << "status :" << status << std::endl;
             mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error:%d"),i.at(U("error")).as_integer()));
         }
         else {

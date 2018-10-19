@@ -265,7 +265,6 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
 	auto lastflag = urlTask->localPath.find_last_of(wxFileName::GetPathSeparator());
 	if (lastflag > 0) {
 		auto fileDir = urlTask->localPath.substr(0, lastflag);
-		std::cout << fileDir << std::endl;
 		wxFileName single = wxFileName(fileDir);
 		if (single.Exists(wxFILE_EXISTS_REGULAR)) {
 			urlTask->status = wcs::file_download_status::failed;
@@ -273,7 +272,7 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
 			return;
 		}
 		if (!single.Exists(wxFILE_EXISTS_DIR)) {
-			auto succ = wxFileName::Mkdir(fileDir, wxPATH_MKDIR_FULL);
+			auto succ = wxFileName::Mkdir(fileDir,wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 			if(!succ){
 				urlTask->status = wcs::file_download_status::failed;
 				urlTask->error = wcs::sync_download_error::file_system_error;
@@ -288,6 +287,10 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
                         return client.request(msg);
                     })
             .then([=](http_response response) -> pplx::task<http_response> {
+                if(response.status_code() != 200){
+                    std::cout << "Request url:" << url << "  return code" << response.status_code() << std::endl;
+                    std::cout << "file: " << urlTask->remotePath << " | " << urlTask->hash << std::endl;
+                }
                 return response.content_ready();
             }).then([=](http_response response) -> pplx::task<void> {
                 return fileBuffer->close();
@@ -298,6 +301,7 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
         urlTask->status = wcs::file_download_status::failed;
         urlTask->error = wcs::sync_download_error::unknown;
         std::cout << ex.what() << std::endl;
+        std::cout << "Download File failed" << std::endl;
         return;
     }
     // check hash
@@ -306,11 +310,13 @@ SyncModelEx::DownloadSingleFile(const web::json::value &value, const utility::st
 	if (file.GetSize() < urlTask->fileSize) {
 		urlTask->status = wcs::file_download_status::failed;
 		urlTask->error = wcs::sync_download_error::size_not_match;
+		std::cout << urlTask->localPath << " download error!" << std::endl;
+		std::cout << "Size Not match for file:" << urlTask->fileSize << " | " << file.GetSize() << std::endl;
 		return;
 	}
     wcs::WcsToolbox::HashFile(urlTask->localPath,data,urlTask);
     if (urlTask->hash != data) {
-        //std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;
+        // std::cout << "Download Failed, hash not match Remote:" << urlTask->hash << " Local:" << data << std::endl;
         urlTask->status = wcs::file_download_status::failed;
         urlTask->error = wcs::sync_download_error::hash_not_match;
     } else {
@@ -413,8 +419,6 @@ void SyncModelEx::CheckTaskStatus() {
                 }
             }
             //singleTask->processedSize
-            //std::cout << singleTask->filename << std::endl;
-            //std::cout << singleTask->processedSize << std::endl;
             // check fin..
 
         }
@@ -565,7 +569,7 @@ void SyncModelEx::StartInnerUpload(wcs::SingleUrlTask *urlTask) {
         return;
     }
     urlTask->hash = file_hash;
-    request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
+    //TODO: Re request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
     CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then(
             [&, urlTask, filePath](ResponseEntity v) {
                 //SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
