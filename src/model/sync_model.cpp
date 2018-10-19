@@ -569,7 +569,7 @@ void SyncModelEx::StartInnerUpload(wcs::SingleUrlTask *urlTask) {
         return;
     }
     urlTask->hash = file_hash;
-    //TODO: Re request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
+    request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
     CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then(
             [&, urlTask, filePath](ResponseEntity v) {
                 //SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
