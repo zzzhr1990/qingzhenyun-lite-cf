@@ -146,12 +146,12 @@ bool QingzhenApp::OnInit()
 int QingzhenApp::OnExit()
 {    
 ////@begin QingzhenApp cleanup
-	if (checker != nullptr) {
-		delete checker;
-	}
-	if (locale != nullptr) {
-		delete locale;
-	}
+
+	delete checker;
+
+
+	delete locale;
+
 	return wxApp::OnExit();
 ////@end QingzhenApp cleanup
 }

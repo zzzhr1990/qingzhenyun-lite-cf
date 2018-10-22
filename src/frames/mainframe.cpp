@@ -33,7 +33,11 @@
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
 #include "../model/sync_model.h"
+#include "../model/update_model.h"
 #include "userlogindialog.h"
+#include "updatedialog.h"
+#include "userdialog.h"
+#include <wx/utils.h>
 ////@end XPM images
 
 
@@ -167,7 +171,15 @@ void MainFrame::CreateControls()
 }
 void MainFrame::OnToolClick(const wxCommandEvent& event) {
 	if (event.GetId() == ID_USER_TOOL) {
-		showLoginFrame(_("Login"));
+		//showLoginFrame(_("Login"));
+		auto & userModel = UserModel::Instance();
+		if(userModel.IsUserLogin() && userModel.GetUserInfo().has_field(_XPLATSTR("uuid"))){
+		    // Show
+		    auto * userDialog = new UserDialog(this,userModel.GetUserInfo());
+            userDialog->ShowModal();
+		}else{
+            showLoginFrame(_("Login"));
+		}
 	}
 }
 void MainFrame::showLoginFrame(const wxString& text){
@@ -211,6 +223,9 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
         // check token validate
         UserModel::Instance().CheckToken(this);
     }
+
+    UpdateModel::Instance().CheckUpdate(this);
+
 	//UserLoginDialog * userLogin = new UserLoginDialog(this);
 	//userLogin->ShowModal();
 	//Check Version
@@ -249,7 +264,9 @@ void MainFrame::OnClose(wxCloseEvent& event){
 		}
 	}
     event.Skip();
+    this->Terminate();
     UserModel::Instance().Terminate();
+    UpdateModel::Instance().Terminate();
 }
 
 /*
@@ -298,6 +315,9 @@ void MainFrame::TryLogin(const wxString &input, const wxString &password) {
 }
 
 void MainFrame::OnThreadEvent(wxThreadEvent &event) {
+    if(this->terminated){
+        return;
+    }
     switch (event.GetInt()){
         case USER_LOGIN_RESPONSE:{
             SetStatusText(_("User login..."), 0);
@@ -329,7 +349,27 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
 			if (r.result.has_field(U("spaceUsed"))) {
 				mainNotebook->UpdateSpaceCapacity(r.result.at(U("spaceUsed")).as_number().to_int64(), r.result.at(U("spaceCapacity")).as_number().to_int64());
 			}
+            break;
 		}
+        case PROGRAM_UPDATE_INFO:{
+            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            if(r.success){
+                auto updateInfoList = r.result.as_array();
+                if(updateInfoList.size() > 0){
+                    auto updateInfo = updateInfoList.at(0);
+                    auto *update = new UpdateDialog(this,updateInfo);
+                    if(wxID_OK == update->ShowModal() ){
+                        //std::cout << "Open New" << std::endl;
+                        auto linkUrl = updateInfo.at((_XPLATSTR("linkUrl"))).as_string();
+                        if(updateInfo.at((_XPLATSTR("action"))).as_integer() == 0){
+                            wxLaunchDefaultBrowser(linkUrl);
+                        }
+                    }
+                }
+
+            }
+            break;
+        }
         default:
             event.Skip();
     }
@@ -339,4 +379,8 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
 
 void MainFrame::DoOpenFiles(const wxArrayString &fileNames) {
     mainNotebook->DoOpenFiles(fileNames);
+}
+
+void MainFrame::Terminate() {
+    this->terminated = true;
 }

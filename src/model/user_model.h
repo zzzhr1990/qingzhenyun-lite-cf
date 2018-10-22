@@ -23,6 +23,7 @@ public:
     void GetUserInfo(wxWindow* handler);
     void StartUserCheckLoop(wxWindow* handler);
     void SetUserInfo(web::json::value v,const bool& login = false);
+	web::json::value GetUserInfo();
     bool IsUserLogin();
     void Logout();
     void CheckToken(wxWindow* handler);

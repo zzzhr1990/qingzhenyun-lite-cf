@@ -143,3 +143,7 @@ void UserModel::Logout() {
     this->userInfo = web::json::value::object(false);
 }
 
+web::json::value UserModel::GetUserInfo() {
+    return this->userInfo;
+}
+

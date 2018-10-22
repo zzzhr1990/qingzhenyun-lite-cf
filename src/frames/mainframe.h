@@ -101,6 +101,8 @@ public:
 
     void DoOpenFiles(const wxArrayString & fileNames );
 
+    void Terminate();
+
 
 
 
@@ -112,6 +114,7 @@ private:
     void OnWindowCreate(wxIdleEvent& event);
     void TryLogin(const wxString & input, const wxString & password);
     void OnThreadEvent(wxThreadEvent& event);
+    bool terminated = false;
 ////@end MainFrame member variables
 };
 

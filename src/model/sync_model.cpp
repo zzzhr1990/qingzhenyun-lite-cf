@@ -142,7 +142,7 @@ void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility
         if (task->type == 1) {
             std::cout << "Explorer all files" << std::endl;
 			this->ListCurrentFile(task->remotePath, task, task->remotePath);
-			if (task->task.size() == 0) {
+			if (task->task.empty()) {
 				task->status = wcs::file_download_status::finished;
 			}
         } else {
