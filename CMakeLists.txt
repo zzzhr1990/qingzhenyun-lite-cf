@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9.0)
-#SET(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake")
+SET(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 SET(LINKING_TYPE "dynamic")
 SET(PROJECT_NAME "qingzhenyun-lite")
 project(${PROJECT_NAME})
