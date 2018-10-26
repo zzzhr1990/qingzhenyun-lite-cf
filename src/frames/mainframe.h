@@ -21,7 +21,6 @@
 #include "wx/frame.h"
 #include "wx/toolbar.h"
 #include "wx/statusbr.h"
-#include "loginframe.h"
 ////@end includes
 
 /*!
@@ -108,7 +107,6 @@ public:
 
 ////@begin MainFrame member variables
 private:
-    LoginFrame * loginFrame = nullptr;
     MainNotebook* mainNotebook = nullptr;
     void showLoginFrame(const wxString& text);
     void OnWindowCreate(wxIdleEvent& event);

@@ -19,7 +19,7 @@
  * Includes
  */
 
- ////@begin includes
+////@begin includes
 #include "../common/common_wx.h"
 #include "wx/notebook.h"
 ////@end includes
@@ -28,20 +28,18 @@
  * Forward declarations
  */
 
- ////@begin forward declarations
- ////@end forward declarations
+////@begin forward declarations
+////@end forward declarations
 
- /*!
-  * Control identifiers
-  */
+/*!
+ * Control identifiers
+ */
 
-  ////@begin control identifiers
-#define ID_USERLOGINDIALOG 10000
-#define ID_NOTEBOOK 10001
+////@begin control identifiers
+
 #define SYMBOL_USERLOGINDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_USERLOGINDIALOG_TITLE _("UserLoginDialog")
-#define SYMBOL_USERLOGINDIALOG_IDNAME ID_USERLOGINDIALOG
-#define SYMBOL_USERLOGINDIALOG_SIZE wxSize(400, 300)
+#define SYMBOL_USERLOGINDIALOG_SIZE wxSize(580, 360)
 #define SYMBOL_USERLOGINDIALOG_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -50,18 +48,18 @@
  * UserLoginDialog class declaration
  */
 
-class UserLoginDialog : public wxDialog
+class UserLoginDialog: public wxDialog
 {
-	DECLARE_DYNAMIC_CLASS(UserLoginDialog)
-	DECLARE_EVENT_TABLE()
+DECLARE_DYNAMIC_CLASS( UserLoginDialog )
+DECLARE_EVENT_TABLE()
 
 public:
 	/// Constructors
 	UserLoginDialog();
-	UserLoginDialog(wxWindow* parent, wxWindowID id = SYMBOL_USERLOGINDIALOG_IDNAME, const wxString& caption = SYMBOL_USERLOGINDIALOG_TITLE, const wxPoint& pos = SYMBOL_USERLOGINDIALOG_POSITION, const wxSize& size = SYMBOL_USERLOGINDIALOG_SIZE, long style = SYMBOL_USERLOGINDIALOG_STYLE);
+	UserLoginDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = SYMBOL_USERLOGINDIALOG_TITLE, const wxPoint& pos = SYMBOL_USERLOGINDIALOG_POSITION, const wxSize& size = SYMBOL_USERLOGINDIALOG_SIZE, long style = SYMBOL_USERLOGINDIALOG_STYLE );
 
 	/// Creation
-	bool Create(wxWindow* parent, wxWindowID id = SYMBOL_USERLOGINDIALOG_IDNAME, const wxString& caption = SYMBOL_USERLOGINDIALOG_TITLE, const wxPoint& pos = SYMBOL_USERLOGINDIALOG_POSITION, const wxSize& size = SYMBOL_USERLOGINDIALOG_SIZE, long style = SYMBOL_USERLOGINDIALOG_STYLE);
+	bool Create( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = SYMBOL_USERLOGINDIALOG_TITLE, const wxPoint& pos = SYMBOL_USERLOGINDIALOG_POSITION, const wxSize& size = SYMBOL_USERLOGINDIALOG_SIZE, long style = SYMBOL_USERLOGINDIALOG_STYLE );
 
 	/// Destructor
 	~UserLoginDialog();
@@ -72,24 +70,29 @@ public:
 	/// Creates the controls and sizers
 	void CreateControls();
 
-	////@begin UserLoginDialog event handler declarations
+////@begin UserLoginDialog event handler declarations
 
-	////@end UserLoginDialog event handler declarations
+	/// wxEVT_LEFT_UP event handler for wxID_STATIC
+	void OnLeftUp( wxMouseEvent& event );
 
-	////@begin UserLoginDialog member function declarations
+////@end UserLoginDialog event handler declarations
 
-		/// Retrieves bitmap resources
-	wxBitmap GetBitmapResource(const wxString& name);
+////@begin UserLoginDialog member function declarations
+
+	/// Retrieves bitmap resources
+	wxBitmap GetBitmapResource( const wxString& name );
 
 	/// Retrieves icon resources
-	wxIcon GetIconResource(const wxString& name);
-	////@end UserLoginDialog member function declarations
+	wxIcon GetIconResource( const wxString& name );
+////@end UserLoginDialog member function declarations
 
-		/// Should we show tooltips?
+	/// Should we show tooltips?
 	static bool ShowToolTips();
 
-	////@begin UserLoginDialog member variables
-	////@end UserLoginDialog member variables
+////@begin UserLoginDialog member variables
+////@end UserLoginDialog member variables
+private:
+    void LogoutBtnClicked(wxCommandEvent &event);
 };
 
 #endif

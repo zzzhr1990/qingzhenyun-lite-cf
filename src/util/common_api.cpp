@@ -5,12 +5,12 @@
 #include "common_api.h"
 #include "../model/user_model.h"
 
-CommonApi &CommonApi::Instance() {
-    static CommonApi c;
+common_api &common_api::Instance() {
+    static common_api c;
     return c;
 }
 
-pplx::task<ResponseEntity> CommonApi::PostData(const utility::string_t &uri, const web::json::value &data) {
+pplx::task<response_entity> common_api::PostData(const utility::string_t &uri, const web::json::value &data) {
     using namespace web::http;
     http_request request(methods::POST);
     web::uri_builder login_uri(uri);
@@ -23,7 +23,8 @@ pplx::task<ResponseEntity> CommonApi::PostData(const utility::string_t &uri, con
         headers.add(U("Token"), token);
     }
     request.set_body(data);
-    const pplx::task<ResponseEntity> resp = raw_client.request(request).then(
+    //raw_client.c
+    const pplx::task<response_entity> resp = raw_client.request(request).then(
             [](pplx::task<http_response> response_task) {
                 try {
                     auto json_response = response_task.get();
@@ -34,7 +35,7 @@ pplx::task<ResponseEntity> CommonApi::PostData(const utility::string_t &uri, con
                         UserModel::Instance().UpdateToken(new_token);
                     }
                     auto success = v[U("success")].as_bool();
-                    ResponseEntity response;
+                    response_entity response;
                     response.success = success;
                     if (v.has_field(U("message"))) {
                         response.message = v.at(U("message")).as_string();
@@ -53,7 +54,7 @@ pplx::task<ResponseEntity> CommonApi::PostData(const utility::string_t &uri, con
                     });
                 }
                 catch (const std::exception &e) {
-                    ResponseEntity response;
+                    response_entity response;
                     response.success = false;
                     response.status = -1;
                     response.result = web::json::value();

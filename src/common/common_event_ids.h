@@ -32,7 +32,7 @@ enum {
     VIDEO_PLAYER_WAKEUP = 5006
 };
 
-static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const ResponseEntity & v, const bool & checkMessage=false) {
+static void SendCommonThreadEvent(wxWindow* handler,const int& type_id, const response_entity & v, const bool & checkMessage=false) {
     if(checkMessage){
         if(v.status == 401 || v.status == 403){
             if(handler == nullptr){

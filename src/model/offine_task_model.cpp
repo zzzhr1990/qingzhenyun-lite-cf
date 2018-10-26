@@ -21,7 +21,7 @@ void OfflineDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const
 	}
 	 */
 
-	CommonApi::Instance().PostData(U("/v1/offline/page"), request).then([handler](ResponseEntity v) {
+	common_api::Instance().PostData(U("/v1/offline/page"), request).then([handler](response_entity v) {
 		SendCommonThreadEvent(handler, USER_REMOTE_TASK_PAGE_DATA, v, true);
 	});
 
@@ -30,7 +30,7 @@ void OfflineDownloadTaskModel::GetPage(wxWindow* handler, const int &page, const
 void OfflineDownloadTaskModel::StartUrl(wxWindow* handler, const utility::string_t& url) {
 	web::json::value request;
 	request[U("url")] = web::json::value::string(url);
-	CommonApi::Instance().PostData(U("/v1/offline/parseUrl"), request).then([handler](ResponseEntity v) {
+	common_api::Instance().PostData(U("/v1/offline/parseUrl"), request).then([handler](response_entity v) {
 		SendCommonThreadEvent(handler, USER_REMOTE_TASK_URL_PARSED, v, true);
 	});
 
@@ -41,7 +41,7 @@ void OfflineDownloadTaskModel::StartTask(wxWindow* handler,const utility::string
 	request[U("taskHash")] = web::json::value::string(taskHash);
 	request[U("savePath")] = web::json::value::string(savePath);
 	request[U("copyFile")] = web::json::value::string(copyFile);
-	CommonApi::Instance().PostData(U("/v1/offline/start"), request).then([handler](ResponseEntity v) {
+	common_api::Instance().PostData(U("/v1/offline/start"), request).then([handler](response_entity v) {
 		SendCommonThreadEvent(handler, USER_REMOTE_TASK_URL_START, v, true);
 	});
 
@@ -52,7 +52,7 @@ void OfflineDownloadTaskModel::DeleteTasks(wxWindow *handler, const web::json::v
 	web::json::value request;
 	//auto pathArray = web::json::value::object().array();
 	request[U("taskId")] = filePaths;
-	CommonApi::Instance().PostData(U("/v1/offline/remove"), request).then([handler](ResponseEntity v) {
+	common_api::Instance().PostData(U("/v1/offline/remove"), request).then([handler](response_entity v) {
 		//SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
 		SendCommonThreadEvent(handler, USER_REMOTE_TASK_DELETE, v, true);
 	});

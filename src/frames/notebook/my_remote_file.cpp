@@ -354,7 +354,7 @@ void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
     // D
     switch (event.GetInt()) {
         case USER_REMOTE_FILE_PAGE_DATA: {
-            auto payload = event.GetPayload<ResponseEntity>();
+            auto payload = event.GetPayload<response_entity>();
             //if(!payload.success)
             RefreshListData(payload);
             break;
@@ -668,7 +668,7 @@ void MyRemoteFilePanel::OnPageInputKillFocus(wxFocusEvent &event) {
 
 }
 
-void MyRemoteFilePanel::RefreshListData(const ResponseEntity &payload) {
+void MyRemoteFilePanel::RefreshListData(const response_entity &payload) {
 	waitPage = false;
     if (payload.code == U("FILE_NOT_FOUND")) {
         wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),

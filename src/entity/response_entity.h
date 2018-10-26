@@ -5,10 +5,10 @@
 #define FUCK_ResponseEntity_H
 #include <cpprest/http_client.h>
 
-struct ResponseEntity
+struct response_entity
 {
     /*
-    ResponseEntity(const bool &success, const web::json::value & result, const int &code) {
+    response_entity(const bool &success, const web::json::value & result, const int &code) {
     this->success = success;
     this->result = result;
     this->code = code;

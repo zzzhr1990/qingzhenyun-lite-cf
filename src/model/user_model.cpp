@@ -45,8 +45,8 @@ void UserModel::StartUserCheckLoop(wxWindow *handler) {
 }
 
 void UserModel::CheckUserAvailable(wxWindow* handler) {
-    const auto &task = CommonApi::Instance().PostData(U("/v1/user/info"), web::json::value::object(false));
-    task.then([&, handler](ResponseEntity v){
+    const auto &task = common_api::Instance().PostData(U("/v1/user/info"), web::json::value::object(false));
+    task.then([&, handler](response_entity v){
         lastRefreshTime = 0;
         if(v.success){
             if(!this->login){
@@ -64,8 +64,8 @@ void UserModel::CheckUserAvailable(wxWindow* handler) {
 }
 
 void UserModel::CheckToken(wxWindow* handler) {
-    const auto &task = CommonApi::Instance().PostData(U("/v1/user/info"), web::json::value::object(false));
-    task.then([&, handler](ResponseEntity v){
+    const auto &task = common_api::Instance().PostData(U("/v1/user/info"), web::json::value::object(false));
+    task.then([&, handler](response_entity v){
         if(v.success){
             SendCommonThreadEvent(handler,USER_LOGIN_RESPONSE,v);
         }else{
@@ -97,8 +97,8 @@ void UserModel::TryLogin(wxWindow *handler, const utility::string_t &value, cons
     web::json::value json_v;
     json_v[U("value")] = web::json::value::string(value);
     json_v[U("password")] = web::json::value::string(password);
-    const auto &task = CommonApi::Instance().PostData(U("/v1/user/login"), json_v);
-    task.then([&,handler](ResponseEntity v){
+    const auto &task = common_api::Instance().PostData(U("/v1/user/login"), json_v);
+    task.then([&,handler](response_entity v){
         if(v.success){
             //Send success event.
             this->login = true;

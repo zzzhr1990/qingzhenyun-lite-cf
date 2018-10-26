@@ -94,7 +94,14 @@ public:
     /// Should we show tooltips?
     static bool ShowToolTips();
 
+    bool GetContinueLogin() {
+        return continueLogin;
+    }
+
 ////@begin UserDialog member variables
+private:
+    void LogoutBtnClicked(wxCommandEvent &event);
+    bool continueLogin = false;
 ////@end UserDialog member variables
 };
 

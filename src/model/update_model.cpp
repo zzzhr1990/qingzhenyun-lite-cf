@@ -16,7 +16,7 @@ void UpdateModel::CheckUpdate(wxWindow *handler) {
     value[_XPLATSTR("type")] = web::json::value::number(this->GetType());
     value[_XPLATSTR("version")] = web::json::value::number(this->GetCurrentVersion());
     value[_XPLATSTR("arch")] = web::json::value::number(platform.GetArchitecture() == wxArchitecture::wxARCH_64 ? 64 : 32);
-    CommonApi::Instance().PostData(U("/v1/user/checkUpdate"), value).then([handler,this](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/user/checkUpdate"), value).then([handler,this](response_entity v) {
         if (this->terminated){
             return;
         }

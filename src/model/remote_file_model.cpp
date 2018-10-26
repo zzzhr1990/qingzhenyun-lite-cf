@@ -20,7 +20,7 @@ void RemoteFileModel::GetPage(wxWindow *handler, const utility::string_t &path, 
         request[U("type")] = web::json::value::number(type);
     }
 
-    CommonApi::Instance().PostData(U("/v1/files/page"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/page"), request).then([handler](response_entity v) {
         SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
     });
 
@@ -38,7 +38,7 @@ RemoteFileModel::GetPageById(wxWindow *handler, const utility::string_t &uuid, c
         request[U("type")] = web::json::value::number(type);
     }
 
-    CommonApi::Instance().PostData(U("/v1/files/page"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/page"), request).then([handler](response_entity v) {
         SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
     });
 
@@ -50,7 +50,7 @@ void RemoteFileModel::CreateNewDirectory(wxWindow *handler, const utility::strin
     request[U("parent")] = web::json::value::string(parent.empty() ? this->current_file_id : parent);
     request[U("name")] = web::json::value::string(directoryName);
 
-    CommonApi::Instance().PostData(U("/v1/files/createDirectory"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/createDirectory"), request).then([handler](response_entity v) {
         //SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
         SendCommonThreadEvent(handler, USER_REMOTE_DIRECTORY_CREATE, v, true);
     });
@@ -62,7 +62,7 @@ void RemoteFileModel::GetPreviewInfo(wxWindow *handler, const utility::string_t 
     request[U("path")] = web::json::value::string(path);
     //request[U("name")] = web::json::value::string(directoryName);
 
-    CommonApi::Instance().PostData(U("/v1/preview/media"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/preview/media"), request).then([handler](response_entity v) {
         SendCommonThreadEvent(handler, USER_PREVIEW_INFO, v, true);
     });
 
@@ -90,7 +90,7 @@ void RemoteFileModel::GetFileInfo(wxWindow *handler, const utility::string_t &pa
     request[U("path")] = web::json::value::string(path);
     //request[U("name")] = web::json::value::string(directoryName);
 
-    CommonApi::Instance().PostData(U("/v1/files/get"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/get"), request).then([handler](response_entity v) {
         SendCommonThreadEvent(handler, USER_REMOTE_FILE_INFO, v, true);
     });
 
@@ -100,7 +100,7 @@ void RemoteFileModel::DeleteFile(wxWindow *handler, const utility::string_t &fil
 
     web::json::value request;
     request[U("path")] = web::json::value::string(filePath);
-    CommonApi::Instance().PostData(U("/v1/files/remove"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/remove"), request).then([handler](response_entity v) {
         //SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
         SendCommonThreadEvent(handler, USER_REMOTE_FILE_DELETE, v, true);
     });
@@ -111,7 +111,7 @@ void RemoteFileModel::DeleteFiles(wxWindow *handler, const web::json::value &fil
     web::json::value request;
     //auto pathArray = web::json::value::object().array();
     request[U("path")] = filePaths;
-    CommonApi::Instance().PostData(U("/v1/files/remove"), request).then([handler](ResponseEntity v) {
+    common_api::Instance().PostData(U("/v1/files/remove"), request).then([handler](response_entity v) {
         //SendCommonThreadEvent(handler, USER_REMOTE_FILE_PAGE_DATA, v, true);
         SendCommonThreadEvent(handler, USER_REMOTE_FILE_DELETE, v, true);
     });

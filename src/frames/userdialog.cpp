@@ -17,6 +17,8 @@
 
 #include "userdialog.h"
 #include "../util/common_util.h"
+#include "../model/user_model.h"
+#include "../api_model/api_user_model.h"
 ////@begin XPM images
 ////@end XPM images
 
@@ -183,8 +185,10 @@ void UserDialog::CreateControls(const web::json::value & userData)
     wxStaticLine* itemStaticLineLogoff = new wxStaticLine( itemPanel3, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
     itemBoxSizer6->Add(itemStaticLineLogoff, 0, wxGROW|wxALL, 5);
 
-    wxButton* itemButton2 = new wxButton( itemPanel3, wxID_ANY, _("Logout / Log in use another account"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer6->Add(itemButton2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* logoutButton = new wxButton( itemPanel3, wxID_ANY, _("Logout / Log in use another account"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer6->Add(logoutButton, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    logoutButton->Bind(wxEVT_BUTTON, &UserDialog::LogoutBtnClicked, this);
+
     //itemButton2->SetFocus();
     itemFlexGridSizer16->Add(itemBoxSizer7, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxGauge* itemGauge8 = new wxGauge( itemPanel12, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL );
@@ -294,4 +298,19 @@ wxIcon UserDialog::GetIconResource( const wxString& name )
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end UserDialog icon retrieval
+}
+
+void UserDialog::LogoutBtnClicked(wxCommandEvent &event) {
+    //this->CallAfter()
+    //UserModel::Instance().Logout();
+    qingzhen::api::api_user_model user_model = qingzhen::api::api_user_model::instance();
+    std::function<void(response_entity)> task2 = [this](response_entity entity)->void {
+        this->CallAfter([this,entity](){
+            if(entity.success || entity.code == _XPLATSTR("CREDENTIALS_REQUIRED")){
+                this->continueLogin = true;
+                this->Close();
+            }
+        });
+    };
+    user_model.logout(task2);
 }

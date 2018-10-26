@@ -69,7 +69,7 @@ private:
     void OnItemRightClick(const wxListEvent & event);
     void OnTaskActivated(const wxListEvent &event);
     void OnCtrlListMenuClicked(const wxCommandEvent & event);
-    void RefreshListData(const ResponseEntity& payload, const bool& updateAll = false);
+    void RefreshListData(const response_entity& payload, const bool& updateAll = false);
     void RefreshBtnClicked(const wxCommandEvent & event);
     web::json::array currentList = web::json::value::array().as_array();
 };

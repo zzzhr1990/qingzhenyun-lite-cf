@@ -183,7 +183,7 @@ void SyncPanel::OnThreadEvent(wxThreadEvent &event) {
     switch (event.GetInt()) {
         case USER_SYNC_LIST_REFRESH:
         {
-            auto payload = event.GetPayload<ResponseEntity>();
+            auto payload = event.GetPayload<response_entity>();
             RefreshListData(payload);
             break;
         }
@@ -287,7 +287,7 @@ SyncPanel::SyncPanel() {
     Init();
 }
 
-void SyncPanel::RefreshListData(const ResponseEntity &payload, const bool & updateAll) {
+void SyncPanel::RefreshListData(const response_entity &payload, const bool & updateAll) {
     //std::cout << "Data Refresh.." << std::endl;
     //update all
     web::json::array list = payload.result.as_array();

@@ -8,15 +8,15 @@
 #include <cpprest/http_client.h>
 #include "../entity/response_entity.h"
 
-class CommonApi {
+class common_api {
 public:
-    static CommonApi& Instance();
-    pplx::task<ResponseEntity> PostData(const utility::string_t& uri, const web::json::value & data);
+    static common_api& Instance();
+    pplx::task<response_entity> PostData(const utility::string_t& uri, const web::json::value & data);
 private:
 
-    // CommonApi();
+    // common_api();
     // web::http::client::http_client_config _cfg;
-    CommonApi():
+    common_api():
     /*
      *
     raw_client(_XPLATSTR("https://api.6pan.cn"),_cfg)

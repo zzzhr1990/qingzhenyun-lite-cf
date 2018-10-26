@@ -168,7 +168,7 @@ void SyncModelEx::StartDownloadFile(const web::json::value &value, const utility
 				web::json::value request;
 				//auto pathArray = web::json::value::object().array();
 				request[U("path")] = filePaths;
-				CommonApi::Instance().PostData(U("/v1/files/remove"), request)
+				common_api::Instance().PostData(U("/v1/files/remove"), request)
 					*/
 
             } catch (std::exception &e) {
@@ -193,7 +193,7 @@ void SyncModelEx::ListCurrentFile(const utility::string_t &current, wcs::Downloa
 	web::json::value request;
 	//auto pathArray = web::json::value::object().array();
 	request[U("path")] = web::json::value::string(current);
-	auto data = CommonApi::Instance().PostData(U("/v1/files/list"), request).get();
+	auto data = common_api::Instance().PostData(U("/v1/files/list"), request).get();
 	if (data.success) {
 		for (const auto &item : data.result.as_array()) {
 			const auto &path = item.at(_XPLATSTR("path")).as_string();
@@ -232,7 +232,7 @@ void SyncModelEx::ListCurrentFile(const utility::string_t &current, wcs::Downloa
 					web::json::value request;
 					//auto pathArray = web::json::value::object().array();
 					request[U("path")] = filePaths;
-					CommonApi::Instance().PostData(U("/v1/files/remove"), request)
+					common_api::Instance().PostData(U("/v1/files/remove"), request)
 						*/
 
 				}
@@ -540,7 +540,7 @@ void SyncModelEx::StartInnerDownload(wcs::SingleUrlTask *urlTask) {
     //Request File info
     web::json::value request;
     request[_XPLATSTR("path")] = web::json::value::string(urlTask->remotePath);
-    CommonApi::Instance().PostData(_XPLATSTR("/v1/files/get"), request).then([&, urlTask](ResponseEntity v) {
+    common_api::Instance().PostData(_XPLATSTR("/v1/files/get"), request).then([&, urlTask](response_entity v) {
         //SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
         if (v.success && v.result.has_field(_XPLATSTR("downloadAddress"))) {
             urlTask->hash = v.result.at(_XPLATSTR("storeId")).as_string();
@@ -570,8 +570,8 @@ void SyncModelEx::StartInnerUpload(wcs::SingleUrlTask *urlTask) {
     }
     urlTask->hash = file_hash;
     request[_XPLATSTR("hash")] = web::json::value::string(file_hash);
-    CommonApi::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then(
-            [&, urlTask, filePath](ResponseEntity v) {
+    common_api::Instance().PostData(_XPLATSTR("/v1/store/token"), request).then(
+            [&, urlTask, filePath](response_entity v) {
                 //SendCommonThreadEvent(handler,USER_REMOTE_FILE_PAGE_DATA,v, true);
                 // && v.result.has_field(_XPLATSTR("downloadAddress"))) {
                 //urlTask->hash = v.result.at(_XPLATSTR("storeId")).as_string();
@@ -647,7 +647,7 @@ web::json::value SyncModelEx::CreateJsonReport() {
 void SyncModelEx::ReportStatus() {
     if (!refreshListener.empty()) {
         for (auto &x : refreshListener) {
-            ResponseEntity responseEntity;
+            response_entity responseEntity;
             responseEntity.status = 200;
             responseEntity.success = true;
             responseEntity.result = CreateJsonReport();
@@ -658,7 +658,7 @@ void SyncModelEx::ReportStatus() {
 
 void SyncModelEx::ReportSpeed(wxWindow *window) {
     pplx::create_task([&, window]() {
-        ResponseEntity responseEntity;
+        response_entity responseEntity;
         responseEntity.status = 200;
         responseEntity.success = true;
         web::json::value reportTask;

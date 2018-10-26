@@ -452,7 +452,7 @@ void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
 	switch (event.GetInt()) {
 	case USER_REMOTE_TASK_PAGE_DATA:
 	{
-		auto payload = event.GetPayload<ResponseEntity>();
+		auto payload = event.GetPayload<response_entity>();
 		RefreshListData(payload);
 		break;
 	}
@@ -470,7 +470,7 @@ void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
 	}
 	case USER_REMOTE_TASK_URL_PARSED:
 	{
-		auto payload = event.GetPayload<ResponseEntity>();
+		auto payload = event.GetPayload<response_entity>();
 		//RefreshListData(payloads);
 		const auto & res = payload.result;
 		if (res.has_field(U("taskHash"))) {
@@ -491,7 +491,7 @@ void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
 	}
 }
 
-void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
+void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
 	mainListCtrl->Freeze();
 	auto model = &OfflineDownloadTaskModel::Instance();
 	web::json::array list = payload.result.at(U("list")).as_array();
@@ -566,7 +566,7 @@ void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
 	ResetCurrentPathDisplay();
 }
 
-//void OfflineDownloadTaskPanel::RefreshListData(const ResponseEntity& payload) {
+//void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
 	/*
 	web::json::array list = payload.result.at(U("list")).as_array();
 	// model->AppendItem( data ,1);

@@ -9,18 +9,10 @@
 // Licence:     
 /////////////////////////////////////////////////////////////////////////////
 
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
 
 ////@begin includes
+#include "../common/common_wx.h"
 ////@end includes
 
 #include "mainframe.h"
@@ -29,6 +21,8 @@
 #include "../resources/if_cloud_main.xpm"
 #include "../resources/user.xpm"
 #include "../resources/settings.xpm"
+////@end XPM images
+
 #include "../model/user_model.h"
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
@@ -38,7 +32,6 @@
 #include "updatedialog.h"
 #include "userdialog.h"
 #include <wx/utils.h>
-////@end XPM images
 
 
 /*
@@ -149,7 +142,7 @@ void MainFrame::CreateControls()
     itemBoxSizer14->Add(itemBoxSizer15, 1, wxGROW, 5);
 
 
-    mainNotebook = new MainNotebook( itemFrame1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
+    mainNotebook = new MainNotebook( itemFrame1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
     itemBoxSizer15->Add(mainNotebook, 1, wxGROW, 5);
 
     wxStatusBar* itemStatusBar17 = new wxStatusBar( itemFrame1, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
@@ -177,12 +170,18 @@ void MainFrame::OnToolClick(const wxCommandEvent& event) {
 		    // Show
 		    auto * userDialog = new UserDialog(this,userModel.GetUserInfo());
             userDialog->ShowModal();
+            if(userDialog->GetContinueLogin()){
+                showLoginFrame(_("Login"));
+            }
 		}else{
             showLoginFrame(_("Login"));
 		}
 	}
 }
-void MainFrame::showLoginFrame(const wxString& text){
+void MainFrame::showLoginFrame(const wxString& text) {
+    auto * loginDialog = new UserLoginDialog(this, wxID_ANY, text);
+    loginDialog->ShowModal();
+    /*
     if (this->loginFrame == nullptr) {
         loginFrame = new LoginFrame(this, wxID_ANY);
         loginFrame->Iconize(false);
@@ -211,7 +210,7 @@ void MainFrame::showLoginFrame(const wxString& text){
     }
     // std::cout << result << std::endl;
     // loginFrame->RequestUserAttention();
-
+     */
 }
 
 void MainFrame::OnWindowCreate(wxIdleEvent& event){
@@ -321,7 +320,7 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
     switch (event.GetInt()){
         case USER_LOGIN_RESPONSE:{
             SetStatusText(_("User login..."), 0);
-            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            const response_entity &r = event.GetPayload<response_entity>();
             UserModel::Instance().SetUserInfo(r.result);
             UserModel::Instance().StartUserCheckLoop(this);
             mainNotebook->RefreshCurrentPage();
@@ -334,14 +333,14 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
 
         case USER_LOGIN_FAILED_RESPONSE:
         {
-            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            const response_entity &r = event.GetPayload<response_entity>();
             UserModel::Instance().Logout();
             showLoginFrame(_T("Login failed, please login again."));
             break;
         }
 
 		case USER_REFRESH_RESPONSE: {
-			const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+			const response_entity &r = event.GetPayload<response_entity>();
 			long d = event.GetTimestamp();
 			time_t time = d;
 			SetStatusText(wxString::Format(_("User info update at...%s"), ConvertTimeToDisplay(time), "%Y-%m-%d %H:%M"));
@@ -352,7 +351,7 @@ void MainFrame::OnThreadEvent(wxThreadEvent &event) {
             break;
 		}
         case PROGRAM_UPDATE_INFO:{
-            const ResponseEntity &r = event.GetPayload<ResponseEntity>();
+            const response_entity &r = event.GetPayload<response_entity>();
             if(r.success){
                 auto updateInfoList = r.result.as_array();
                 if(updateInfoList.size() > 0){

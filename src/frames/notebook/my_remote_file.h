@@ -106,7 +106,7 @@ public:
 
 	void OnPageInputKillFocus(wxFocusEvent & event);
 
-	void RefreshListData(const ResponseEntity& res);
+	void RefreshListData(const response_entity& res);
     void OnCtrlListMenuClicked(const wxCommandEvent &event);
 
 	void DoOpenFiles(const wxArrayString &fileNames);

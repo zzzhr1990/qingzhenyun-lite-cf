@@ -242,7 +242,7 @@ void VideoPreviewFrame::OnThreadEvent(wxThreadEvent & event)
 			break;
 	case USER_PREVIEW_INFO:
 	{
-		auto payload = event.GetPayload<ResponseEntity>();
+		auto payload = event.GetPayload<response_entity>();
 		//RefreshListData(payload);
 		if (payload.success) {
 			//wxMessageBox(_("Success load preview file."), _("Load Preview Success"));

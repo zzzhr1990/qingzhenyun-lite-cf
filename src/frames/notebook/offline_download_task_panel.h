@@ -127,7 +127,7 @@ private:
 	void OnItemRightClick(const wxListEvent & event);
 	void OnPageInputKillFocus(const wxFocusEvent & event);
 	void OnThreadEvent(wxThreadEvent & event);
-	void RefreshListData(const ResponseEntity & payload);
+	void RefreshListData(const response_entity & payload);
 	void PrevBtnClicked(const wxCommandEvent & event);
 	void StartDownloadUrl(const wxString & str);
 	void NextBtnClicked(const wxCommandEvent & event);
@@ -135,7 +135,7 @@ private:
 	void ResetCurrentPathDisplay();
 	void OnStartDrag( wxListEvent & event);
 	void OnEndDrag( wxListEvent & event);
-	//	void RefreshListData(const ResponseEntity & payload);
+	//	void RefreshListData(const response_entity & payload);
 	
 	bool drag = false;
 	wxListCtrl* mainListCtrl = nullptr;

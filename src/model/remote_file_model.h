@@ -29,7 +29,7 @@ public:
 	void GetPreviewInfo(wxWindow * handler, const utility::string_t & path);
 	void GetFileInfo(wxWindow * handler, const utility::string_t & path);
     /*
-    static void SendThreadMessage(wxWindow * handler, ResponseEntity v){
+    static void SendThreadMessage(wxWindow * handler, response_entity v){
     }
      */
 	void SetCurrentPage(const int &page = 1) {

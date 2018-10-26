@@ -21,7 +21,7 @@ public:
         //      std::cout << "timer destructed!" << std::endl;
     }
 
-    void StartTimer(int interval, std::function<void()> task, const bool& immediately = false){
+    void StartTimer(int interval, const std::function<void()> &task, const bool& immediately = false){
         if (expired_ == false){
             //          std::cout << "timer is currently running, please expire it first..." << std::endl;
             return;
@@ -95,8 +95,8 @@ public:
     }
 
 private:
-    std::atomic<bool> expired_;
-    std::atomic<bool> try_to_expire_;
+    std::atomic<bool> expired_{};
+    std::atomic<bool> try_to_expire_{};
     std::mutex mutex_;
     std::condition_variable expired_cond_;
 };

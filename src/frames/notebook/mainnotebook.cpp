@@ -182,7 +182,7 @@ void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
         break;
 	}
 	case USER_SYNC_SPEED_REFRESH:{
-        const auto & data = event.GetPayload<ResponseEntity>();
+        const auto & data = event.GetPayload<response_entity>();
         auto* main = (MainFrame*)this->GetParent();
         const auto & value = data.result;
         auto upSpeed = value.at(U("upSpeed")).as_number().to_uint64();
