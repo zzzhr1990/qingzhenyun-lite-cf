@@ -29,6 +29,8 @@
 
 ////@begin forward declarations
 #include "./notebook/mainnotebook.h"
+#include "../entity/response_entity.h"
+#include "../util/simple_timer.h"
 
 ////@end forward declarations
 
@@ -110,9 +112,12 @@ private:
     MainNotebook* mainNotebook = nullptr;
     void showLoginFrame(const wxString& text);
     void OnWindowCreate(wxIdleEvent& event);
-    void TryLogin(const wxString & input, const wxString & password);
+    void TryLogin(const wxString &countryCode, const wxString & input, const wxString & password);
+    void TryLoginByMessage(const wxString &phoneInfo, const wxString & code);
     void OnThreadEvent(wxThreadEvent& event);
+    void OnLoginSuccess(response_entity entity);
     bool terminated = false;
+    SimpleTimer globalTimer;
 ////@end MainFrame member variables
 };
 

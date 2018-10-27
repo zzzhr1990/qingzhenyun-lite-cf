@@ -24,6 +24,7 @@
 ////@end XPM images
 
 #include "../model/user_model.h"
+#include "../api_model/api_user_model.h"
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
 #include "../model/sync_model.h"
@@ -171,6 +172,7 @@ void MainFrame::OnToolClick(const wxCommandEvent& event) {
 		    auto * userDialog = new UserDialog(this,userModel.GetUserInfo());
             userDialog->ShowModal();
             if(userDialog->GetContinueLogin()){
+                globalTimer.Expire();
                 showLoginFrame(_("Login"));
             }
 		}else{
@@ -178,9 +180,19 @@ void MainFrame::OnToolClick(const wxCommandEvent& event) {
 		}
 	}
 }
+
 void MainFrame::showLoginFrame(const wxString& text) {
     auto * loginDialog = new UserLoginDialog(this, wxID_ANY, text);
-    loginDialog->ShowModal();
+    if(wxID_OK == loginDialog->ShowModal()) {
+        //std::cout << "Try login" << std::endl;
+        if(loginDialog->GetNoteCurrentSelection() == 0){
+            // Login By User Id
+            this->TryLogin(loginDialog->GetPasswordCountryCode(),loginDialog->GetUserInput(),loginDialog->GetUsePassword());
+        }else{
+            this->TryLoginByMessage(loginDialog->GetPhoneInfo(), loginDialog->GetMessageCodeInput());
+        }
+    }
+
     /*
     if (this->loginFrame == nullptr) {
         loginFrame = new LoginFrame(this, wxID_ANY);
@@ -196,9 +208,9 @@ void MainFrame::showLoginFrame(const wxString& text) {
     if(result == wxID_OK)
     {
         // check validate
-        const auto &userInput = loginFrame->getUserInput();
+        const auto &userInputStaticText = loginFrame->getUserInput();
         const auto &userPassword = loginFrame->getUserPassword();
-        TryLogin(userInput, Utf8MD5(userPassword));
+        TryLogin(userInputStaticText, Utf8MD5(userPassword));
     }else{
 		if (UserModel::Instance().GetToken().empty()) {
 			Close();
@@ -216,14 +228,16 @@ void MainFrame::showLoginFrame(const wxString& text) {
 void MainFrame::OnWindowCreate(wxIdleEvent& event){
     this->Unbind(wxEVT_IDLE, &MainFrame::OnWindowCreate, this);
     event.Skip();
-    if(UserModel::Instance().GetToken().empty()){
-        showLoginFrame(_("You need to login first."));
-    }else{
-        // check token validate
-        UserModel::Instance().CheckToken(this);
-    }
 
     UpdateModel::Instance().CheckUpdate(this);
+
+    qingzhen::api::api_user_model::instance().async_read_token().then([this](utility::string_t token){
+        if(token.empty()){
+            this->CallAfter([this](){this->showLoginFrame(_("User login"));});
+        }else{
+            std::cout << "Read the token:" << token << std::endl;
+        }
+    });
 
 	//UserLoginDialog * userLogin = new UserLoginDialog(this);
 	//userLogin->ShowModal();
@@ -309,8 +323,29 @@ wxIcon MainFrame::GetIconResource( const wxString& name )
 ////@end MainFrame icon retrieval
 }
 
-void MainFrame::TryLogin(const wxString &input, const wxString &password) {
-    UserModel::Instance().TryLogin(this,input,password);
+void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, const wxString &password) {
+    //UserModel::Instance().TryLogin(this,input,password);
+    auto & user_model = qingzhen::api::api_user_model::instance();
+    utility::string_t _cc = utility::conversions::to_string_t(countryCode);
+    utility::string_t _ip = utility::conversions::to_string_t(input);
+    utility::string_t _pwd = utility::conversions::to_string_t(password);
+
+    pplx::task<response_entity> task = user_model.login(_cc, _ip, _pwd);
+    task.then([this](response_entity entity)->void {
+        if(entity.success){
+            auto onSuccess = [entity,this]()->void {
+                this->OnLoginSuccess(entity);
+            };
+            this->CallAfter(onSuccess);
+        }else{
+            auto onFailed = [this]()-> void {
+                //std::cout << "Login Success" << std::endl;
+                this->showLoginFrame(_("Login Failed"));
+            };
+            this->CallAfter(onFailed);
+
+        }
+    });
 }
 
 void MainFrame::OnThreadEvent(wxThreadEvent &event) {
@@ -382,4 +417,44 @@ void MainFrame::DoOpenFiles(const wxArrayString &fileNames) {
 
 void MainFrame::Terminate() {
     this->terminated = true;
+    globalTimer.Expire();
+}
+
+void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &code) {
+    auto & user_model = qingzhen::api::api_user_model::instance();
+
+    if(phoneInfo.empty()){
+        return;
+    }
+    if(code.empty()){
+        wxMessageBox(_("Code cannot be empty"),_("Code cannot be empty"));
+        return;
+    }
+    utility::string_t _phoneInfo = utility::conversions::to_string_t(phoneInfo);
+    utility::string_t _code = utility::conversions::to_string_t(code);
+
+    pplx::task<response_entity> task = user_model.login_by_message(_phoneInfo, _code);
+    task.then([this](response_entity entity)->void {
+        if(entity.success){
+            auto onSuccess = [entity,this]()->void {
+                this->OnLoginSuccess(entity);
+            };
+            this->CallAfter(onSuccess);
+        }else{
+            auto onFailed = [this]()-> void {
+                this->showLoginFrame(_("Login Failed"));
+            };
+            this->CallAfter(onFailed);
+        }
+    });
+}
+
+void MainFrame::OnLoginSuccess(response_entity entity) {
+    // std::cout << "Login Success" << std::endl;
+    qingzhen::api::api_user_model::instance().set_user_info(entity.result);
+    auto checkFunction = [this](){
+        std::cout << "Check user" << std::endl;
+    };
+    globalTimer.StartTimer(5000,checkFunction);
+    //
 }

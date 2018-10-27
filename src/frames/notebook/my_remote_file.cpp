@@ -602,7 +602,7 @@ void MyRemoteFilePanel::NewDirectoryBtnClicked(wxCommandEvent &event) {
     if (result == wxID_OK) {
         // check validate
         const auto &userInput = addDirectoryDialog->getUserInput();
-        //TryLogin(userInput, Utf8MD5(userPassword));
+        //TryLogin(userInputStaticText, Utf8MD5(userPassword));
         auto &fileModel = RemoteFileModel::Instance();
         fileModel.CreateNewDirectory(this, userInput);
     }

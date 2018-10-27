@@ -657,9 +657,9 @@ void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
 	if (result == wxID_OK)
 	{
 		// check validate
-		//const auto &userInput = loginFrame->getUserInput();
+		//const auto &userInputStaticText = loginFrame->getUserInput();
 		//const auto &userPassword = loginFrame->getUserPassword();
-		//TryLogin(userInput, Utf8MD5(userPassword));
+		//TryLogin(userInputStaticText, Utf8MD5(userPassword));
 		const auto &userInput = addOfflineTask->GetDownloadPath();
 		const auto &userUrlInput = addOfflineTask->GetUrlInputStr();
 		if (!userInput.empty() && !userUrlInput.empty()) {

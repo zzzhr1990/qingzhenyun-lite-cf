@@ -100,11 +100,13 @@ bool QingzhenApp::OnInit()
 	checker = new wxSingleInstanceChecker();
 	if (checker->IsAnotherRunning())
 	{
+
 		wxMessageBox(_("Another program instance is already running, aborting."),_("Warning"));
 		delete checker; // OnExit() won't be called if we return false
 		checker = nullptr;
 		return false;
 	}
+	//checker->CreateDefault()
 #if wxUSE_XPM
 	wxImage::AddHandler(new wxXPMHandler);
 #endif

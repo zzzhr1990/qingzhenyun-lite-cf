@@ -22,6 +22,7 @@
 ////@begin includes
 #include "../common/common_wx.h"
 #include "wx/notebook.h"
+#include "../util/simple_timer.h"
 ////@end includes
 
 /*!
@@ -89,10 +90,60 @@ public:
 	/// Should we show tooltips?
 	static bool ShowToolTips();
 
+	int GetNoteCurrentSelection();
+
+	//wxString GetUserCountryCode();
+    wxString GetUsePassword();
+	wxString GetUserInput();
+    wxString GetMessagePhoneInput();
+    wxString GetMessageCodeInput();
+    wxString GetMessageCountryCode();
+    wxString GetPasswordCountryCode();
+    wxString GetPhoneInfo();
 ////@begin UserLoginDialog member variables
 ////@end UserLoginDialog member variables
 private:
     void LogoutBtnClicked(wxCommandEvent &event);
+
+    wxChoice* passwordCountryCodeSelection = nullptr;
+    wxChoice* messageCountryCodeSelection = nullptr;
+	wxNotebook* itemNotebook = nullptr;
+	wxTextCtrl* userInput = nullptr;
+    wxTextCtrl* messagePhoneInput = nullptr;
+    wxTextCtrl* userPasswordInput = nullptr;
+    //wxTextCtrl* userPassword = nullptr;
+
+	//int ia[] = {1};
+
+	std::pair<wxString,wxString> DEFAULT_COUNTRY_CODE_PAIR [7] = {
+	        /*
+	         * itemChoice9Strings.Add(_("PRC (+86)"));
+    itemChoice9Strings.Add(_("PRC (+86)"));
+    itemChoice9Strings.Add(_("HonKong (+852)"));
+    itemChoice9Strings.Add(_("Macao (+853)"));
+    itemChoice9Strings.Add(_("TaiWan (+886)"));
+    itemChoice9Strings.Add(_("USA (+1)"));
+    itemChoice9Strings.Add(_("Japan (+81)"));
+	         */
+	        std::pair<wxString,wxString>(wxT("Default"),wxT("")),
+            std::pair<wxString,wxString>(wxT("PRC (+86)"),wxT("86")),
+            std::pair<wxString,wxString>(wxT("HonKong (+852)"),wxT("852")),
+            std::pair<wxString,wxString>(wxT("Macao (+853)"),wxT("853")),
+            std::pair<wxString,wxString>(wxT("Taiwan (+886)"),wxT("886")),
+            std::pair<wxString,wxString>(wxT("USA (+1)"),wxT("1")),
+            std::pair<wxString,wxString>(wxT("Japan (+81)"),wxT("81")),
+	                };
+	void FillCountryCodeInput(wxChoice* userInput);
+	void SendTextMessage();
+    wxArrayString GetCountryCodeArray();
+    wxString GetCountryCode(wxChoice* choice);
+    SimpleTimer timer = SimpleTimer();
+    void ResetTimerClick();
+    wxButton* sendMessageButton = nullptr;
+    time_t last_send_message_time = 0;
+    void SendMessageButtonClicked(wxCommandEvent &event);
+    wxTextCtrl* messageCodeInput = nullptr;
+    wxString phoneInfo;
 };
 
 #endif
