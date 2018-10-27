@@ -88,6 +88,11 @@ static wxString Utf8MD5(const wxString& str) {
 
 }
 
+static utility::string_t wxString2CpprestString(wxString str) {
+	utility::string_t res = str;
+	return res;
+}
+
 
 static void CopyTextToClipboard(const wxString& str) {
 	if (wxTheClipboard->Open())

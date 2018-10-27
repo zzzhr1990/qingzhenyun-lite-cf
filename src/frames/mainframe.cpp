@@ -326,9 +326,9 @@ wxIcon MainFrame::GetIconResource( const wxString& name )
 void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, const wxString &password) {
     //UserModel::Instance().TryLogin(this,input,password);
     auto & user_model = qingzhen::api::api_user_model::instance();
-    utility::string_t _cc = utility::conversions::to_string_t(countryCode);
-    utility::string_t _ip = utility::conversions::to_string_t(input);
-    utility::string_t _pwd = utility::conversions::to_string_t(password);
+    utility::string_t _cc = wxString2CpprestString(countryCode);
+    utility::string_t _ip = wxString2CpprestString(input);
+    utility::string_t _pwd = wxString2CpprestString(password);
 
     pplx::task<response_entity> task = user_model.login(_cc, _ip, _pwd);
     task.then([this](response_entity entity)->void {
@@ -430,8 +430,8 @@ void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &cod
         wxMessageBox(_("Code cannot be empty"),_("Code cannot be empty"));
         return;
     }
-    utility::string_t _phoneInfo = utility::conversions::to_string_t(phoneInfo);
-    utility::string_t _code = utility::conversions::to_string_t(code);
+    utility::string_t _phoneInfo = wxString2CpprestString(phoneInfo);
+    utility::string_t _code = wxString2CpprestString(code);
 
     pplx::task<response_entity> task = user_model.login_by_message(_phoneInfo, _code);
     task.then([this](response_entity entity)->void {
@@ -454,7 +454,13 @@ void MainFrame::OnLoginSuccess(response_entity entity) {
     qingzhen::api::api_user_model::instance().set_user_info(entity.result);
     auto checkFunction = [this](){
         std::cout << "Check user" << std::endl;
+		if (qingzhen::api::api_user_model::instance().is_user_login()) {
+			// tick current page
+			mainNotebook->RefreshTimerTick();
+		}
+		
     };
+	mainNotebook->RefreshTimerTick();
     globalTimer.StartTimer(5000,checkFunction);
     //
 }

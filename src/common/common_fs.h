@@ -9,8 +9,8 @@
 #ifdef _MSC_VER
 #include <filesystem>
 #include <system_error>
-namespace common_fs = boost::filesystem;
-namespace common_system = std::system;
+namespace common_fs = std::filesystem;
+//namespace common_system = std::sys;
 #else
 #include <boost/filesystem.hpp>
 #include "boost/system/error_code.hpp"

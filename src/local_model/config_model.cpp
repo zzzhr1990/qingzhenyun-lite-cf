@@ -5,6 +5,7 @@
 #include <cpprest/filestream.h>
 #include "cpprest/containerstream.h"
 #include "config_model.h"
+
 #include "../common/common_fs.h"
 
 config_model &config_model::instance() {
@@ -41,7 +42,7 @@ void config_model::update_token(const utility::string_t &token) {
 utility::string_t config_model::get_current_path() {
     try {
         common_fs::path p = common_fs::current_path();
-        return utility::string_t(p.string());
+        return utility::conversions::to_string_t(p.string());
     }catch (std::exception &ex){
         std::cout << ex.what() << std::endl;
         return utility::string_t();
@@ -59,7 +60,7 @@ void config_model::async_write_json(utility::string_t path, web::json::value jso
         std::cout << "Ser json failed" << s.what() << std::endl;
         return;
     }
-    std::string result = ost.str();
+    std::string result = utility::conversions::to_utf8string(ost.str());
 
     pplx::create_task([path,json,result]()->void {
         auto fileBuffer = std::make_shared<concurrency::streams::streambuf<char>>();
@@ -94,7 +95,7 @@ pplx::task<std::pair<bool, web::json::value>> config_model::async_read_json(util
                 }).then([fileBuffer](size_t size){ return fileBuffer->close(); });
         try {
             cx.get();
-            auto json = web::json::value::parse(ost.collection());
+            auto json = web::json::value::parse(utility::conversions::to_string_t(ost.collection()));
             return std::make_pair(true, json);
         } catch (std::exception &ex) {
             if(fileBuffer != nullptr){

@@ -23,7 +23,6 @@
 #include "../../model/remote_file_model.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
 #include "../../model/sync_model.h"
-#include "../../model/user_model.h"
 #include "../mainframe.h"
 #include "../../util/common_util.h"
 
@@ -87,7 +86,6 @@ bool MainNotebook::Create(wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 MainNotebook::~MainNotebook()
 {
 ////@begin MainNotebook destruction
-    timer.Expire();
 ////@end MainNotebook destruction
 }
 
@@ -157,7 +155,6 @@ void MainNotebook::CreateControls()
         //std::cout << "Tick0" << std::endl;
         wxQueueEvent(this->offlineDownloadTaskPanel, event.Clone());
     };
-    timer.StartTimer(2000,task);
 ////@end MainNotebook content construction
 }
 
@@ -266,14 +263,20 @@ void MainNotebook::UpdateSpaceCapacity(const long long & spaceUsed, const long l
 	myRemoteFilePanel->UpdateSpaceCapacity(spaceUsed, spaceCapacity);
 }
 
+void MainNotebook::RefreshTimerTick()
+{
+	// note: async function, dangerous
+	this->CallAfter([this]() {
+		this->TimerTick();
+	});
+}
+
 void MainNotebook::TimerTick() {
     auto selection = this->GetSelection();
     switch (selection){
         case 0:
-			if (UserModel::Instance().IsUserLogin()) {
-				myRemoteFilePanel->RefreshData(false);
-				break;
-			}
+			myRemoteFilePanel->RefreshData(false);
+			break;
         case 1:
             //offlineDownloadTaskPanel->RefreshData();
             break;
