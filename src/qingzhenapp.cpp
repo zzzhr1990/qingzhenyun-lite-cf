@@ -101,7 +101,7 @@ bool QingzhenApp::OnInit()
 	if (checker->IsAnotherRunning())
 	{
 
-		wxMessageBox(_("Another program instance is already running, aborting."),_("Warning"));
+		wxMessageBox(_("Another program instance is already running, aborting.\nIf still, restart your computer."),_("Warning"));
 		delete checker; // OnExit() won't be called if we return false
 		checker = nullptr;
 		return false;

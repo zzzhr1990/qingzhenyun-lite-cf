@@ -195,36 +195,7 @@ void MainFrame::showLoginFrame(const wxString& text) {
         }
     }
 
-    /*
-    if (this->loginFrame == nullptr) {
-        loginFrame = new LoginFrame(this, wxID_ANY);
-        loginFrame->Iconize(false);
-        //
-    }
-    loginFrame->SetLabel(text);
-    loginFrame->SetTips(text);
-    // login_frame->Show(true);
-    // loginFrame->Raise();  // doesn't seem to work
-    // loginFrame->SetFocus();  // does nothing
-    auto const &result = loginFrame->ShowModal(); // this by itself doesn't work
-    if(result == wxID_OK)
-    {
-        // check validate
-        const auto &userInputStaticText = loginFrame->getUserInput();
-        const auto &userPassword = loginFrame->getUserPassword();
-        TryLogin(userInputStaticText, Utf8MD5(userPassword));
-    }else{
-		if (UserModel::Instance().GetToken().empty()) {
-			Close();
-		}
-		else {
-			UserModel::Instance().CheckToken(this);
-		}
-        
-    }
-    // std::cout << result << std::endl;
-    // loginFrame->RequestUserAttention();
-     */
+   
 }
 
 void MainFrame::OnWindowCreate(wxIdleEvent& event){
@@ -468,6 +439,25 @@ void MainFrame::OnLoginSuccess(response_entity entity) {
 		if (qingzhen::api::api_user_model::instance().is_user_login()) {
 			// tick current page
 			mainNotebook->RefreshTimerTick();
+
+			qingzhen::util::get_current_linux_timestamp();
+			if (qingzhen::util::get_current_linux_timestamp() - last_user_refresh_time > 120L) {
+				check_login_source.cancel();
+				check_login_source = pplx::cancellation_token_source();
+				qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp) {
+					if (!resp.is_cancelled()) {
+						if (resp.success) {
+							//this->OnLoginSuccess(resp);
+							this->CallAfter([this]() {this->UpdateUserInfo(); });
+						}
+						else {
+							if (resp.status == 401 || resp.status == 403) {
+								this->CallAfter([this]() { this->showLoginFrame(_("Login Failed")); });
+							}
+						}
+					}
+				});
+			}
 		}
 		
     };
@@ -514,8 +504,8 @@ bool MainFrame::IsDirAvailable(wxString config_path) {
 }
 
 void MainFrame::UpdateUserInfo() {
-	long d = qingzhen::util::get_current_linux_timestamp();
-	time_t time = d;
+	last_user_refresh_time = qingzhen::util::get_current_linux_timestamp();
+	time_t time = last_user_refresh_time;
 	SetStatusText(wxString::Format(_("User info update at...%s"), ConvertTimeToDisplay(time), "%Y-%m-%d %H:%M"));
 	auto user_info = qingzhen::api::api_user_model::instance().get_user_info();
 	if (user_info.has_field(U("spaceUsed"))) {

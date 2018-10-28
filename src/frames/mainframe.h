@@ -121,6 +121,7 @@ private:
 	void FindConfigPath();
 	bool IsDirAvailable(wxString config_path);
 	void UpdateUserInfo();
+	time_t last_user_refresh_time;
 	pplx::cancellation_token_source normal_login_source = pplx::cancellation_token_source();
 	pplx::cancellation_token_source message_login_source = pplx::cancellation_token_source();
 	pplx::cancellation_token_source check_login_source = pplx::cancellation_token_source();
