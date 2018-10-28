@@ -118,6 +118,12 @@ private:
     void OnLoginSuccess(response_entity entity);
     bool terminated = false;
     SimpleTimer globalTimer;
+	void FindConfigPath();
+	bool IsDirAvailable(wxString config_path);
+	void UpdateUserInfo();
+	pplx::cancellation_token_source normal_login_source = pplx::cancellation_token_source();
+	pplx::cancellation_token_source message_login_source = pplx::cancellation_token_source();
+	pplx::cancellation_token_source check_login_source = pplx::cancellation_token_source();
 ////@end MainFrame member variables
 };
 

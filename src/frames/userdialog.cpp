@@ -55,6 +55,7 @@ UserDialog::UserDialog( wxWindow* parent, const web::json::value & userData,wxWi
 {
     Init();
     Create(parent,userData, id, caption, pos, size, style);
+	this->Bind(wxEVT_CLOSE_WINDOW, &UserDialog::OnClose, this);
 }
 
 
@@ -303,6 +304,7 @@ wxIcon UserDialog::GetIconResource( const wxString& name )
 void UserDialog::LogoutBtnClicked(wxCommandEvent &event) {
     //this->CallAfter()
     //UserModel::Instance().Logout();
+	logout_cancel_source.cancel();
     qingzhen::api::api_user_model user_model = qingzhen::api::api_user_model::instance();
     std::function<void(response_entity)> task2 = [this](response_entity entity)->void {
         this->CallAfter([this,entity](){
@@ -312,5 +314,13 @@ void UserDialog::LogoutBtnClicked(wxCommandEvent &event) {
             }
         });
     };
-    user_model.logout(task2);
+	logout_cancel_source = pplx::cancellation_token_source();
+    user_model.logout(task2, logout_cancel_source);
+}
+
+void UserDialog::OnClose(wxCloseEvent & event)
+{
+	logout_cancel_source.cancel();
+	event.Skip();
+
 }

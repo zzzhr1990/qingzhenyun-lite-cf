@@ -26,6 +26,9 @@ struct response_entity
     utility::string_t  code;
     int status;
     utility::string_t message;
+	bool is_cancelled() {
+		return status == -99999;
+	}
 };
 
 

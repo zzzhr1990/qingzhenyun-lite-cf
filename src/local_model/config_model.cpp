@@ -7,8 +7,8 @@
 #include "config_model.h"
 
 #include "../common/common_fs.h"
-
-config_model &config_model::instance() {
+//using namespace qingzhen::model;
+qingzhen::model::config_model &qingzhen::model::config_model::instance() {
     //return ;
     static config_model c;
     return c;
@@ -16,7 +16,7 @@ config_model &config_model::instance() {
 
 }
 
-void config_model::update_token(const utility::string_t &token) {
+void qingzhen::model::config_model::update_token(const utility::string_t &token) {
     if(token.empty()){
         return;
     }
@@ -31,7 +31,7 @@ void config_model::update_token(const utility::string_t &token) {
     }
     // try and save
 
-    token_file_path += _XPLATSTR(".token_store");
+    token_file_path += _XPLATSTR(".qingzhen_token_store");
 
     web::json::value val;
     val[_XPLATSTR("token")] = web::json::value::string(token);
@@ -39,10 +39,14 @@ void config_model::update_token(const utility::string_t &token) {
     //std::cout << "Update token: " << token_file_path << std::endl;
 }
 
-utility::string_t config_model::get_current_path() {
+utility::string_t qingzhen::model::config_model::get_current_path() {
+	if (!this->config_path.empty()) {
+		return config_path;
+	}
     try {
         common_fs::path p = common_fs::current_path();
-        return utility::conversions::to_string_t(p.string());
+		this->config_path = utility::conversions::to_string_t(p.string());
+		return this->config_path;
     }catch (std::exception &ex){
         std::cout << ex.what() << std::endl;
         return utility::string_t();
@@ -50,7 +54,7 @@ utility::string_t config_model::get_current_path() {
 
 }
 
-void config_model::async_write_json(utility::string_t path, web::json::value json) {
+void qingzhen::model::config_model::async_write_json(utility::string_t path, web::json::value json) {
 
 
     utility::stringstream_t ost;
@@ -62,7 +66,7 @@ void config_model::async_write_json(utility::string_t path, web::json::value jso
     }
     std::string result = utility::conversions::to_utf8string(ost.str());
 
-    pplx::create_task([path,json,result]()->void {
+    auto fin = pplx::create_task([path,json,result]()->void {
         auto fileBuffer = std::make_shared<concurrency::streams::streambuf<char>>();
         auto cx = concurrency::streams::file_buffer<char>::open(path, std::ios::out | std::ios::binary | std::ios::trunc).then(
                 [&json, &fileBuffer,&result](concurrency::streams::streambuf <char> outFile) {
@@ -80,9 +84,19 @@ void config_model::async_write_json(utility::string_t path, web::json::value jso
             }
         }
     });
+
+	pplx::create_task([fin]() {
+		try {
+			fin.get();
+		}
+		catch (std::exception &ex) {
+			std::cout << ex.what() << std::endl;
+			return;
+		}
+	});
 }
 
-pplx::task<std::pair<bool, web::json::value>> config_model::async_read_json(utility::string_t path) {
+pplx::task<std::pair<bool, web::json::value>> qingzhen::model::config_model::async_read_json(utility::string_t path) {
     //return pplx::task<std::pair<bool, web::json::value>>();
 
     auto fin = pplx::create_task([path]()-> std::pair<bool, web::json::value> {
@@ -105,10 +119,20 @@ pplx::task<std::pair<bool, web::json::value>> config_model::async_read_json(util
             return std::make_pair(true, web::json::value());
         }
     });
-    return fin;
+
+	auto ccx = pplx::create_task([fin]() {
+		try {
+			return fin.get();
+		}
+		catch (std::exception &ex) {
+			std::cout << ex.what() << std::endl;
+			return std::make_pair(true, web::json::value());
+		}
+	});
+    return ccx;
 }
 
-pplx::task<utility::string_t> config_model::async_read_token() {
+pplx::task<utility::string_t> qingzhen::model::config_model::async_read_token() {
     auto token_file_path = this->get_current_path();
     if(token_file_path.empty()){
         return pplx::task_from_result(utility::string_t());
@@ -119,7 +143,7 @@ pplx::task<utility::string_t> config_model::async_read_token() {
 
     // try and save
 
-    token_file_path += _XPLATSTR(".token_store");
+    token_file_path += _XPLATSTR(".qingzhen_token_store");
     if(!common_fs::exists(token_file_path)){
         return pplx::task_from_result(utility::string_t());
     }
@@ -138,5 +162,10 @@ pplx::task<utility::string_t> config_model::async_read_token() {
         }
     });
     return cx;
+}
+
+void qingzhen::model::config_model::set_config_path(utility::string_t path)
+{
+	this->config_path = path;
 }
 

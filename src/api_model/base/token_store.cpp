@@ -33,7 +33,7 @@ void qingzhen::api::token_store::remove_token() {
 }
 
 void qingzhen::api::token_store::save_token() {
-    config_model::instance().update_token(this->token);
+	qingzhen::model::config_model::instance().update_token(this->token);
 }
 
 utility::string_t qingzhen::api::token_store::get_token() {
@@ -41,7 +41,10 @@ utility::string_t qingzhen::api::token_store::get_token() {
 }
 
 pplx::task<utility::string_t> qingzhen::api::token_store::async_read_token() {
-    return config_model::instance().async_read_token();
+	return pplx::create_task([this]() {
+		this->token = qingzhen::model::config_model::instance().async_read_token().get();
+		return this->token;
+	});
 }
 
 

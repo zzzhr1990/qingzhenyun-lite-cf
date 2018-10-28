@@ -23,6 +23,7 @@
 #include "../common/common_wx.h"
 #include "wx/notebook.h"
 #include "../util/simple_timer.h"
+#include <pplx/pplxtasks.h>
 ////@end includes
 
 /*!
@@ -144,6 +145,9 @@ private:
     void SendMessageButtonClicked(wxCommandEvent &event);
     wxTextCtrl* messageCodeInput = nullptr;
     wxString phoneInfo;
+	pplx::cancellation_token_source send_message_cancellation_token_source = pplx::cancellation_token_source();
+
+	void OnClose(wxCloseEvent& event);
 };
 
 #endif

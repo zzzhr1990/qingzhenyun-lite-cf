@@ -67,7 +67,7 @@ static wxString ConvertSizeToDisplay(int64_t size){
 
 static wxString ConvertTimeToDisplay(time_t time,  const std::string& format = "%Y-%m-%d %H:%M:%S"){
     std::stringstream ss;
-    ss << std::put_time(std::localtime(&time), format.data()); // 4 time
+    ss << std::put_time(std::localtime(&time), format.c_str()); // 4 time
     //current.
     return (wxString::Format(_T("%s"),ss.str())); // 4 time
 }

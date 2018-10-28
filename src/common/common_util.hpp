@@ -19,8 +19,9 @@ namespace qingzhen {
     public:
         static utility::string_t utf8_to_md5(utility::string_t& str) {
             unsigned char digest[16];
-            const char* string = utility::conversions::to_utf8string(str).data();
-
+			std::string datas = utility::conversions::to_utf8string(str);
+			const char* string = datas.c_str();
+			//const char* string = "";
             MD5_CTX ctx;
             MD5_Init(&ctx);
             MD5_Update(&ctx, string, strlen(string));

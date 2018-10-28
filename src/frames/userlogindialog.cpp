@@ -57,6 +57,7 @@ UserLoginDialog::UserLoginDialog( wxWindow* parent, wxWindowID id, const wxStrin
 {
 	Init();
 	Create(parent, id, caption, pos, size, style);
+	this->Bind(wxEVT_CLOSE_WINDOW, &UserLoginDialog::OnClose, this);
 }
 
 
@@ -365,7 +366,10 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
     //auto phone = this->
     this->SendTextMessage();
     utility::string_t phoneToSend = phone;
-    qingzhen::api::api_user_model::instance().send_login_message(countryCode, phoneToSend)
+	send_message_cancellation_token_source.cancel();
+	//last_source.cancel();
+	send_message_cancellation_token_source = pplx::cancellation_token_source();
+	qingzhen::api::api_user_model::instance().send_login_message(countryCode, phoneToSend, send_message_cancellation_token_source)
     .then([this](response_entity r){
         if(!r.success){
             this->CallAfter([this](){
@@ -376,6 +380,12 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
             this->phoneInfo = r.result.as_string();
         }
     });
+}
+
+void UserLoginDialog::OnClose(wxCloseEvent & event)
+{
+	send_message_cancellation_token_source.cancel();
+	event.Skip();
 }
 
 wxString UserLoginDialog::GetMessageCountryCode() {

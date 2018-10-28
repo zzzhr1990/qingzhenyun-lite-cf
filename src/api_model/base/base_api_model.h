@@ -7,8 +7,28 @@
 
 #include <pplx/pplxtasks.h>
 #include "../../entity/response_entity.h"
+#include <iostream>
+/*
+class facebook_client {
+public:
+	static facebook_client& instance(); // Singleton
+
+
+private:
+	facebook_client() :
+		raw_client(L"https://graph.facebook.com/"),
+		signed_in(false) {}
+
+
+	bool signed_in;
+	web::http::client::http_client raw_client;
+};
+*/
 
 namespace qingzhen::api {
+
+	
+
     class client_static {
     public:
         static web::http::client::http_client get_client() {
@@ -16,12 +36,19 @@ namespace qingzhen::api {
             return c.raw_client;
         }
     private:
-        web::http::client::http_client raw_client = web::http::client::http_client(_XPLATSTR("https://api.6pan.cn"));
+
+		qingzhen::api::client_static() {
+			this->config = web::http::client::http_client_config();
+			this->config.set_timeout(std::chrono::seconds(30));
+			this->raw_client = web::http::client::http_client(_XPLATSTR("https://api.6pan.cn"), this->config);
+		}
+		web::http::client::http_client_config config;
+		web::http::client::http_client raw_client = web::http::client::http_client(_XPLATSTR("https://www.cctv.com"),config);
     };
     class base_api_model {
     public:
-        pplx::task<response_entity> post_json(const utility::string_t& uri, const web::json::value & data);
-        void post_json(const utility::string_t& uri, const web::json::value & data,std::function<void(response_entity)> callback);
+        pplx::task<response_entity> post_json(const utility::string_t& uri, const web::json::value & data, const pplx::cancellation_token_source &cancellation_token_source);
+        void post_json(const utility::string_t& uri, const web::json::value & data,std::function<void(response_entity)> callback, const pplx::cancellation_token_source &cancellation_token_source);
         void then_json(pplx::task<response_entity> task, std::function<void(response_entity)> callback);
     private:
         // web::http::client::http_client raw_client;
