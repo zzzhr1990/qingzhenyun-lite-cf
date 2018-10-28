@@ -41,6 +41,7 @@ include_directories(
 find_package(TBB CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h src/*.xpm)
+file(GLOB IMAGES_SOURCE ${CMAKE_CURRENT_SOURCE_DIR} images/*.jpg images/*.png images/*.bmp images/*.gif)
 #FOREACH(LETTER ${SRCS})
 #    string(FIND ${LETTER} "cmake-" SEARCH_POS)
 #    if(SEARCH_POS EQUAL -1)
@@ -73,6 +74,7 @@ if(MSVC)
 			"bin/windows/i686/lib/*.lib"
 			)
 	endif()
+	
 	add_custom_target(CopyDLLs
 		COMMAND ${CMAKE_COMMAND} -E copy ${dll_SRC} "${CMAKE_BINARY_DIR}"
 	)
@@ -80,6 +82,10 @@ if(MSVC)
 else(MSVC)
     add_executable(${PROJECT_NAME} ${SRCS})
 endif()
+add_custom_target(CopyImages
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/images"
+	COMMAND ${CMAKE_COMMAND} -E copy ${IMAGES_SOURCE} "${CMAKE_BINARY_DIR}/images"
+)
 #file(GLOB mo_SRC
 #		"trans/*.mo"
 #)
@@ -87,6 +93,7 @@ endif()
 #	COMMAND ${CMAKE_COMMAND} -E copy ${mo_SRC} "${CMAKE_BINARY_DIR}"
 #)
 #add_dependencies(${PROJECT_NAME} CopyMos)
+add_dependencies(${PROJECT_NAME} CopyImages)
 if(MSVC)
 	add_dependencies(${PROJECT_NAME} CopyDLLs)
     target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${dll_LIB} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
