@@ -229,17 +229,28 @@ void MyRemoteFilePanel::CreateControls() {
     itemBoxSizer4->Add(itemStaticText2, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
     wxBitmapButton *itemBitmapButton5 = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON2,
-                                                           itemPanel1->GetBitmapResource(wxT("delete_trash.xpm")),
+		wxBitmap(wxT("images/delete.png"), wxBITMAP_TYPE_PNG),
                                                            wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     itemBitmapButton5->SetHelpText(_("Delete"));
     if (MyRemoteFilePanel::ShowToolTips())
         itemBitmapButton5->SetToolTip(_("Delete Select Files"));
     itemBoxSizer4->Add(itemBitmapButton5, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    wxBitmapButton *itemBitmapButton8 = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON3,
-                                                           itemPanel1->GetBitmapResource(wxT("copy.xpm")),
+    wxBitmapButton *moveDirectoryBtn = new wxBitmapButton(itemPanel1, wxID_ANY,
+                                                           wxBitmap(wxT("images/move_directory.png"), wxBITMAP_TYPE_PNG),
                                                            wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    itemBoxSizer4->Add(itemBitmapButton8, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+	moveDirectoryBtn->SetHelpText(_("Move Selected files"));
+	if (MyRemoteFilePanel::ShowToolTips())
+		moveDirectoryBtn->SetToolTip(_("Move Selected files"));
+    itemBoxSizer4->Add(moveDirectoryBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+	wxBitmapButton *copyBtn = new wxBitmapButton(itemPanel1, wxID_ANY,
+		wxBitmap(wxT("images/copy.png"), wxBITMAP_TYPE_PNG),
+		wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
+	copyBtn->SetHelpText(_("Copy Selected files"));
+	if (MyRemoteFilePanel::ShowToolTips())
+		copyBtn->SetToolTip(_("Copy Selected files"));
+	itemBoxSizer4->Add(copyBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
     wxBoxSizer *itemBoxSizer6 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer4->Add(itemBoxSizer6, 1, wxALIGN_CENTER_VERTICAL, 5);
@@ -247,7 +258,7 @@ void MyRemoteFilePanel::CreateControls() {
     capacityText = new wxStaticText(itemPanel1, wxID_STATIC, _("8888 / 8888 MB"), wxDefaultPosition, wxDefaultSize, 0);
     itemBoxSizer6->Add(capacityText, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
-    prevPageBtn = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON6, itemPanel1->GetBitmapResource(wxT("left_btn.xpm")),
+    prevPageBtn = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON6, wxBitmap(wxT("images/page_left.png"), wxBITMAP_TYPE_PNG),
                                      wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     itemBoxSizer4->Add(prevPageBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
@@ -257,7 +268,7 @@ void MyRemoteFilePanel::CreateControls() {
     currentPageInput->Bind(wxEVT_LEFT_DCLICK, &MyRemoteFilePanel::OnPageInputDClick, this);
     itemBoxSizer4->Add(currentPageInput, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    nextPageBtn = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON7, itemPanel1->GetBitmapResource(wxT("right_btn.xpm")),
+    nextPageBtn = new wxBitmapButton(itemPanel1, ID_BITMAPBUTTON7, wxBitmap(wxT("images/page_right.png"), wxBITMAP_TYPE_PNG),
                                      wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     itemBoxSizer4->Add(nextPageBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
