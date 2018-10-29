@@ -35,13 +35,13 @@ namespace qingzhen::api {
             static client_static c;
             return c.raw_client;
         }
-    private:
 
-		qingzhen::api::client_static() {
-			this->config = web::http::client::http_client_config();
-			this->config.set_timeout(std::chrono::seconds(30));
-			this->raw_client = web::http::client::http_client(_XPLATSTR("https://api.6pan.cn"), this->config);
-		}
+    private:
+        client_static(){
+            this->config = web::http::client::http_client_config();
+            this->config.set_timeout(std::chrono::seconds(30));
+            this->raw_client = web::http::client::http_client(_XPLATSTR("https://api.6pan.cn"), this->config);
+        }
 		web::http::client::http_client_config config;
 		web::http::client::http_client raw_client = web::http::client::http_client(_XPLATSTR("https://www.cctv.com"),config);
     };

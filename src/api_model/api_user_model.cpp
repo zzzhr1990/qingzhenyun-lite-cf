@@ -39,7 +39,7 @@ api_user_model::login(utility::string_t &country_code, utility::string_t &value,
 pplx::task<response_entity>
 api_user_model::check_user_info(const pplx::cancellation_token_source &cancellation_token_source) {
 	web::json::value val = web::json::value::object(false);
-	val[_XPLATSTR("time")] = web::json::value::number(qingzhen::util::get_current_linux_timestamp());	// password should be encode
+	val[_XPLATSTR("time")] = web::json::value::number(static_cast<int32_t>(qingzhen::util::get_current_linux_timestamp()));	// password should be encode
 	return this->post_json(_XPLATSTR("/v1/user/info"), val, cancellation_token_source);
 }
 
