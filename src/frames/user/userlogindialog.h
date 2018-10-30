@@ -20,9 +20,9 @@
  */
 
 ////@begin includes
-#include "../common/common_wx.h"
+#include "../../common/common_wx.h"
 #include "wx/notebook.h"
-#include "../util/simple_timer.h"
+#include "../../util/simple_timer.h"
 #include <pplx/pplxtasks.h>
 ////@end includes
 

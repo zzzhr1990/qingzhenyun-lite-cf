@@ -31,9 +31,9 @@
 #include "../model/update_model.h"
 #include "../common/common_util.hpp"
 #include "../local_model/config_model.h"
-#include "userlogindialog.h"
+#include "user/userlogindialog.h"
 #include "updatedialog.h"
-#include "userdialog.h"
+#include "user/userdialog.h"
 #include <wx/utils.h>
 #include <wx/stdpaths.h>
 
@@ -204,7 +204,7 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
 
     
 	this->FindConfigPath();
-	UpdateModel::Instance().CheckUpdate(this);
+	//UpdateModel::Instance().CheckUpdate(this);
     qingzhen::api::api_user_model::instance().async_read_token().then([this](utility::string_t token){
         if(token.empty()){
             this->CallAfter([this](){this->showLoginFrame(_("User login"));});
@@ -264,7 +264,7 @@ void MainFrame::OnClose(wxCloseEvent& event){
     event.Skip();
     this->Terminate();
     UserModel::Instance().Terminate();
-    UpdateModel::Instance().Terminate();
+   // UpdateModel::Instance().Terminate();
 }
 
 /*

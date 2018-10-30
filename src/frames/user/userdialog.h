@@ -18,7 +18,7 @@
  */
 
 ////@begin includes
-#include "../common/common_wx.h"
+#include "../../common/common_wx.h"
 #include "wx/notebook.h"
 #include "wx/statline.h"
 #include <cpprest/http_client.h>

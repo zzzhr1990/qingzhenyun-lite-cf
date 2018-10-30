@@ -19,8 +19,8 @@
 ////@end includes
 
 #include "userlogindialog.h"
-#include "../api_model/api_user_model.h"
-#include "../common/common_util.hpp"
+#include "../../api_model/api_user_model.h"
+#include "../../common/common_util.hpp"
 ////@begin XPM images
 ////@end XPM images
 

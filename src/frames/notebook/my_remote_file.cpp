@@ -28,6 +28,7 @@
 
 #include "my_remote_file.h"
 #include "../../model/remote_file_model.h"
+#include "../../api_model/api_remote_file_model.h"
 #include "../../model/sync_model.h"
 #include "../../util/common_util.h"
 
@@ -136,6 +137,8 @@ MyRemoteFilePanel::~MyRemoteFilePanel() {
     menu->Destroy(ID_DELETE_FILE);
 	menu->Destroy(ID_VIEW_FILE_DETAIL);
     delete menu;
+    file_refresh_cancellation.cancel();
+    create_cancellation.cancel();
 ////@end NyRemoteFilePanel destruction
 }
 
@@ -356,9 +359,7 @@ void MyRemoteFilePanel::RefreshData(const bool& force) {
 	if (!force && waitPage) {
 		return;
 	}
-    auto &fileModel = RemoteFileModel::Instance();
-	waitPage = true;
-    fileModel.GetPage(this);
+    this->GotoPath();
 }
 
 void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
@@ -397,10 +398,9 @@ void MyRemoteFilePanel::OnUserRemoteFileDClick(wxMouseEvent &event) {
     if (mainListCtrl->GetSelectedItemCount() > 0) {
         event.Skip();
     } else {
-        auto &fileModel = RemoteFileModel::Instance();
-        fileModel.GetPageById(this, fileModel.GetParent(), 1);
+        auto &file_model = qingzhen::api::api_remote_file_model::instance();
+        this->GotoUUID(file_model.get_parent(),1);
     }
-
 }
 
 void MyRemoteFilePanel::OnItemRightClick(const wxListEvent &event) {
@@ -486,7 +486,8 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 		}
 	}
 	else if (event.GetId() == ID_VIEW_FILE_DETAIL) {
-		if (!selectedItems.empty() && list.size() > 0) {
+		if (!selectedItems.empty() ) {
+
 			auto fInfo = list.at(static_cast<web::json::array::size_type>(selectedItems[0]));
 			if (!fInfo.is_null()) {
 				auto fileDetailDialog = FileDetail(this, fInfo);
@@ -499,102 +500,72 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 
 void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
     long index = event.GetIndex();
-    auto &fileModel = RemoteFileModel::Instance();
-    auto list = fileModel.GetCurrentList();
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    auto list = file_model.get_current_list();
     long count = list.size();
     if (index >= count) {
-        fileModel.GetPageById(this, fileModel.GetParent(), 1);
+        this->GotoUUID(file_model.get_parent(),1);
         return;
     }
     auto fileData = list.at(static_cast<web::json::array::size_type>(index));
     if (fileData.is_null()) {
-        fileModel.GetPageById(this, fileModel.GetParent(), 1);
+        this->GotoUUID(file_model.get_parent(),1);
         return;
     }
-    utility::string_t currentPath = fileData.at(U("path")).as_string();
-    int type = fileData.at(U("type")).as_integer();
+    utility::string_t currentPath = fileData.at(_XPLATSTR("path")).as_string();
+    int type = fileData.at(_XPLATSTR("type")).as_integer();
     if (type == 1) {
-        fileModel.GetPage(this, currentPath, 1);
+        this->GotoPath(currentPath,1);
+
     } else if (type == -1) {
 
         wxMessageBox(wxT("This file is in invalid.\nThere's something wrong with our server."), _T("ErrorFile"),
                      wxICON_ERROR);
         //ShowModal())msg->Show();
     } else {
-        if (fileData.has_field(U("preview"))) {
+        if (fileData.has_field(_XPLATSTR("preview"))) {
             int preview = fileData.at(U("preview")).as_integer();
             if (preview == 1000) {
                 ///if (videoPreviewFrame == nullptr) {
- /*
-                    auto system = wxPlatformInfo::Get().GetOperatingSystemId();
-                    if (system & wxOS_MAC) {
-                        auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
-                        if (!wxDirExists(text)) {
-                            text = "/Applications/VLC.app/Contents/MacOS/plugins";
-                        }
-                        if (!wxDirExists(text)) {
-                            wxMessageBox(_("Could not found LibVLC plugins"), _("VLC init fail"));
-                            // this->Close();
-                            return;
-                        }
-                        //
-#ifndef __WINDOWS__
-                        setenv("VLC_PLUGIN_PATH", text.c_str(), 1);
-#endif // !__WINDOWS__
-                        // Can't do it under windows, Under windows, we have to search plugins manually.
-                    }
-                    */
-                    if(previewFrame != nullptr){
-                        previewFrame->Close();
-                        //previewFrame->Destroy();
-                        //delete previewFrame;
-                        //previewFrame = nullptr;
-						return;
-                    }
+                /*
+                                   auto system = wxPlatformInfo::Get().GetOperatingSystemId();
+                                   if (system & wxOS_MAC) {
+                                       auto text = wxGetCwd() + wxFileName::GetPathSeparator() + wxT("plugins");
+                                       if (!wxDirExists(text)) {
+                                           text = "/Applications/VLC.app/Contents/MacOS/plugins";
+                                       }
+                                       if (!wxDirExists(text)) {
+                                           wxMessageBox(_("Could not found LibVLC plugins"), _("VLC init fail"));
+                                           // this->Close();
+                                           return;
+                                       }
+                                       //
+               #ifndef __WINDOWS__
+                                       setenv("VLC_PLUGIN_PATH", text.c_str(), 1);
+               #endif // !__WINDOWS__
+                                       // Can't do it under windows, Under windows, we have to search plugins manually.
+                                   }
+                                   */
+                if (previewFrame != nullptr) {
+                    previewFrame->Close();
+                    //previewFrame->Destroy();
+                    //delete previewFrame;
+                    //previewFrame = nullptr;
+                    return;
+                }
 
-                    previewFrame = new VideoPreviewFrame(currentPath, this);
+                previewFrame = new VideoPreviewFrame(currentPath, this);
                 previewFrame->Iconize(false);
                 previewFrame->Raise();
-					//videoPreviewFrame.GetVideoStream();
-                    previewFrame->Show();
-					//std::cout << "exit" << std::endl;
-					//videoPreviewFrame.Clean();
-					//
-					
-                ///} else {
-                ///    videoPreviewFrame->SetPath(currentPath);
-                ///}
-                
-                //std::cout << "exit3" << std::endl;
+                //videoPreviewFrame.GetVideoStream();
+                previewFrame->Show();
             }
         }
     }
-    /*
-
-if (item == nullptr) {
-    fileModel.GetPageById(this, fileModel.GetParent());
-    return;
-}
-auto row = fileModel.GetRow(item);
-wxDataViewListStoreLine *line = fileModel.m_data[row];
-
-auto path = line->m_values.at(5).GetString();
-auto type = line->m_values.at(6).GetInteger();
-if (type == 1) {
-    fileModel.GetPage(this, path, 1);
-}
-else if (type == -1) {
-    wxMessageBox(wxT("This file is in invalid.\nThere's something wrong with our server."), _T("ErrorFile"), wxICON_INFORMATION);
-    //ShowModal())msg->Show();
-}
-//
-//std::cout << data->at(0).GetString() << std::endl;
-*/
 }
 
 void MyRemoteFilePanel::RefreshBtnClicked(wxCommandEvent &event) {
-    auto &fileModel = RemoteFileModel::Instance();
-    fileModel.GetPage(this);
+    this->GotoPath();
 
 }
 
@@ -605,61 +576,62 @@ void MyRemoteFilePanel::NewDirectoryBtnClicked(wxCommandEvent &event) {
         addDirectoryDialog->SetLabel(_("New Directory"));
     }
 
-    // loginFrame->SetTips(text);
-    // login_frame->Show(true);
-    // loginFrame->Raise();  // doesn't seem to work
-    // loginFrame->SetFocus();  // does nothing
     auto const &result = addDirectoryDialog->ShowModal(); // this by itself doesn't work
     if (result == wxID_OK) {
         // check validate
         const auto &userInput = addDirectoryDialog->getUserInput();
-        //TryLogin(userInputStaticText, Utf8MD5(userPassword));
-        auto &fileModel = RemoteFileModel::Instance();
-        fileModel.CreateNewDirectory(this, userInput);
+        auto &file_model = qingzhen::api::api_remote_file_model::instance();
+        this->create_cancellation.cancel();
+        this->create_cancellation = pplx::cancellation_token_source();
+        file_model.create_new_directory(this->create_cancellation,userInput).then([this](response_entity entity){
+            this->CallAfter([this](){
+                this->GotoPath();
+            });
+        });
     }
 }
 
 void MyRemoteFilePanel::ParentBtnClicked(wxCommandEvent &event) {
-    auto &fileModel = RemoteFileModel::Instance();
-    auto parent = fileModel.GetParent();
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    auto parent = file_model.get_parent();
     if (!parent.empty()) {
-        fileModel.GetPageById(this, parent, 1);
+        this->GotoUUID(parent,1);
     }
 
 }
 
 void MyRemoteFilePanel::PrevBtnClicked(wxCommandEvent &event) {
-    auto &fileModel = RemoteFileModel::Instance();
-    auto page = fileModel.GetCurrentPage();
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    auto page = file_model.get_current_page();
     if (page > 1) {
-        fileModel.GetPage(this, fileModel.GetCurrentPath(), page - 1);
+        this->GotoPath(file_model.get_current_path(), page - 1);
     }
 }
 
 void MyRemoteFilePanel::NextBtnClicked(wxCommandEvent &event) {
-    auto &fileModel = RemoteFileModel::Instance();
-    auto page = fileModel.GetCurrentPage();
-    if (page < fileModel.GetTotalPage()) {
-        fileModel.GetPage(this, fileModel.GetCurrentPath(), page + 1);
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    auto page = file_model.get_current_page();
+    if (page < file_model.get_total_page()) {
+        this->GotoPath(file_model.get_current_path(), page + 1);
     }
 }
 
 void MyRemoteFilePanel::ResetCurrentPathDisplay() {
-    auto &fileModel = RemoteFileModel::Instance();
-    auto const &currentPage = fileModel.GetCurrentPage();
-    auto const &totalPage = fileModel.GetTotalPage();
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    auto const &currentPage = file_model.get_current_page();
+    auto const &totalPage = file_model.get_total_page();
     currentPageInput->SetValue(wxString::Format(_T("%d / %d"), currentPage, totalPage));
     currentPageInput->SetEditable(false);
     prevPageBtn->Enable(currentPage > 1);
     nextPageBtn->Enable(currentPage < totalPage);
-    pathInput->SetValue(fileModel.GetCurrentPath());
-    parentBtn->Enable(!fileModel.GetParent().empty());
+    pathInput->SetValue(file_model.get_current_path());
+    parentBtn->Enable(!file_model.get_parent().empty());
 }
 
 void MyRemoteFilePanel::OnPageInputDClick(wxMouseEvent &event) {
     //event.Get
-    auto &fileModel = RemoteFileModel::Instance();
-    currentPageInput->SetValue(wxString::Format(_T("%d"), fileModel.GetCurrentPage()));
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
+    currentPageInput->SetValue(wxString::Format(_T("%d"), file_model.get_current_page()));
     currentPageInput->SetEditable(true);
     currentPageInput->Bind(wxEVT_KILL_FOCUS, &MyRemoteFilePanel::OnPageInputKillFocus, this);
 }
@@ -668,11 +640,11 @@ void MyRemoteFilePanel::OnPageInputKillFocus(wxFocusEvent &event) {
 
     currentPageInput->Unbind(wxEVT_KILL_FOCUS, &MyRemoteFilePanel::OnPageInputKillFocus, this);
     currentPageInput->SetEditable(false);
-    auto &fileModel = RemoteFileModel::Instance();
+    auto &file_model = qingzhen::api::api_remote_file_model::instance();
     wxString input = currentPageInput->GetValue();
     int c = wxAtoi(input);
-    if (c > 0 && c != fileModel.GetCurrentPage() && c <= fileModel.GetTotalPage() && c != fileModel.GetCurrentPage()) {
-        fileModel.GetPage(this, fileModel.GetCurrentPath(), c);
+    if (c > 0 && c != file_model.get_current_page() && c <= file_model.get_total_page()) {
+        this->GotoPath(file_model.get_current_path(), c);
     } else {
         ResetCurrentPathDisplay();
     }
@@ -714,94 +686,7 @@ void MyRemoteFilePanel::RefreshListData(const response_entity &payload) {
     }
     //
     web::json::array list = payload.result.at(U("list")).as_array();
-	mainListCtrl->Freeze();
-    // model->AppendItem( data ,1);
-    auto model = &RemoteFileModel::Instance();
-	auto refresh = model->GetCurrentList().size() != list.size();
-    auto dirInfo = payload.result.at(U("info"));
-    auto currentPath = dirInfo.at(U("path")).as_string();
-    auto currentId = dirInfo.at(U("uuid")).as_string();
-    auto parent = dirInfo.at(U("parent")).as_string();
-    auto currentPage = payload.result.at(U("page")).as_integer();
-    auto currentPageSize = payload.result.at(U("pageSize")).as_integer();
-    auto totalPage = payload.result.at(U("totalPage")).as_integer();
-    model->UpdateCurrentLocation(currentPath, currentId, currentPage, currentPageSize, totalPage, parent, list);
-    /*
-     * "Type" --- "Filename" --- "FileSize" --- "FileType"
-     */
-    long cur = 0;
-    //long index = 0;
-	if (refresh) {
-		mainListCtrl->Hide();
-		mainListCtrl->DeleteAllItems();
-	}
-   
-    for (const auto &i : list) {
-        // create item
-        wxListItem itemCol;
-        itemCol.SetId(cur);
-        // col 1 type
-        itemCol.SetColumn(0);
-        auto cx = i.at(U("type")).as_integer();
-        auto lock = i.at(U("locking")).as_bool();
-        if (cx == 1) {
-            if(lock){
-                itemCol.SetText(_T(" [+][L]"));
-            }else{
-                itemCol.SetText(_T(" [+]"));
-            }
 
-        } else if (cx == -1) {
-            itemCol.SetText(_T(" [E]"));
-            itemCol.SetTextColour(*wxRED);
-        } else {
-            if(lock) {
-                itemCol.SetText(_T(" [-][L]"));
-            }else{
-                itemCol.SetText(_T(" [-]"));
-            }
-        }
-		if (refresh) {
-			mainListCtrl->InsertItem(itemCol);
-		}
-		else {
-			mainListCtrl->SetItem(cur, 0, itemCol.GetText());
-		}
-        // col1 filename
-
-        mainListCtrl->SetItem(cur, 1, i.at(U("name")).as_string());
-        // col 2 file size
-        mainListCtrl->SetItem(cur, 2, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
-        // col3 mime
-        mainListCtrl->SetItem(cur, 3, i.at(U("ext")).as_string());
-        // col4 date
-        std::time_t t = i.at(U("ctime")).as_number().to_int64() / 1000;
-        mainListCtrl->SetItem(cur, 4, ConvertTimeToDisplay(t, "%Y/%m/%d %H:%M"));
-
-        //mainListCtrl->GetColumnWidth()
-        /*
-        // col3 size
-        wxListItem itemCol2;
-        itemCol2.SetId(cur);
-        itemCol2.SetColumn(2);
-        itemCol2.SetText(_T("0B"));
-        mainListCtrl->InsertItem(itemCol2);
-        //mainListCtrl->InsertItem(itemCol);
-        //itemCol.SetColumn(3);
-        wxListItem itemCol3;
-        itemCol3.SetId(cur);
-        itemCol3.SetColumn(3);
-        itemCol3.SetText(i.at(U("mime")).as_string());
-        mainListCtrl->InsertItem(itemCol3);
-         */
-        cur++;
-    }
-	if (refresh) {
-		mainListCtrl->Show();
-	}
-   
-	ResetCurrentPathDisplay();
-	mainListCtrl->Thaw();
 }
 
 void MyRemoteFilePanel::OnSizeChanged(wxSizeEvent &event) {
@@ -845,8 +730,8 @@ void MyRemoteFilePanel::OnEndDrag(wxListEvent &event) {
 }
 
 void MyRemoteFilePanel::UpdateSpaceCapacity(const long long &spaceUsed, const long long &spaceCapacity) {
-    this->spaceUsed = spaceUsed;
-    this->spaceCapacity = spaceCapacity;
+    //this->spaceUsed = spaceUsed;
+    //this->spaceCapacity = spaceCapacity;
     capacityText->SetLabel(
             wxString::Format(_("%s / %s"), ConvertSizeToDisplay(spaceUsed), ConvertSizeToDisplay(spaceCapacity)));
 }
@@ -861,4 +746,142 @@ void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
     }
      */
     SyncModel::Instance().StartUploadFile(fileNames, RemoteFileModel::Instance().GetCurrentPath());
+}
+
+void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {
+    // sync..
+    auto& file_model = qingzhen::api::api_remote_file_model::instance();
+    if (entity.code == U("FILE_NOT_FOUND")) {
+        wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
+                     _("Cannot go to directory"), wxICON_INFORMATION);
+        // RemoteFileModel::Instance().GetPage(this, U("/"), 1);
+        // this->file_refresh_cancellation.cancel();
+        // this->file_refresh_cancellation = pplx::cancellation_token_source();
+        // qingzhen::api::api_remote_file_model::instance().refresh_path(this->file_refresh_cancellation);
+        return;
+    }
+
+
+    auto success = file_model.on_response_entity_received(entity);
+    if(!success){
+        return;
+    }
+    this->RefreshDataGridDisplay();
+}
+
+void MyRemoteFilePanel::RefreshDataGridDisplay() {
+    mainListCtrl->Freeze();
+    // model->AppendItem( data ,1);
+    auto & file_model = qingzhen::api::api_remote_file_model::instance();
+    auto file_list = file_model.get_current_list();
+    long list_size = static_cast<long>(file_list.size());
+    auto refresh = list_size != last_list_size;
+    last_list_size = list_size;
+
+    /*
+     * "Type" --- "Filename" --- "FileSize" --- "FileType"
+     */
+    long cur = 0;
+    //long index = 0;
+    if (refresh) {
+        mainListCtrl->Hide();
+        mainListCtrl->DeleteAllItems();
+    }
+
+    for (const auto &i : file_list) {
+        // create item
+        wxListItem itemCol;
+        itemCol.SetId(cur);
+        // col 1 type
+        itemCol.SetColumn(0);
+        auto cx = i.at(U("type")).as_integer();
+        auto lock = i.at(U("locking")).as_bool();
+        if (cx == 1) {
+            if(lock){
+                itemCol.SetText(_T(" [+][L]"));
+            }else{
+                itemCol.SetText(_T(" [+]"));
+            }
+
+        } else if (cx == -1) {
+            itemCol.SetText(_T(" [E]"));
+            itemCol.SetTextColour(*wxRED);
+        } else {
+            if(lock) {
+                itemCol.SetText(_T(" [-][L]"));
+            }else{
+                itemCol.SetText(_T(" [-]"));
+            }
+        }
+        if (refresh) {
+            mainListCtrl->InsertItem(itemCol);
+        }
+        else {
+            mainListCtrl->SetItem(cur, 0, itemCol.GetText());
+        }
+        // col1 filename
+
+        mainListCtrl->SetItem(cur, 1, i.at(U("name")).as_string());
+        // col 2 file size
+        mainListCtrl->SetItem(cur, 2, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
+        // col3 mime
+        mainListCtrl->SetItem(cur, 3, i.at(U("ext")).as_string());
+        // col4 date
+        std::time_t t = i.at(U("ctime")).as_number().to_int64() / 1000;
+        mainListCtrl->SetItem(cur, 4, ConvertTimeToDisplay(t, "%Y/%m/%d %H:%M"));
+
+        //mainListCtrl->GetColumnWidth()
+        /*
+        // col3 size
+        wxListItem itemCol2;
+        itemCol2.SetId(cur);
+        itemCol2.SetColumn(2);
+        itemCol2.SetText(_T("0B"));
+        mainListCtrl->InsertItem(itemCol2);
+        //mainListCtrl->InsertItem(itemCol);
+        //itemCol.SetColumn(3);
+        wxListItem itemCol3;
+        itemCol3.SetId(cur);
+        itemCol3.SetColumn(3);
+        itemCol3.SetText(i.at(U("mime")).as_string());
+        mainListCtrl->InsertItem(itemCol3);
+         */
+        cur++;
+    }
+    if (refresh) {
+        mainListCtrl->Show();
+    }
+
+    ResetCurrentPathDisplay();
+    mainListCtrl->Thaw();
+}
+
+void MyRemoteFilePanel::GotoPath(const utility::string_t path, const int &page, const int &pageSize, const int &type) {
+    waitPage = true;
+    this->file_refresh_cancellation.cancel();
+    this->file_refresh_cancellation = pplx::cancellation_token_source();
+    // go and request...
+    qingzhen::api::api_remote_file_model::instance().goto_path(this->file_refresh_cancellation,path,page,pageSize,type).then([this](response_entity entity){
+        if(!entity.is_cancelled()){
+            this->CallAfter([this,entity](){
+                this->OnCurrentPageDataReceived(entity);
+            });
+        }
+        this->waitPage = false;
+    });
+}
+
+void MyRemoteFilePanel::GotoUUID(utility::string_t uuid, const int &page, const int &pageSize, const int &type) {
+    waitPage = true;
+    this->file_refresh_cancellation.cancel();
+    this->file_refresh_cancellation = pplx::cancellation_token_source();
+    // go and request...
+    qingzhen::api::api_remote_file_model::instance().goto_uuid(this->file_refresh_cancellation,uuid,page,pageSize,type).then([this](response_entity entity){
+        if(!entity.is_cancelled()){
+            this->CallAfter([this,entity](){
+                this->OnCurrentPageDataReceived(entity);
+            });
+        }
+        this->waitPage = false;
+    });
 }

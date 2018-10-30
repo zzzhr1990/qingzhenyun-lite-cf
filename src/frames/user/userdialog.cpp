@@ -16,9 +16,9 @@
 ////@end includes
 
 #include "userdialog.h"
-#include "../util/common_util.h"
-#include "../model/user_model.h"
-#include "../api_model/api_user_model.h"
+#include "../../util/common_util.h"
+#include "../../model/user_model.h"
+#include "../../api_model/api_user_model.h"
 ////@begin XPM images
 ////@end XPM images
 

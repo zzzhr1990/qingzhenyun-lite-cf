@@ -46,7 +46,6 @@ class MyRemoteFilePanel;
 #define ID_LISTCTRL 10016
 #define ID_CHECKBOX 10008
 #define ID_BITMAPBUTTON2 10017
-#define ID_BITMAPBUTTON3 10018
 #define ID_BITMAPBUTTON6 10021
 #define ID_BITMAPBUTTON7 10023
 #define ID_DOWNLOAD_FILE 6404
@@ -74,7 +73,7 @@ public:
     bool Create(wxWindow* parent, wxWindowID id = ID_MY_REMOTE_FILE_PANEL, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL);
 
     /// Destructor
-    ~MyRemoteFilePanel();
+    ~MyRemoteFilePanel() override;
 
     /// Initialises member variables
     void Init();
@@ -141,13 +140,26 @@ private:
 	wxBitmapButton* parentBtn = nullptr;
 	AddDirectoryDialog * addDirectoryDialog = nullptr;
     void OnItemRightClick(const wxListEvent & event);
-	long long spaceUsed = 0;
-	long long spaceCapacity = 0;
 	wxStaticText* capacityText = nullptr;
 	//VideoPreviewFrame * videoPreviewFrame = nullptr;
     wxMenu* menu = nullptr;
 	bool waitPage = false;
 	VideoPreviewFrame* previewFrame = nullptr;
+
+	void OnCurrentPageDataReceived(response_entity entity);
+
+	void RefreshDataGridDisplay();
+
+
+	// cancellation_token_source
+	long last_list_size = 0;
+	pplx::cancellation_token_source file_refresh_cancellation = pplx::cancellation_token_source();
+    pplx::cancellation_token_source create_cancellation = pplx::cancellation_token_source();
+
+    void GotoPath(utility::string_t path = _XPLATSTR(""), const int &page = -1,
+                  const int &pageSize = -1, const int &type = -1);
+    void GotoUUID(utility::string_t uuid = _XPLATSTR(""), const int &page = -1,
+                  const int &pageSize = -1, const int &type = -1);
 ////@end NyRemoteFilePanel member variables
 };
 
