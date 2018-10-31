@@ -156,8 +156,8 @@ void AddOfflineTask::CreateControls()
 	downloadPath = new wxTextCtrl(itemDialog1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
 	itemBoxSizer3->Add(downloadPath, 1, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-	wxButton* itemButton6 = new wxButton(itemDialog1, wxID_ANY, _("Change"), wxDefaultPosition, wxDefaultSize, 0);
-	itemBoxSizer3->Add(itemButton6, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+	wxButton* directoryChangeBtn = new wxButton(itemDialog1, wxID_ANY, _("Change"), wxDefaultPosition, wxDefaultSize, 0);
+	itemBoxSizer3->Add(directoryChangeBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
 	wxStdDialogButtonSizer* itemStdDialogButtonSizer12 = new wxStdDialogButtonSizer;
 

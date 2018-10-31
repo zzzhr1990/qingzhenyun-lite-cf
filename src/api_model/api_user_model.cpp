@@ -7,10 +7,12 @@
 #include "./base/token_store.h"
 using namespace qingzhen::api;
 
+/*
 api_user_model &api_user_model::instance() {
     static api_user_model c;
     return c;
 }
+ */
 
 void api_user_model::logout(std::function<void(response_entity)> &callback, const pplx::cancellation_token_source &cancellation_token_source) {
     this->then_json(this->logout(cancellation_token_source),callback);
@@ -87,4 +89,3 @@ bool api_user_model::is_user_login() {
 pplx::task<utility::string_t> api_user_model::async_read_token() {
     return token_store::instance().async_read_token();
 }
-

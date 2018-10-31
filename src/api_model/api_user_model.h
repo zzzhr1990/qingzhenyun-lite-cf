@@ -9,9 +9,8 @@
 #include "base/base_api_model.h"
 
 namespace qingzhen::api{
-    class api_user_model : base_api_model {
+    class api_user_model : public base_api_model<api_user_model> {
     public:
-        static api_user_model& instance();
         void logout(std::function<void(response_entity)> &callback, const pplx::cancellation_token_source &cancellation_token_source);
         pplx::task<response_entity> logout(const pplx::cancellation_token_source &cancellation_token_source);
 
@@ -33,6 +32,8 @@ namespace qingzhen::api{
         bool is_user_login();
 
         pplx::task<utility::string_t>  async_read_token();
+
+        void OnDirectoryInfoReceived();
 
     private:
         web::json::value user_info;

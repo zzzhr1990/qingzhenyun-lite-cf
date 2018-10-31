@@ -17,15 +17,7 @@
  * Includes
  */
 
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
+#include "../../common/common_wx.h"
 
  ////@begin includes
 #include "wx/imaglist.h"
@@ -53,10 +45,7 @@ class OfflineDownloadTaskPanel;
 
 ////@begin control identifiers
 
-#define SYMBOL_OFFLINEDOWNLOADTASKPANEL_STYLE wxSUNKEN_BORDER|wxTAB_TRAVERSAL
-#define SYMBOL_OFFLINEDOWNLOADTASKPANEL_IDNAME ID_OFFLINE_DOWNLOAD_PANEL
-#define SYMBOL_OFFLINEDOWNLOADTASKPANEL_SIZE wxDefaultSize
-#define SYMBOL_OFFLINEDOWNLOADTASKPANEL_POSITION wxDefaultPosition
+
 #define ID_COPY_URL_TO_CLIP 6401
 #define ID_VIEW_TASK_DETAIL 6402
 #define ID_DELETE_SELECT_TASKS 6403
@@ -126,7 +115,6 @@ private:
 	void ShowTaskDetail(const web::json::value & v);
 	void OnItemRightClick(const wxListEvent & event);
 	void OnPageInputKillFocus(const wxFocusEvent & event);
-	void OnThreadEvent(wxThreadEvent & event);
 	void RefreshListData(const response_entity & payload);
 	void PrevBtnClicked(const wxCommandEvent & event);
 	void StartDownloadUrl(const wxString & str);
@@ -144,7 +132,7 @@ private:
 	wxBitmapButton* nextPageBtn = nullptr;
 	wxTextCtrl* currentPageInput = nullptr;
 	AddOfflineTask* addOfflineTask = nullptr;
-	wxString currentDownloadPath = _T("/");
+	wxString currentDownloadPath = wxT("/");
 	wxMenu* menu = nullptr;
 };
 

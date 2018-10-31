@@ -83,7 +83,6 @@ public:
 
     void RefreshData(const bool& force = true);
 
-    void OnThreadEvent(wxThreadEvent& event);
 
 	void OnUserRemoteFileDClick(wxMouseEvent & event);
 
@@ -93,7 +92,7 @@ public:
 
 	void NewDirectoryBtnClicked(wxCommandEvent & event);
 
-	void ParentBtnClicked(wxCommandEvent & event);
+
 
 	void PrevBtnClicked(wxCommandEvent & event);
 
@@ -105,7 +104,6 @@ public:
 
 	void OnPageInputKillFocus(wxFocusEvent & event);
 
-	void RefreshListData(const response_entity& res);
     void OnCtrlListMenuClicked(const wxCommandEvent &event);
 
 	void DoOpenFiles(const wxArrayString &fileNames);
@@ -149,6 +147,10 @@ private:
 	void OnCurrentPageDataReceived(response_entity entity);
 
 	void RefreshDataGridDisplay();
+
+	void ParentBtnClicked(wxCommandEvent & event);
+
+	void OnMoveBtnClicked(wxCommandEvent & event);
 
 
 	// cancellation_token_source

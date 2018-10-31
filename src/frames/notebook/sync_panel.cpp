@@ -5,7 +5,6 @@
 #include "sync_panel.h"
 
 #include "../../resources/refresh.xpm"
-#include "../../model/sync_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
 #include <wx/platinfo.h>
@@ -116,7 +115,10 @@ void SyncPanel::CreateControls() {
     menu->Append(ID_VIEW_D_TASK_DETAIL, _("View task detail"));
     menu->Append(ID_VIEW_D_OPEN_IN_EXPLORER, _("Open in Explorer"));
     menu->Bind(wxEVT_MENU, &SyncPanel::OnCtrlListMenuClicked, this);
+    //TODO:FIX
+    /*
     SyncModel::Instance().AddRefreshListener(U("SYNC_PANEL"),this);
+     */
 ////@end OfflineDownloadTaskPanel content construction
 }
 
@@ -280,7 +282,10 @@ void SyncPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 }
 
 void SyncPanel::RefreshData() {
+    //TODO:FIX
+    /*
     SyncModel::Instance().ForceRefresh(this);
+     */
 }
 
 SyncPanel::SyncPanel() {

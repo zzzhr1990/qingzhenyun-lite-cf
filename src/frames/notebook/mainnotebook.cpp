@@ -20,9 +20,7 @@
 
 #include "mainnotebook.h"
 #include "../../common/common_event_ids.h"
-#include "../../model/remote_file_model.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
-#include "../../model/sync_model.h"
 #include "../mainframe.h"
 #include "../../util/common_util.h"
 
@@ -165,12 +163,14 @@ void MainNotebook::CreateControls()
 void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
 	switch (event.GetInt()) {
 	case USER_GOTO_DIRECTORY: {
+	    /*
 		auto& path = event.GetString();
 		auto &model = RemoteFileModel::Instance();
 		model.SetCurrentPage(1);
 		model.SetCurrentPath(path);
 		this->ChangeSelection(0);
 		RefreshCurrentPage();
+	     */
 		break;
 	}
 
@@ -287,7 +287,7 @@ void MainNotebook::TimerTick() {
             break;
     }
 
-    SyncModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
+    //SyncModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
 }
 
 void MainNotebook::DoOpenFiles(const wxArrayString &fileNames) {

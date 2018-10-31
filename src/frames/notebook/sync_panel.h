@@ -5,14 +5,7 @@
 #ifndef QINGZHENYUN_LITE_SYNC_PANEL_H
 #define QINGZHENYUN_LITE_SYNC_PANEL_H
 
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
+#include "../../common/common_wx.h"
 
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"

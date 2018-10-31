@@ -16,7 +16,6 @@
 ////@end includes
 
 #include "updatedialog.h"
-#include "../model/update_model.h"
 ////@begin XPM images
 ////@end XPM images
 
@@ -120,7 +119,7 @@ void UpdateDialog::CreateControls(const web::json::value& updateData)
     itemBoxSizer3->Add(itemBoxSizer4, 0, wxGROW|wxALL, 5);
 
     auto versionStr = updateData.at(_XPLATSTR("displayVersion")).as_string();
-    auto currentVersionStr = UpdateModel::Instance().GetDisplayVersion();
+    auto currentVersionStr = wxT("0.0.0.0");
     auto currentVersionCompare = _("Current Version: %s | New Version: %s");
 
     wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, wxString::Format(currentVersionCompare,currentVersionStr,versionStr), wxDefaultPosition, wxDefaultSize, 0 );

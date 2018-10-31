@@ -23,12 +23,9 @@
 #include "../resources/settings.xpm"
 ////@end XPM images
 
-#include "../model/user_model.h"
 #include "../api_model/api_user_model.h"
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
-#include "../model/sync_model.h"
-#include "../model/update_model.h"
 #include "../common/common_util.hpp"
 #include "../local_model/config_model.h"
 #include "user/userlogindialog.h"
@@ -36,6 +33,7 @@
 #include "user/userdialog.h"
 #include <wx/utils.h>
 #include <wx/stdpaths.h>
+#include <wx/filename.h>
 
 /*
  * MainFrame type definition
@@ -160,7 +158,6 @@ void MainFrame::CreateControls()
     itemStatusBar17->SetStatusWidths(2, itemStatusBar17Widths);
     itemFrame1->SetStatusBar(itemStatusBar17);
     // when inited, check this box.
-    this->Bind(wxEVT_THREAD, &MainFrame::OnThreadEvent, this);
     this->Bind(wxEVT_IDLE, &MainFrame::OnWindowCreate, this);
     this->Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
 ////@end MainFrame content construction
@@ -186,7 +183,6 @@ void MainFrame::OnToolClick(const wxCommandEvent& event) {
 void MainFrame::showLoginFrame(const wxString& text) {
     auto * loginDialog = new UserLoginDialog(this, wxID_ANY, text);
     if(wxID_OK == loginDialog->ShowModal()) {
-        //std::cout << "Try login" << std::endl;
         if(loginDialog->GetNoteCurrentSelection() == 0){
             // Login By User Id
             this->TryLogin(loginDialog->GetPasswordCountryCode(),loginDialog->GetUserInput(),loginDialog->GetUsePassword());
@@ -209,9 +205,9 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
         if(token.empty()){
             this->CallAfter([this](){this->showLoginFrame(_("User login"));});
         }else{
-            //std::cout << "Read the token:" << token << std::endl; login by token
+            last_user_refresh_time = qingzhen::util::get_current_linux_timestamp();
 			check_login_source.cancel();
-			check_login_source = pplx::cancellation_token_source();
+            check_login_source = pplx::cancellation_token_source();
 			qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp){
 				if (!resp.is_cancelled()) {
 					if (resp.success) {
@@ -220,28 +216,14 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
 						this->CallAfter([this]() { this->showLoginFrame(_("Login Failed")); });
 					}
 				}
+				else{
+				    std::cout << "Cancelled" << std::endl;
+				}
 			});
         }
     });
 
-	//UserLoginDialog * userLogin = new UserLoginDialog(this);
-	//userLogin->ShowModal();
-	//Check Version
-	
 
-    //UserModel::Instance().IsUserLogin();
-    // showLoginFrame(_("苟利国家"));
-    // check login ...
-    // user_model->terminate();
-    //this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnWindowCreate));
-    /*
-    if (!UserModel::instance().IsUserLogin()) {
-        showLoginFrame();
-    }else{
-        //refresh
-        OnUserLogin();
-    }
-     */
 }
 
 
@@ -255,15 +237,17 @@ bool MainFrame::ShowToolTips()
 }
 
 void MainFrame::OnClose(wxCloseEvent& event){
+    /*
 	if (!SyncModel::Instance().isAllFinished()) {
 		if (wxOK != wxMessageBox(_("It seems you are syncing files, are you sure?"), _("Confirm close"), wxOK | wxCANCEL | wxICON_ASTERISK)) {
 			event.Veto();
 			return;
 		}
 	}
+     */
+
     event.Skip();
     this->Terminate();
-    UserModel::Instance().Terminate();
    // UpdateModel::Instance().Terminate();
 }
 
@@ -309,7 +293,6 @@ wxIcon MainFrame::GetIconResource( const wxString& name )
 }
 
 void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, const wxString &password) {
-    //UserModel::Instance().TryLogin(this,input,password);
 	normal_login_source.cancel();
     auto & user_model = qingzhen::api::api_user_model::instance();
     utility::string_t _cc = wxString2CpprestString(countryCode);
@@ -325,7 +308,6 @@ void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, con
 				return;
 			}
             auto onFailed = [this]()-> void {
-                //std::cout << "Login Success" << std::endl;
                 this->showLoginFrame(_("Login Failed"));
             };
             this->CallAfter(onFailed);
@@ -334,61 +316,6 @@ void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, con
     });
 }
 
-void MainFrame::OnThreadEvent(wxThreadEvent &event) {
-    if(this->terminated){
-        return;
-    }
-    switch (event.GetInt()){
-        case USER_LOGIN_RESPONSE:{
-            SetStatusText(_("User login..."), 0);
-            const response_entity &r = event.GetPayload<response_entity>();
-            UserModel::Instance().SetUserInfo(r.result);
-            UserModel::Instance().StartUserCheckLoop(this);
-            mainNotebook->RefreshCurrentPage();
-			if (r.result.has_field(U("spaceUsed"))) {
-				mainNotebook->UpdateSpaceCapacity(r.result.at(U("spaceUsed")).as_number().to_int64(), r.result.at(U("spaceCapacity")).as_number().to_int64());
-			}
-			
-            break;
-        }
-
-        case USER_LOGIN_FAILED_RESPONSE:
-        {
-            const response_entity &r = event.GetPayload<response_entity>();
-            UserModel::Instance().Logout();
-            showLoginFrame(_T("Login failed, please login again."));
-            break;
-        }
-
-		case USER_REFRESH_RESPONSE: {
-			
-            break;
-		}
-        case PROGRAM_UPDATE_INFO:{
-            const response_entity &r = event.GetPayload<response_entity>();
-            if(r.success){
-                auto updateInfoList = r.result.as_array();
-                if(updateInfoList.size() > 0){
-                    auto updateInfo = updateInfoList.at(0);
-                    auto *update = new UpdateDialog(this,updateInfo);
-                    if(wxID_OK == update->ShowModal() ){
-                        //std::cout << "Open New" << std::endl;
-                        auto linkUrl = updateInfo.at((_XPLATSTR("linkUrl"))).as_string();
-                        if(updateInfo.at((_XPLATSTR("action"))).as_integer() == 0){
-                            wxLaunchDefaultBrowser(linkUrl);
-                        }
-                    }
-                }
-
-            }
-            break;
-        }
-        default:
-            event.Skip();
-    }
-    // 智障Windows，一半的代码都是给傻逼微软擦屁股
-	
-}
 
 void MainFrame::DoOpenFiles(const wxArrayString &fileNames) {
     mainNotebook->DoOpenFiles(fileNames);
@@ -433,7 +360,6 @@ void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &cod
 }
 
 void MainFrame::OnLoginSuccess(response_entity entity) {
-    // std::cout << "Login Success" << std::endl;
     qingzhen::api::api_user_model::instance().set_user_info(entity.result);
     auto checkFunction = [this](){
 		if (qingzhen::api::api_user_model::instance().is_user_login()) {
@@ -442,12 +368,12 @@ void MainFrame::OnLoginSuccess(response_entity entity) {
 
 			qingzhen::util::get_current_linux_timestamp();
 			if (qingzhen::util::get_current_linux_timestamp() - last_user_refresh_time > 120L) {
-				check_login_source.cancel();
-				check_login_source = pplx::cancellation_token_source();
+                check_login_source.cancel();
+                check_login_source = pplx::cancellation_token_source();
 				qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp) {
 					if (!resp.is_cancelled()) {
 						if (resp.success) {
-							//this->OnLoginSuccess(resp);
+						    // jump into UI thread
 							this->CallAfter([this]() {this->UpdateUserInfo(); });
 						}
 						else {
@@ -472,16 +398,15 @@ void MainFrame::OnLoginSuccess(response_entity entity) {
 void MainFrame::FindConfigPath()
 {
 	auto config_path = wxStandardPaths::Get().GetUserDataDir() + wxFileName::GetPathSeparator() + wxT("qingzhenyun");
-	//auto config_path = wxT("C:\\Program Files (x86)\\qingzhen");
-	auto succ = false;
+	bool success;
 	if (!this->IsDirAvailable(config_path)) {
 		config_path = wxStandardPaths::Get().GetAppDocumentsDir() + wxFileName::GetPathSeparator() + wxT("qingzhenyun");
-		succ = this->IsDirAvailable(config_path);
+		success = this->IsDirAvailable(config_path);
 	}
 	else {
-		succ = true;
+		success = true;
 	}
-	if (!succ) {
+	if (!success) {
 		wxMessageBox(_("Cannot get config directory, your configuration may not saved."), _("Cannot get config directory"));
 	}
 	else {
@@ -491,16 +416,14 @@ void MainFrame::FindConfigPath()
 }
 
 bool MainFrame::IsDirAvailable(wxString config_path) {
-	auto succ = false;
-	//wxFileName config_path_name = wxFileName(config_path);
+	bool success;
 	if (!wxFileName::Exists(config_path, wxFILE_EXISTS_DIR)) {
-		//wxMessageBox(config_path, "Disk readable!");
-		succ = wxFileName::Mkdir(config_path, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+		success = wxFileName::Mkdir(config_path, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 	}
 	else {
-		succ = wxFileName::IsDirReadable(config_path) && wxFileName::IsDirWritable(config_path);
+		success = wxFileName::IsDirReadable(config_path) && wxFileName::IsDirWritable(config_path);
 	}
-	return succ;
+	return success;
 }
 
 void MainFrame::UpdateUserInfo() {

@@ -8,12 +8,15 @@
 #include "../entity/response_entity.h"
 #include "base/base_api_model.h"
 namespace qingzhen::api {
-    class api_remote_file_model  : base_api_model {
+    class api_remote_file_model  : public base_api_model<api_remote_file_model> {
     public:
-        static api_remote_file_model& instance();
+        //static api_remote_file_model& instance();
         pplx::task<response_entity> refresh_path(const pplx::cancellation_token_source &cancellation_token_source,
                                                  const utility::string_t &path = _XPLATSTR(""), const int &page = -1,
                                                  const int &page_size = -1, const int &type = -1);
+        pplx::task<response_entity> refresh_path_list_ex(const pplx::cancellation_token_source &cancellation_token_source,
+                                                 const utility::string_t &path = _XPLATSTR(""), const int &start = -1,
+                                                 const int &size = -1, const int &type = -1);
         pplx::task<response_entity> goto_path(const pplx::cancellation_token_source &cancellation_token_source,
                                                  const utility::string_t &path = _XPLATSTR(""), const int &page = -1,
                                                  const int &page_size = -1, const int &type = -1);

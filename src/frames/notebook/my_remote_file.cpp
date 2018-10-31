@@ -27,10 +27,9 @@
 ////@end includes
 
 #include "my_remote_file.h"
-#include "../../model/remote_file_model.h"
 #include "../../api_model/api_remote_file_model.h"
-#include "../../model/sync_model.h"
 #include "../../util/common_util.h"
+#include "../file/remove_file_select.h"
 
 ////@begin XPM images
 #include "../../resources/refresh.xpm"
@@ -275,7 +274,6 @@ void MyRemoteFilePanel::CreateControls() {
                                      wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     itemBoxSizer4->Add(nextPageBtn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    this->Bind(wxEVT_THREAD, &MyRemoteFilePanel::OnThreadEvent, this);
     mainListCtrl->Bind(wxEVT_SIZE, &MyRemoteFilePanel::OnSizeChanged, this);
     mainListCtrl->Bind(wxEVT_LIST_COL_BEGIN_DRAG, &MyRemoteFilePanel::OnStartDrag, this);
     mainListCtrl->Bind(wxEVT_LIST_COL_END_DRAG, &MyRemoteFilePanel::OnEndDrag, this);
@@ -294,6 +292,8 @@ void MyRemoteFilePanel::CreateControls() {
 	
     menu->Bind(wxEVT_MENU, &MyRemoteFilePanel::OnCtrlListMenuClicked, this);
     mainListCtrl->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MyRemoteFilePanel::OnItemRightClick, this);
+
+    moveDirectoryBtn->Bind(wxEVT_BUTTON, &MyRemoteFilePanel::OnMoveBtnClicked, this);
 ////@end NyRemoteFilePanel content construction
 }
 
@@ -362,6 +362,7 @@ void MyRemoteFilePanel::RefreshData(const bool& force) {
     this->GotoPath();
 }
 
+/*
 void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
     // D
     switch (event.GetInt()) {
@@ -393,6 +394,7 @@ void MyRemoteFilePanel::OnThreadEvent(wxThreadEvent &event) {
             event.Skip();
     }
 }
+ */
 
 void MyRemoteFilePanel::OnUserRemoteFileDClick(wxMouseEvent &event) {
     if (mainListCtrl->GetSelectedItemCount() > 0) {
@@ -409,6 +411,8 @@ void MyRemoteFilePanel::OnItemRightClick(const wxListEvent &event) {
 
 void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 	//// Get Select
+	//TODO:FIX
+	/*
 	long itemIndex = -1;
 	std::vector<long> selectedItems;
 	auto &fileModel = RemoteFileModel::Instance();
@@ -495,6 +499,7 @@ void MyRemoteFilePanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
 			}
 		}
 	}
+	 */
 }
 
 
@@ -651,43 +656,7 @@ void MyRemoteFilePanel::OnPageInputKillFocus(wxFocusEvent &event) {
 
 }
 
-void MyRemoteFilePanel::RefreshListData(const response_entity &payload) {
-	waitPage = false;
-    if (payload.code == U("FILE_NOT_FOUND")) {
-        wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
-                     _("Cannot go to directory"), wxICON_INFORMATION);
-        RemoteFileModel::Instance().GetPage(this, U("/"), 1);
-        return;
-    }
-    if(!payload.success){
-        return;
-    }
-    // check if a file
-    if (payload.result.has_field(U("info"))) {
-        const web::json::value &info = payload.result.at(U("info"));
-        if (info.has_field(U("type"))) {
-            const int &type = info.at(U("type")).as_integer();
-            if (type == 0) {
-                //wxMessageBox("Ahhh");
-                if (info.has_field(U("parent"))) {
-                    const auto &parent = info.at(U("parent")).as_string();
-                    if (parent.empty()) {
-                        RemoteFileModel::Instance().GetPage(this, U("/"), 1);
-                        return;
-                    } else {
-                        RemoteFileModel::Instance().GetPageById(this, parent, 1);
-                        return;
-                    }
-                }
-                RemoteFileModel::Instance().GetPage(this, U("/"), 1);
-                return;
-            }
-        }
-    }
-    //
-    web::json::array list = payload.result.at(U("list")).as_array();
 
-}
 
 void MyRemoteFilePanel::OnSizeChanged(wxSizeEvent &event) {
     event.Skip();
@@ -745,7 +714,10 @@ void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
         auto path = RemoteFileModel::Instance().GetCurrentPath();
     }
      */
-    SyncModel::Instance().StartUploadFile(fileNames, RemoteFileModel::Instance().GetCurrentPath());
+    //TODO:FIX
+    /*
+     * SyncModel::Instance().StartUploadFile(fileNames, RemoteFileModel::Instance().GetCurrentPath());
+     */
 }
 
 void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {
@@ -754,10 +726,9 @@ void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {
     if (entity.code == U("FILE_NOT_FOUND")) {
         wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
                      _("Cannot go to directory"), wxICON_INFORMATION);
-        // RemoteFileModel::Instance().GetPage(this, U("/"), 1);
-        // this->file_refresh_cancellation.cancel();
-        // this->file_refresh_cancellation = pplx::cancellation_token_source();
-        // qingzhen::api::api_remote_file_model::instance().refresh_path(this->file_refresh_cancellation);
+        this->file_refresh_cancellation.cancel();
+        this->file_refresh_cancellation = pplx::cancellation_token_source();
+        qingzhen::api::api_remote_file_model::instance().refresh_path(this->file_refresh_cancellation);
         return;
     }
 
@@ -875,7 +846,6 @@ void MyRemoteFilePanel::GotoUUID(utility::string_t uuid, const int &page, const 
     waitPage = true;
     this->file_refresh_cancellation.cancel();
     this->file_refresh_cancellation = pplx::cancellation_token_source();
-    // go and request...
     qingzhen::api::api_remote_file_model::instance().goto_uuid(this->file_refresh_cancellation,uuid,page,pageSize,type).then([this](response_entity entity){
         if(!entity.is_cancelled()){
             this->CallAfter([this,entity](){
@@ -884,4 +854,10 @@ void MyRemoteFilePanel::GotoUUID(utility::string_t uuid, const int &page, const 
         }
         this->waitPage = false;
     });
+}
+
+void MyRemoteFilePanel::OnMoveBtnClicked(wxCommandEvent &event) {
+    WXUNUSED(event);
+    auto removeFileSelect = new RemoteFileSelect(this);
+    removeFileSelect->ShowModal();
 }

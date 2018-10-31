@@ -367,7 +367,6 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
     this->SendTextMessage();
     utility::string_t phoneToSend = phone;
 	send_message_cancellation_token_source.cancel();
-	//last_source.cancel();
 	send_message_cancellation_token_source = pplx::cancellation_token_source();
 	qingzhen::api::api_user_model::instance().send_login_message(countryCode, phoneToSend, send_message_cancellation_token_source)
     .then([this](response_entity r){

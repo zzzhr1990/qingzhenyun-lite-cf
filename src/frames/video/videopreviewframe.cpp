@@ -26,8 +26,7 @@
 ////@end includes
 
 #include "videopreviewframe.h"
-#include "../../model/remote_file_model.h"
-#include "../../model/user_model.h"
+
 ////@begin XPM images
 ////@end XPM images
 #ifdef U
@@ -107,7 +106,10 @@ VideoPreviewFrame::VideoPreviewFrame(const utility::string_t &path, wxWindow* pa
 		printLog(_XPLATSTR("Create player success. "));
 		mpv_set_option_string(ctx, "title",utility::conversions::to_utf8string(path).c_str());
 		mpv_set_option_string(ctx, "force-media-title", utility::conversions::to_utf8string(path).c_str());
+		//TODO:FIX
+		/*
 		RemoteFileModel::Instance().GetPreviewInfo(this, path);
+		 */
 	}
 	
 }
@@ -315,7 +317,10 @@ void VideoPreviewFrame::PlayPreview(const web::json::array & array)
 		}
 	}
 	if (clear > 0) {
+		//TODO:FIX
+		/*
 		auto url = t.append(U("?token=")).append(UserModel::Instance().GetToken());
+
 		const std::string& playUrl = utility::conversions::to_utf8string(url);
 		//auto system = wxPlatformInfo::Get().GetOperatingSystemId();
 		printLog(_XPLATSTR("Starting media player..."));
@@ -334,6 +339,7 @@ void VideoPreviewFrame::PlayPreview(const web::json::array & array)
 		// Play this file.
 		const char *cmd[] = { "loadfile", xx.c_str(), nullptr };
 		mpv_command(ctx, cmd);
+		 */
 		//instance =
 		/*
 		mpv_handle *ctx = mpv_create();
@@ -446,8 +452,5 @@ void VideoPreviewFrame::CloseInner() {
 }
 
 
-/*
- * wxEVT_SCROLL_PAGEUP event handler for ID_SLIDER
- */
 
 

@@ -20,8 +20,6 @@
 #include "../../resources/refresh.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
-#include "../../model/offine_task_model.h"
-#include "../../model/remote_file_model.h"
 //#include "../../model/remote_download_task_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
@@ -176,7 +174,6 @@ void OfflineDownloadTaskPanel::CreateControls()
 
     nextPageBtn = new wxBitmapButton( itemPanel2, wxID_ANY, itemPanel2->GetBitmapResource(wxT("right_btn.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     itemBoxSizer8->Add(nextPageBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-	this->Bind(wxEVT_THREAD, &OfflineDownloadTaskPanel::OnThreadEvent, this);
 	currentPageInput->Bind(wxEVT_LEFT_DCLICK, &OfflineDownloadTaskPanel::OnPageInputDClick, this);
 	mainListCtrl->Bind(wxEVT_SIZE, &OfflineDownloadTaskPanel::OnSizeChanged, this);
 	mainListCtrl->Bind(wxEVT_LIST_COL_BEGIN_DRAG, &OfflineDownloadTaskPanel::OnStartDrag, this);
@@ -210,7 +207,8 @@ bool OfflineDownloadTaskPanel::ShowToolTips()
  */
 // wxListEvent
 void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event) {
-	
+	//TODO: FIX this
+	/*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	auto list = fileModel.GetCurrentList();
 	long count = list.size();
@@ -266,6 +264,7 @@ void OfflineDownloadTaskPanel::OnCtrlListMenuClicked(const wxCommandEvent &event
 		}
 		return;
 	}
+	 */
 	/*
 	if (event.GetId() == ID_COPY_URL_TO_CLIP) {
 		long itemIndex = -1;
@@ -344,6 +343,8 @@ void OfflineDownloadTaskPanel::OnSizeChanged( wxSizeEvent &event) {
 
 void OfflineDownloadTaskPanel::OnUserRemoteTaskActivated(const wxListEvent &event)
 {
+    //TODO:FIX
+    /*
 	long index = event.GetIndex();
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	auto list = fileModel.GetCurrentList();
@@ -367,7 +368,7 @@ void OfflineDownloadTaskPanel::OnUserRemoteTaskActivated(const wxListEvent &even
 		}
 		
 	}
-	
+	*/
 	
 }
 
@@ -419,20 +420,28 @@ wxIcon OfflineDownloadTaskPanel::GetIconResource( const wxString& name )
 
 void OfflineDownloadTaskPanel::OnPageInputDClick(const wxMouseEvent &event) {
 	//event.Get
+	//TODO:FIX
+	/*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	currentPageInput->SetValue(wxString::Format(_T("%d"), fileModel.GetCurrentPage()));
 	currentPageInput->SetEditable(true);
 	currentPageInput->Bind(wxEVT_KILL_FOCUS, &OfflineDownloadTaskPanel::OnPageInputKillFocus, this);
+	 */
 }
 
 void OfflineDownloadTaskPanel::RefreshBtnClicked(const wxCommandEvent &event) {
+    //TODO:FIX
+    /*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	fileModel.GetPage(this);
+     */
 
 }
 
 void OfflineDownloadTaskPanel::OnPageInputKillFocus(const wxFocusEvent &event) {
 
+    //TODO:FIX
+    /*
 	currentPageInput->Unbind(wxEVT_KILL_FOCUS, &OfflineDownloadTaskPanel::OnPageInputKillFocus, this);
 	currentPageInput->SetEditable(false);
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
@@ -444,54 +453,15 @@ void OfflineDownloadTaskPanel::OnPageInputKillFocus(const wxFocusEvent &event) {
 	else {
 		ResetCurrentPathDisplay();
 	}
+     */
 
 }
 
-void OfflineDownloadTaskPanel::OnThreadEvent( wxThreadEvent &event) {
-	// D
-	switch (event.GetInt()) {
-	case USER_REMOTE_TASK_PAGE_DATA:
-	{
-		auto payload = event.GetPayload<response_entity>();
-		RefreshListData(payload);
-		break;
-	}
-	case USER_REMOTE_TASK_CREATE:
-	{
-		auto & remoteModel = OfflineDownloadTaskModel::Instance();
-		remoteModel.GetPage(this);
-		break;
-	}
-	case USER_REMOTE_TASK_DELETE:
-	{
-		auto & remoteModel = OfflineDownloadTaskModel::Instance();
-		remoteModel.GetPage(this);
-		break;
-	}
-	case USER_REMOTE_TASK_URL_PARSED:
-	{
-		auto payload = event.GetPayload<response_entity>();
-		//RefreshListData(payloads);
-		const auto & res = payload.result;
-		if (res.has_field(U("taskHash"))) {
-			// start
-			auto & remoteModel = OfflineDownloadTaskModel::Instance();
-			remoteModel.StartTask(this, res.at(U("taskHash")).as_string(), currentDownloadPath, _("*"));
-		}
-		break;
-	}
-	case USER_REMOTE_TASK_URL_START: {
-		addOfflineTask->ClearUrlInputStr();
-		OfflineDownloadTaskModel::Instance().GetPage(this, 1);
-		break;
-	}
-		
-	default:
-		event.Skip();
-	}
-}
+
 
 void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
+    //TODO:FIX
+    /*
 	mainListCtrl->Freeze();
 	auto model = &OfflineDownloadTaskModel::Instance();
 	web::json::array list = payload.result.at(U("list")).as_array();
@@ -564,85 +534,35 @@ void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
 	}
 	mainListCtrl->Thaw();
 	ResetCurrentPathDisplay();
+     */
 }
 
-//void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
-	/*
-	web::json::array list = payload.result.at(U("list")).as_array();
-	// model->AppendItem( data ,1);
-	auto model = &RemoteFileModel::Instance();
-	auto dirInfo = payload.result.at(U("info"));
-	auto currentPath = dirInfo.at(U("path")).as_string();
-	auto currentId = dirInfo.at(U("uuid")).as_string();
-	auto parent = dirInfo.at(U("parent")).as_string();
-	auto currentPage = payload.result.at(U("page")).as_integer();
-	auto currentPageSize = payload.result.at(U("pageSize")).as_integer();
-	auto totalPage = payload.result.at(U("totalPage")).as_integer();
-	model->UpdateCurrentLocation(currentPath, currentId, currentPage, currentPageSize, totalPage, parent, list);
-	
-	// * "Type" --- "Filename" --- "FileSize" --- "FileType"
-	
-	long cur = 0;
-	//long index = 0;
-	mainListCtrl->Hide();
-	mainListCtrl->DeleteAllItems();
-	for (const auto& i : list) {
-		// create item
-		wxListItem itemCol;
-		itemCol.SetId(cur);
-		// col 1 type
-		itemCol.SetColumn(0);
-		auto cx = i.at(U("type")).as_integer();
-		if (cx == 1) {
-			itemCol.SetText(_T("[+]"));
-		}
-		else if (cx == -1) {
-			itemCol.SetText(_T("[E]"));
-			itemCol.SetTextColour(*wxRED);
-		}
-		else {
-			itemCol.SetText(_T("[-]"));
-		}
-		mainListCtrl->InsertItem(itemCol);
-		// col1 filename
-
-		mainListCtrl->SetItem(cur, 1, i.at(U("name")).as_string());
-		// col 2 file size
-		mainListCtrl->SetItem(cur, 2, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
-		// col3 mime
-		mainListCtrl->SetItem(cur, 3, i.at(U("ext")).as_string());
-		// col4 date
-		std::time_t t = i.at(U("ctime")).as_number().to_int64() / 1000;
-		mainListCtrl->SetItem(cur, 4, ConvertTimeToDisplay(t, "%Y/%m/%d %H:%M"));
-
-
-		cur++;
-	}
-	mainListCtrl->Show();
-	ResetCurrentPathDisplay();
-	mainListCtrl->SetFocus();
-	*/
-
-//}
 
 void OfflineDownloadTaskPanel::PrevBtnClicked(const wxCommandEvent &event) {
+    //TODO:FIX
+    /*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	auto page = fileModel.GetCurrentPage();
 	if (page > 1) {
 		fileModel.GetPage(this, page - 1);
 	}
+     */
 }
 
 void OfflineDownloadTaskPanel::NextBtnClicked(const wxCommandEvent &event) {
+    //TODO:FIX
+    /*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	auto page = fileModel.GetCurrentPage();
 	if (page < fileModel.GetTotalPage()) {
 		fileModel.GetPage(this, page + 1);
 	}
+     */
 }
 
 void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
-	//show
+	//TODO:FIX
+	/*
 	if (this->addOfflineTask == nullptr) {
 		addOfflineTask = new AddOfflineTask(this, wxID_ANY);
 		addOfflineTask->Iconize(false);
@@ -668,9 +588,12 @@ void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
 			OfflineDownloadTaskModel::Instance().StartUrl(this, userUrlInput);
 		}
 	}
+	 */
 }
 
 void OfflineDownloadTaskPanel::ResetCurrentPathDisplay() {
+    //TODO:FIX
+    /*
 	auto & fileModel = OfflineDownloadTaskModel::Instance();
 	auto const &currentPage = fileModel.GetCurrentPage();
 	auto const &totalPage = fileModel.GetTotalPage();
@@ -678,6 +601,7 @@ void OfflineDownloadTaskPanel::ResetCurrentPathDisplay() {
 	currentPageInput->SetEditable(false);
 	prevPageBtn->Enable(currentPage > 1);
 	nextPageBtn->Enable(currentPage < totalPage);
+     */
 }
 
 void OfflineDownloadTaskPanel::OnStartDrag(wxListEvent & event)
@@ -694,10 +618,15 @@ void OfflineDownloadTaskPanel::OnEndDrag(wxListEvent & event)
 }
 
 void OfflineDownloadTaskPanel::RefreshData() {
+    //TODO:FIX
+    /*
 	OfflineDownloadTaskModel::Instance().GetPage(this);
+     */
 }
 
 void OfflineDownloadTaskPanel::StartDownloadUrl(const wxString& str) {
 	//OfflineDownloadTaskModel::Instance().GetPage(this);
+	/*
 	OfflineDownloadTaskModel::Instance().GetPage(this);
+	 */
 }

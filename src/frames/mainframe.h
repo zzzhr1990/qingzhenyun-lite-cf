@@ -16,7 +16,7 @@
 /*!
  * Includes
  */
-
+#include "../common/common_wx.h"
 ////@begin includes
 #include "wx/frame.h"
 #include "wx/toolbar.h"
@@ -114,7 +114,6 @@ private:
     void OnWindowCreate(wxIdleEvent& event);
     void TryLogin(const wxString &countryCode, const wxString & input, const wxString & password);
     void TryLoginByMessage(const wxString &phoneInfo, const wxString & code);
-    void OnThreadEvent(wxThreadEvent& event);
     void OnLoginSuccess(response_entity entity);
     bool terminated = false;
     SimpleTimer globalTimer;

@@ -4,11 +4,12 @@
 
 #include "api_remote_file_model.h"
 using namespace qingzhen::api;
-
+/*
 api_remote_file_model &api_remote_file_model::instance() {
     static api_remote_file_model c;
     return c;
 }
+ */
 
 pplx::task<response_entity>
 api_remote_file_model::refresh_path(const pplx::cancellation_token_source &cancellation_token_source,
@@ -23,6 +24,21 @@ api_remote_file_model::refresh_path(const pplx::cancellation_token_source &cance
         request[_XPLATSTR("type")] = web::json::value::number(type);
     }
     return this->post_json(_XPLATSTR("/v1/files/page"),request, cancellation_token_source);
+}
+
+pplx::task<response_entity>
+api_remote_file_model::refresh_path_list_ex(const pplx::cancellation_token_source &cancellation_token_source,
+                                    const utility::string_t &path, const int &start, const int &size,
+                                    const int &type) {
+    web::json::value request;
+    request[_XPLATSTR("path")] = web::json::value::string(path.empty() ? current_path : path);
+    request[_XPLATSTR("start")] = web::json::value::number(start > -1 ? start : -1);
+    request[_XPLATSTR("size")] = web::json::value::number(size > 0 ? size : current_page_size);
+    request[_XPLATSTR("order")] = web::json::value::number(current_order);
+    if (type > -1) {
+        request[_XPLATSTR("type")] = web::json::value::number(type);
+    }
+    return this->post_json(_XPLATSTR("/v1/files/list2"),request, cancellation_token_source);
 }
 
 /*
