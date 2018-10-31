@@ -12,7 +12,9 @@
 #ifndef _QINGZHENAPP_H_
 #define _QINGZHENAPP_H_
 
-
+#ifdef _MSC_VER
+#pragma comment(lib, "bcrypt.lib")
+#endif // _MSC_VER
 /*!
  * Includes
  */

@@ -97,7 +97,7 @@ namespace qingzhen::api {
                                     response.success = false;
                                     response.status = -1;
                                     response.result = web::json::value();
-                                    response.message = "API not found";
+                                    response.message = _XPLATSTR("API not found");
                                     std::cout << "API cannot found" << std::endl;
                                     return pplx::task_from_result(response);
                                 } else{

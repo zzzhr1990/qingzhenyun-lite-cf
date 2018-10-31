@@ -1,9 +1,9 @@
 //
 // Created by zzzhr on 2018/9/19.
 //
-#ifdef __WXWINDOWS__
+#ifdef _MSC_VER
 #pragma comment(lib, "bcrypt.lib")
-#endif // __WXWINDOWS__
+#endif // _MSC_VER
 #ifndef QINGZHENYUN_LITE_WCS_TOOLBOX_H
 #define QINGZHENYUN_LITE_WCS_TOOLBOX_H
 #include <iostream>

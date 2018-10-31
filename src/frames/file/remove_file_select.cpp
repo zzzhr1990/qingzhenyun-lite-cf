@@ -129,7 +129,7 @@ void RemoteFileSelect::CreateControls()
     wxButton* itemButton4 = new wxButton( itemDialog1, wxID_ANY, _("New"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer1->Add(itemButton4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mainTreeCtrl = new wxTreeCtrl( itemDialog1, wxID_ANY, wxDefaultPosition, wxSize(100, 100), wxTR_DEFAULT_STYLE | wxSUNKEN_BORDER);
+    mainTreeCtrl = new wxTreeCtrl( itemDialog1, wxID_ANY, wxDefaultPosition, wxSize(100, 100), wxTR_DEFAULT_STYLE | wxSUNKEN_BORDER );
     itemBoxSizer2->Add(mainTreeCtrl, 1, wxGROW|wxALL, 5);
 
     wxStaticLine* itemStaticLine6 = new wxStaticLine( itemDialog1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
@@ -154,6 +154,8 @@ void RemoteFileSelect::CreateControls()
     this->Bind(wxEVT_TREE_ITEM_EXPANDING, &RemoteFileSelect::OnTreeExpanding, this);
 
     this->Bind(wxEVT_TREE_SEL_CHANGED, &RemoteFileSelect::OnTreeSelectChanged, this);
+
+	this->Bind(wxEVT_TREE_ITEM_ACTIVATED, &RemoteFileSelect::OnTreeSelectActivated, this);
 ////@end remotefileselect content construction
 }
 
@@ -219,12 +221,12 @@ void RemoteFileSelect::OnTreeExpanding(wxTreeEvent &evt) {
             this->get_path_cancellation = pplx::cancellation_token_source();
             auto task = qingzhen::api::api_remote_file_model::instance()
                     .refresh_path_list_ex(this->get_path_cancellation,directory_data->get_path(), -1, -1, 1);
-            task.then([this](response_entity entity){
+            task.then([this,directory_data](response_entity entity){
                 if(!entity.is_cancelled() && entity.success){
                     // create new data
                     auto &result = entity.result;
                     if(result.has_field(_XPLATSTR("info"))){
-                        this->CallAfter([this,result](){ this -> OnDirectoryDataReceived(result);});
+                        this->CallAfter([this,result, directory_data](){ this -> OnDirectoryDataReceived(result, directory_data->GetId());});
                     }
                 }
             });
@@ -232,8 +234,8 @@ void RemoteFileSelect::OnTreeExpanding(wxTreeEvent &evt) {
     }
 }
 
-void RemoteFileSelect::OnDirectoryDataReceived(web::json::value result) {
-    auto selection = this->mainTreeCtrl->GetSelection();
+void RemoteFileSelect::OnDirectoryDataReceived(web::json::value result,wxTreeItemId selection) {
+    //auto selection = this->mainTreeCtrl->GetSelection();
     if(selection != nullptr){
         auto item_data = this->mainTreeCtrl->GetItemData(selection);
         if(item_data != nullptr){
@@ -274,3 +276,7 @@ void RemoteFileSelect::OnTreeSelectChanged(wxTreeEvent &evt) {
     }
 }
 
+//OnTreeSelectActivated
+void RemoteFileSelect::OnTreeSelectActivated(wxTreeEvent &evt) {
+	this->mainTreeCtrl->Expand(evt.GetItem());
+}

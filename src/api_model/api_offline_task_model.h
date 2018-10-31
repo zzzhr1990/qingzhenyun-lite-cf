@@ -8,9 +8,12 @@
 #include <functional>
 #include "../entity/response_entity.h"
 #include "base/base_api_model.h"
-class api_offline_task_model : public base_api_model<api_remote_file_model> {
 
-};
+namespace qingzhen::api {
+	class api_offline_task_model : public base_api_model<api_offline_task_model> {
+
+	};
+}
 
 
 #endif //QINGZHENYUN_LITE_API_OFFLINE_TASK_MODEL_H

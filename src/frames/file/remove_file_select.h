@@ -134,7 +134,8 @@ private:
     void OnTreeExpanding(wxTreeEvent &evt);
     // OnTreeSelectChanged
     void OnTreeSelectChanged(wxTreeEvent &evt);
-    void OnDirectoryDataReceived(web::json::value info);
+	void OnTreeSelectActivated(wxTreeEvent & evt);
+    void OnDirectoryDataReceived(web::json::value info, wxTreeItemId selection);
     wxTextCtrl* pathInput = nullptr;
 ////@begin remotefileselect member variables
 ////@end remotefileselect member variables
