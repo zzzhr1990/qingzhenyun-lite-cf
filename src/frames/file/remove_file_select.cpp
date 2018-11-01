@@ -19,7 +19,8 @@
 
 #include "remove_file_select.h"
 #include "../../api_model/api_remote_file_model.h"
-
+#include "add_directory_dialog.h"
+#include "../../api_model/api_user_model.h"
 ////@begin XPM images
 ////@end XPM images
 
@@ -126,8 +127,8 @@ void RemoteFileSelect::CreateControls()
     pathInput->SetEditable(false);
     itemBoxSizer1->Add(pathInput, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton4 = new wxButton( itemDialog1, wxID_ANY, _("New"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer1->Add(itemButton4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* createNewDirectoryBtn = new wxButton( itemDialog1, wxID_ANY, _("New"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(createNewDirectoryBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     mainTreeCtrl = new wxTreeCtrl( itemDialog1, wxID_ANY, wxDefaultPosition, wxSize(100, 100), wxTR_DEFAULT_STYLE | wxSUNKEN_BORDER );
     itemBoxSizer2->Add(mainTreeCtrl, 1, wxGROW|wxALL, 5);
@@ -156,6 +157,8 @@ void RemoteFileSelect::CreateControls()
     this->Bind(wxEVT_TREE_SEL_CHANGED, &RemoteFileSelect::OnTreeSelectChanged, this);
 
 	this->Bind(wxEVT_TREE_ITEM_ACTIVATED, &RemoteFileSelect::OnTreeSelectActivated, this);
+
+    createNewDirectoryBtn->Bind(wxEVT_BUTTON, &RemoteFileSelect::OnCreateDirectoryBtnClicked, this);
 ////@end remotefileselect content construction
 }
 
@@ -279,4 +282,41 @@ void RemoteFileSelect::OnTreeSelectChanged(wxTreeEvent &evt) {
 //OnTreeSelectActivated
 void RemoteFileSelect::OnTreeSelectActivated(wxTreeEvent &evt) {
 	this->mainTreeCtrl->Expand(evt.GetItem());
+}
+
+void RemoteFileSelect::OnCreateDirectoryBtnClicked(wxCommandEvent &event) {
+    auto select = this->mainTreeCtrl->GetSelection();
+    if(select == nullptr){
+        return;
+    }
+    auto data = this->mainTreeCtrl->GetItemData( select);
+    if(data != nullptr) {
+        // exp...
+        auto directory_data = (simple_directory_info *) data;
+        auto * add_dialog = new AddDirectoryDialog(this);
+        add_dialog->ShowModal();
+        utility::string_t input = add_dialog->GetUserInput();
+        //
+        if(!input.empty()){
+            this->get_path_cancellation.cancel();
+            this->get_path_cancellation = pplx::cancellation_token_source();
+            auto task = qingzhen::api::api_remote_file_model::instance().create_new_directory(get_path_cancellation,input ,directory_data->get_path());
+            task.then([select,this,directory_data](response_entity entity){
+               if(entity.success){
+                   this->CallAfter([select,this,directory_data](){
+                       directory_data->set_inited(false);
+                       this->mainTreeCtrl->Collapse(select);
+                       auto * data_sub = new simple_directory_info(_XPLATSTR("../"));
+                       this->mainTreeCtrl->AppendItem(select,_("Fetching Data"),-1,-1,data_sub);
+                       //this->mainTreeCtrl->DeleteChildren(select);
+                       this->mainTreeCtrl->Expand(select);
+                   });
+               }
+            });
+        }
+    }
+}
+
+wxString RemoteFileSelect::GetUserInput() {
+    return pathInput->GetValue();
 }

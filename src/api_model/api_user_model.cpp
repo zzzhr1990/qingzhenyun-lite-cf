@@ -89,3 +89,15 @@ bool api_user_model::is_user_login() {
 pplx::task<utility::string_t> api_user_model::async_read_token() {
     return token_store::instance().async_read_token();
 }
+
+/*
+pplx::task<response_entity>
+api_user_model::create_directory(const pplx::cancellation_token_source &cancellation_token_source,
+                                 utility::string_t& directory_name, utility::string_t& path) {
+    web::json::value request;
+    request[_XPLATSTR("path")] = web::json::value::string(path);
+    request[_XPLATSTR("name")] = web::json::value::string(directory_name);
+    return this->post_json(_XPLATSTR("/v1/files/createDirectory"),request, cancellation_token_source);
+}
+
+ */

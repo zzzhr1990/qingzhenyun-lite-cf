@@ -20,10 +20,12 @@
 #include "../../resources/refresh.xpm"
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
-//#include "../../model/remote_download_task_model.h"
+#include "../../api_model/api_offline_task_model.h"
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
 #include "../../util/listctrlutil.h"
+#include "../offline/add_task_result_dialog.h"
+
 ////@end XPM images
 
 
@@ -419,189 +421,91 @@ wxIcon OfflineDownloadTaskPanel::GetIconResource( const wxString& name )
 }
 
 void OfflineDownloadTaskPanel::OnPageInputDClick(const wxMouseEvent &event) {
-	//event.Get
-	//TODO:FIX
-	/*
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
-	currentPageInput->SetValue(wxString::Format(_T("%d"), fileModel.GetCurrentPage()));
+
+    auto & task_model = qingzhen::api::api_offline_task_model::instance();
+	currentPageInput->SetValue(wxString::Format(_T("%d"), task_model.get_current_page()));
 	currentPageInput->SetEditable(true);
 	currentPageInput->Bind(wxEVT_KILL_FOCUS, &OfflineDownloadTaskPanel::OnPageInputKillFocus, this);
-	 */
 }
 
 void OfflineDownloadTaskPanel::RefreshBtnClicked(const wxCommandEvent &event) {
-    //TODO:FIX
-    /*
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
-	fileModel.GetPage(this);
-     */
-
+    this->RefreshPage();
 }
 
 void OfflineDownloadTaskPanel::OnPageInputKillFocus(const wxFocusEvent &event) {
 
-    //TODO:FIX
-    /*
 	currentPageInput->Unbind(wxEVT_KILL_FOCUS, &OfflineDownloadTaskPanel::OnPageInputKillFocus, this);
 	currentPageInput->SetEditable(false);
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
+    auto & task_model = qingzhen::api::api_offline_task_model::instance();
 	wxString input = currentPageInput->GetValue();
 	int c = wxAtoi(input);
-	if (c > 0 && c != fileModel.GetCurrentPage() && c <= fileModel.GetTotalPage() && c != fileModel.GetCurrentPage()) {
-		fileModel.GetPage(this, c);
+	if (c > 0 && c != task_model.get_current_page() && c <= task_model.get_total_page()) {
+		this->RefreshPage(c);
 	}
 	else {
 		ResetCurrentPathDisplay();
 	}
-     */
+
 
 }
 
 
 
-void OfflineDownloadTaskPanel::RefreshListData(const response_entity& payload) {
-    //TODO:FIX
-    /*
-	mainListCtrl->Freeze();
-	auto model = &OfflineDownloadTaskModel::Instance();
-	web::json::array list = payload.result.at(U("list")).as_array();
-	auto refresh = model->GetCurrentList().size() != list.size();
-	auto currentPage = payload.result.at(U("page")).as_integer();
-	auto currentPageSize = payload.result.at(U("pageSize")).as_integer();
-	auto totalPage = payload.result.at(U("totalPage")).as_integer();
-	//const utility::string_t &patent
-	model->UpdateCurrent(currentPage, currentPageSize, totalPage,list);
-	long cur = 0;
-	if (refresh) {
-		mainListCtrl->Hide();
-		mainListCtrl->DeleteAllItems();
-	}
-	for (const auto& i : list) {
-		// create item
-		wxListItem itemCol;
-		itemCol.SetId(cur);
-		// col 1 type
-		itemCol.SetColumn(0);
-		
-		itemCol.SetText(i.at(U("name")).as_string());
-		if (refresh) {
-			mainListCtrl->InsertItem(itemCol);
-		}
-		else {
-			mainListCtrl->SetItem(cur, 0, itemCol.GetText());
-		}
-		// col1 taskname
-
-		// col 2 file size
-		mainListCtrl->SetItem(cur, 1, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
-		// col3 progress
-		int progress = i.at(U("progress")).as_integer();
-		if (progress > 100) {
-			progress = 100;
-		}
-		if (progress < 0) {
-			progress = 0;
-		}
-		mainListCtrl->SetItem(cur, 2, wxString::Format(_T("%d%%"), progress));
-
-		int status = i.at(U("status")).as_integer();
-
-		if (status < 0) {
-			mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error %d"), i.at(U("errorCode")).as_integer()));
-		}
-		else {
-			if (status == 90) {
-				mainListCtrl->SetItem(cur, 3, _T("Copying"));
-			}
-			else if (status == 100) {
-				mainListCtrl->SetItem(cur, 3, _T("Finish"));
-			}
-			else {
-				mainListCtrl->SetItem(cur, 3, _T("Downloading"));
-			}
-		}
-
-		// col5 date
-		std::time_t t = i.at(U("createTime")).as_number().to_int64() / 1000;
-		mainListCtrl->SetItem(cur, 4, ConvertTimeToDisplay(t, "%Y/%m/%d %H:%M"));
-
-
-		cur++;
-	}
-	if (refresh) {
-		mainListCtrl->Show();
-		mainListCtrl->SetFocus();
-	}
-	mainListCtrl->Thaw();
-	ResetCurrentPathDisplay();
-     */
-}
 
 
 void OfflineDownloadTaskPanel::PrevBtnClicked(const wxCommandEvent &event) {
-    //TODO:FIX
-    /*
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
-	auto page = fileModel.GetCurrentPage();
+
+    auto & task_model = qingzhen::api::api_offline_task_model::instance();
+	auto page = task_model.get_current_page();
 	if (page > 1) {
-		fileModel.GetPage(this, page - 1);
+		this->RefreshPage(page - 1);
 	}
-     */
 }
 
 void OfflineDownloadTaskPanel::NextBtnClicked(const wxCommandEvent &event) {
-    //TODO:FIX
-    /*
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
-	auto page = fileModel.GetCurrentPage();
-	if (page < fileModel.GetTotalPage()) {
-		fileModel.GetPage(this, page + 1);
+    auto & task_model = qingzhen::api::api_offline_task_model::instance();
+    auto page = task_model.get_current_page();
+	if (page < task_model.get_total_page()) {
+        this->RefreshPage(page + 1);
 	}
-     */
 }
 
 void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
-	//TODO:FIX
-	/*
-	if (this->addOfflineTask == nullptr) {
-		addOfflineTask = new AddOfflineTask(this, wxID_ANY);
-		addOfflineTask->Iconize(false);
-		//
-		addOfflineTask->SetLabel(_("Add new task"));
-	}
-	addOfflineTask->SetDownloadPath(RemoteFileModel::Instance().GetCurrentPath());
-	// login_frame->Show(true);
-	// loginFrame->Raise();  // doesn't seem to work
-	// loginFrame->SetFocus();  // does nothing
-	auto const &result = addOfflineTask->ShowModal(); // this by itself doesn't work
-	if (result == wxID_OK)
-	{
-		// check validate
-		//const auto &userInputStaticText = loginFrame->getUserInput();
-		//const auto &userPassword = loginFrame->getUserPassword();
-		//TryLogin(userInputStaticText, Utf8MD5(userPassword));
-		const auto &userInput = addOfflineTask->GetDownloadPath();
-		const auto &userUrlInput = addOfflineTask->GetUrlInputStr();
-		if (!userInput.empty() && !userUrlInput.empty()) {
-			//Start..
-			currentDownloadPath = userInput;
-			OfflineDownloadTaskModel::Instance().StartUrl(this, userUrlInput);
-		}
-	}
-	 */
+
+	AddOfflineTask * addOfflineTaskDialog = new AddOfflineTask(this);
+	if(addOfflineTaskDialog->ShowModal() == wxID_OK) {
+	    if(addOfflineTaskDialog->IsTorrentPageSelected()){
+
+	    }else{
+
+	    }
+        currentDownloadPath = addOfflineTaskDialog->GetDownloadDir();
+        auto url = addOfflineTaskDialog->GetDownloadUrl().Trim();
+        if(url.empty()){
+            wxMessageBox(_("Please input urls"), _("Empty input"));
+            return;
+        }
+        action_cancellation.cancel();
+        action_cancellation = pplx::cancellation_token_source();
+        qingzhen::api::api_offline_task_model::instance().parse_url(action_cancellation, url).then([this](response_entity entity){
+            if(!entity.is_cancelled()){
+                this->CallAfter([this, entity](){
+                    this->OnUrlParsed(entity);
+                });
+            }
+        });
+    }
 }
 
 void OfflineDownloadTaskPanel::ResetCurrentPathDisplay() {
-    //TODO:FIX
-    /*
-	auto & fileModel = OfflineDownloadTaskModel::Instance();
-	auto const &currentPage = fileModel.GetCurrentPage();
-	auto const &totalPage = fileModel.GetTotalPage();
+	auto & task_model = qingzhen::api::api_offline_task_model::instance();
+	auto const &currentPage = task_model.get_current_page();
+	auto const &totalPage = task_model.get_total_page();
 	currentPageInput->SetValue(wxString::Format(_T("%d / %d"), currentPage, totalPage));
 	currentPageInput->SetEditable(false);
 	prevPageBtn->Enable(currentPage > 1);
 	nextPageBtn->Enable(currentPage < totalPage);
-     */
+
 }
 
 void OfflineDownloadTaskPanel::OnStartDrag(wxListEvent & event)
@@ -617,16 +521,179 @@ void OfflineDownloadTaskPanel::OnEndDrag(wxListEvent & event)
 
 }
 
-void OfflineDownloadTaskPanel::RefreshData() {
-    //TODO:FIX
-    /*
-	OfflineDownloadTaskModel::Instance().GetPage(this);
-     */
-}
+
 
 void OfflineDownloadTaskPanel::StartDownloadUrl(const wxString& str) {
 	//OfflineDownloadTaskModel::Instance().GetPage(this);
 	/*
 	OfflineDownloadTaskModel::Instance().GetPage(this);
 	 */
+}
+
+void OfflineDownloadTaskPanel::RefreshData(const bool &force) {
+    if (!force && waitPage) {
+        return;
+    }
+    this->RefreshPage();
+}
+
+void OfflineDownloadTaskPanel::RefreshPage(const int &page, const int &page_size) {
+    waitPage = true;
+    this->offline_page_cancellation.cancel();
+    this->offline_page_cancellation = pplx::cancellation_token_source();
+    // go and request...
+    qingzhen::api::api_offline_task_model::instance().refresh_page(this->offline_page_cancellation,page,page_size).then([this](response_entity entity){
+        if(!entity.is_cancelled()){
+            this->CallAfter([this,entity](){
+                this->OnCurrentPageDataReceived(entity);
+            });
+        }
+        this->waitPage = false;
+    });
+}
+
+void OfflineDownloadTaskPanel::Terminate() {
+    offline_page_cancellation.cancel();
+    action_cancellation.cancel();
+}
+
+void OfflineDownloadTaskPanel::OnCurrentPageDataReceived(response_entity entity) {
+    if(qingzhen::api::api_offline_task_model::instance().on_response_entity_page_data_received(entity)){
+        this->RefreshDataGridDisplay();
+    }
+}
+
+void OfflineDownloadTaskPanel::RefreshDataGridDisplay() {
+    mainListCtrl->Freeze();
+    auto model = qingzhen::api::api_offline_task_model::instance();
+
+    auto task_list = model.get_current_list();
+    long list_size = static_cast<long>(task_list.size());
+    auto refresh = list_size != last_list_size;
+    last_list_size = list_size;
+
+    long cur = 0;
+    if (refresh) {
+        mainListCtrl->Hide();
+        mainListCtrl->DeleteAllItems();
+    }
+    for (const auto& i : task_list) {
+        // create item
+        wxListItem itemCol;
+        itemCol.SetId(cur);
+        // col 1 type
+        itemCol.SetColumn(0);
+
+        itemCol.SetText(i.at(U("name")).as_string());
+        if (refresh) {
+            mainListCtrl->InsertItem(itemCol);
+        }
+        else {
+            mainListCtrl->SetItem(cur, 0, itemCol.GetText());
+        }
+        // col1 taskname
+
+        // col 2 file size
+        mainListCtrl->SetItem(cur, 1, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
+        // col3 progress
+        int progress = i.at(U("progress")).as_integer();
+        if (progress > 100) {
+            progress = 100;
+        }
+        if (progress < 0) {
+            progress = 0;
+        }
+        mainListCtrl->SetItem(cur, 2, wxString::Format(_T("%d%%"), progress));
+
+        int status = i.at(U("status")).as_integer();
+
+        if (status < 0) {
+            mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error %d"), i.at(U("errorCode")).as_integer()));
+        }
+        else {
+            if (status == 90) {
+                mainListCtrl->SetItem(cur, 3, _T("Copying"));
+            }
+            else if (status == 100) {
+                mainListCtrl->SetItem(cur, 3, _T("Finish"));
+            }
+            else {
+                mainListCtrl->SetItem(cur, 3, _T("Downloading"));
+            }
+        }
+
+        // col5 date
+        std::time_t t = i.at(U("createTime")).as_number().to_int64() / 1000;
+        mainListCtrl->SetItem(cur, 4, ConvertTimeToDisplay(t, "%Y/%m/%d %H:%M"));
+
+
+        cur++;
+    }
+    if (refresh) {
+        mainListCtrl->Show();
+        mainListCtrl->SetFocus();
+    }
+    mainListCtrl->Thaw();
+    ResetCurrentPathDisplay();
+}
+
+void OfflineDownloadTaskPanel::OnUrlParsed(response_entity entity) {
+    if(!entity.success){
+        wxMessageBox(wxString::Format(_("Add task failed %s"), entity.message), _("Add Task Failed"));
+        return;
+    }
+    auto result = entity.result;
+    if(result.is_null()){
+        return;
+    }
+    if(result.has_field(_XPLATSTR("needPassword"))){
+        if(result.at(_XPLATSTR("needPassword")).as_bool()){
+            wxMessageBox(_("Url need password to download, please input password and try again"), _("Need password"));
+            return;
+        }
+    }
+    if(!result.has_field(_XPLATSTR("taskHash"))){
+        return;
+    }
+    auto taskHash = result.at(_XPLATSTR("taskHash")).as_string();
+    if(result.has_field(_XPLATSTR("files"))){
+        //
+        auto files = result.at(_XPLATSTR("files")).as_array();
+        if(files.size() > 0){
+            wxArrayString file_names;
+            for(auto &data:files){
+                wxString file_name = wxT("unknown file");
+                if(data.has_field(_XPLATSTR("path"))){
+                    file_name = data.at(_XPLATSTR("path")).as_string();
+                } else if(data.has_field(_XPLATSTR("name"))){
+                    file_name = data.at(_XPLATSTR("name")).as_string();
+                }
+                file_names.push_back(file_name);
+            }
+            auto * addTaskResult = new AddTaskResultDialog(this, file_names);
+            if(wxID_OK == addTaskResult->ShowModal()){
+                StartTask(taskHash, addTaskResult->GetItemsSelectString());
+            }
+            return;
+        }
+    }
+    StartTask(taskHash, _XPLATSTR("[\"*\"]"));
+}
+
+void OfflineDownloadTaskPanel::StartTask(utility::string_t taskHash, utility::string_t copyFile) {
+    action_cancellation.cancel();
+    action_cancellation = pplx::cancellation_token_source();
+    utility::string_t path = this->currentDownloadPath;
+    auto task = qingzhen::api::api_offline_task_model::instance().start_task(action_cancellation, taskHash, path, copyFile);
+    task.then([this](response_entity entity){
+        if(!entity.is_cancelled()){
+            this->CallAfter([this,entity](){
+                if(entity.success){
+                    this->RefreshPage(1);
+                }else{
+                    wxMessageBox(wxString::Format(_("Add task failed %s"), entity.message), _("Add Task Failed"));
+                }
+            });
+        }
+    });
 }

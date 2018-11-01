@@ -57,7 +57,6 @@ UserLoginDialog::UserLoginDialog( wxWindow* parent, wxWindowID id, const wxStrin
 {
 	Init();
 	Create(parent, id, caption, pos, size, style);
-	this->Bind(wxEVT_CLOSE_WINDOW, &UserLoginDialog::OnClose, this);
 }
 
 
@@ -381,11 +380,6 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
     });
 }
 
-void UserLoginDialog::OnClose(wxCloseEvent & event)
-{
-	send_message_cancellation_token_source.cancel();
-	event.Skip();
-}
 
 wxString UserLoginDialog::GetMessageCountryCode() {
     return this->GetCountryCode(this->messageCountryCodeSelection);
@@ -397,6 +391,11 @@ wxString UserLoginDialog::GetMessageCodeInput() {
 
 wxString UserLoginDialog::GetPhoneInfo() {
     return this->phoneInfo;
+}
+
+void UserLoginDialog::EndModal(int retCode) {
+    send_message_cancellation_token_source.cancel();
+    wxDialog::EndModal(retCode);
 }
 
 

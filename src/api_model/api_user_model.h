@@ -33,7 +33,6 @@ namespace qingzhen::api{
 
         pplx::task<utility::string_t>  async_read_token();
 
-        void OnDirectoryInfoReceived();
 
     private:
         web::json::value user_info;

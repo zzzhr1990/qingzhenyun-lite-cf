@@ -169,14 +169,13 @@ void MainNotebook::OnThreadEvent(wxThreadEvent &event) {
 		model.SetCurrentPage(1);
 		model.SetCurrentPath(path);
 		this->ChangeSelection(0);
-		RefreshCurrentPage();
+		RefreshPage();
 	     */
 		break;
 	}
 
 	case PAGE_TIMER_TICK:{
-        TimerTick();
-        break;
+//        break;
 	}
 	case USER_SYNC_SPEED_REFRESH:{
         const auto & data = event.GetPayload<response_entity>();
@@ -230,7 +229,7 @@ wxIcon MainNotebook::GetIconResource( const wxString& name )
 ////@end MainNotebook icon retrieval
 }
 
-void MainNotebook::RefreshCurrentPage(int selection) {
+void MainNotebook::RefreshCurrentPage(int selection, bool force) {
 	if (!inited) {
 		inited = true;
 		this->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &MainNotebook::OnNoteBookChange, this);
@@ -240,10 +239,10 @@ void MainNotebook::RefreshCurrentPage(int selection) {
 	}
     switch (selection){
         case 0:
-            myRemoteFilePanel->RefreshData(true);
+            myRemoteFilePanel->RefreshData(force);
             break;
 		case 1:
-			offlineDownloadTaskPanel->RefreshData();
+			offlineDownloadTaskPanel->RefreshData(force);
 			break;
         case 2:
             syncPanel->RefreshData();
@@ -267,28 +266,11 @@ void MainNotebook::RefreshTimerTick()
 {
 	// note: async function, dangerous
 	this->CallAfter([this]() {
-		this->TimerTick();
+        auto selection = this->GetSelection();
+		this->RefreshCurrentPage(selection, false);
 	});
 }
 
-void MainNotebook::TimerTick() {
-    auto selection = this->GetSelection();
-    switch (selection){
-        case 0:
-			myRemoteFilePanel->RefreshData(false);
-			break;
-        case 1:
-            //offlineDownloadTaskPanel->RefreshData();
-            break;
-        case 2:
-            syncPanel->RefreshData();
-            break;
-        default:
-            break;
-    }
-
-    //SyncModel::Instance().ReportSpeed(this->offlineDownloadTaskPanel);
-}
 
 void MainNotebook::DoOpenFiles(const wxArrayString &fileNames) {
     myRemoteFilePanel->DoOpenFiles(fileNames);

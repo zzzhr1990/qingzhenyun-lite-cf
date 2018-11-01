@@ -92,7 +92,7 @@ public:
 		/// Should we show tooltips?
 	static bool ShowToolTips();
 
-	wxString getUserInput();
+	wxString GetUserInput();
 private:
 	wxTextCtrl* directoryNameInput = nullptr;
 

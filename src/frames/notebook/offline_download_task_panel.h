@@ -104,10 +104,10 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
-	void RefreshData();
+    void RefreshData(const bool& force = true);
 
 	
-
+    void Terminate();
 ////@begin OfflineDownloadTaskPanel member variables
 ////@end OfflineDownloadTaskPanel member variables
 private:
@@ -115,7 +115,6 @@ private:
 	void ShowTaskDetail(const web::json::value & v);
 	void OnItemRightClick(const wxListEvent & event);
 	void OnPageInputKillFocus(const wxFocusEvent & event);
-	void RefreshListData(const response_entity & payload);
 	void PrevBtnClicked(const wxCommandEvent & event);
 	void StartDownloadUrl(const wxString & str);
 	void NextBtnClicked(const wxCommandEvent & event);
@@ -124,16 +123,27 @@ private:
 	void OnStartDrag( wxListEvent & event);
 	void OnEndDrag( wxListEvent & event);
 	//	void RefreshListData(const response_entity & payload);
-	
+
+	void RefreshPage(const int &page = -1,
+                     const int &page_size = -1);
+
+	void RefreshDataGridDisplay();
+
 	bool drag = false;
+	bool waitPage = false;
 	wxListCtrl* mainListCtrl = nullptr;
 	TaskDetail * taskDetail = nullptr;
 	wxBitmapButton* prevPageBtn = nullptr;
 	wxBitmapButton* nextPageBtn = nullptr;
 	wxTextCtrl* currentPageInput = nullptr;
-	AddOfflineTask* addOfflineTask = nullptr;
-	wxString currentDownloadPath = wxT("/");
+	wxString currentDownloadPath = wxT("/:OfflineDownload");
+    long last_list_size = 0;
 	wxMenu* menu = nullptr;
+    void OnCurrentPageDataReceived(response_entity entity);
+	pplx::cancellation_token_source offline_page_cancellation = pplx::cancellation_token_source();
+    pplx::cancellation_token_source action_cancellation = pplx::cancellation_token_source();
+    void OnUrlParsed(response_entity entity);
+    void StartTask(utility::string_t taskHash, utility::string_t copyFile);
 };
 
 #endif

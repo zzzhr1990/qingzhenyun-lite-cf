@@ -30,18 +30,18 @@ namespace qingzhen::api {
         update_current_location(const utility::string_t &path, const utility::string_t &file_id, const int &page,
                                                const int &page_size, const int &total_page, const utility::string_t &parent,
                                                const web::json::array &list);
-        bool on_response_entity_received(response_entity & entity);
+        bool on_response_entity_page_data_received(response_entity &entity);
         web::json::array get_current_list() ;
         int get_current_page();
         int get_total_page();
         utility::string_t get_current_path();
         utility::string_t get_parent();
-        pplx::task<response_entity> create_new_directory(const pplx::cancellation_token_source &cancellation_token_source,const utility::string_t & directory_name, const utility::string_t & parent_uuid = U(""));
+        pplx::task<response_entity> create_new_directory(const pplx::cancellation_token_source &cancellation_token_source,const utility::string_t & directory_name, const utility::string_t & path = _XPLATSTR("/"));
     private:
         utility::string_t current_path = _XPLATSTR("/");
         utility::string_t current_file_id = _XPLATSTR("");
         int current_page = 1;
-        int current_page_size = 40;
+        int current_page_size = 50;
         int total_page = 1;
         utility::string_t current_parent = _XPLATSTR("");
         web::json::array current_list = web::json::value::array().as_array();

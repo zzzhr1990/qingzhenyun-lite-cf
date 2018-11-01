@@ -365,7 +365,6 @@ void MainFrame::OnLoginSuccess(response_entity entity) {
 		if (qingzhen::api::api_user_model::instance().is_user_login()) {
 			// tick current page
 			mainNotebook->RefreshTimerTick();
-
 			qingzhen::util::get_current_linux_timestamp();
 			if (qingzhen::util::get_current_linux_timestamp() - last_user_refresh_time > 120L) {
                 check_login_source.cancel();

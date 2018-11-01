@@ -18,16 +18,9 @@
 /*!
  * Includes
  */
-#include "wx/wxprec.h"
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
 ////@begin includes
+#include "../../common/common_wx.h"
 #include "wx/notebook.h"
 ////@end includes
 
@@ -43,10 +36,11 @@
  */
 
 ////@begin control identifiers
+
 #define SYMBOL_ADDOFFLINETASK_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_ADDOFFLINETASK_TITLE _("AddOfflineTask")
-#define SYMBOL_ADDOFFLINETASK_IDNAME ID_ADDOFFLINETASK
-#define SYMBOL_ADDOFFLINETASK_SIZE wxSize(640, 480)
+#define SYMBOL_ADDOFFLINETASK_IDNAME wxID_ANY
+#define SYMBOL_ADDOFFLINETASK_SIZE wxSize(600, 400)
 #define SYMBOL_ADDOFFLINETASK_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -56,9 +50,9 @@
  */
 
 class AddOfflineTask: public wxDialog
-{    
-    DECLARE_DYNAMIC_CLASS( AddOfflineTask )
-    DECLARE_EVENT_TABLE()
+{
+DECLARE_DYNAMIC_CLASS( AddOfflineTask )
+DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
@@ -77,10 +71,6 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-	void SetDownloadPath(const wxString & str);
-
-	
-
 ////@begin AddOfflineTask event handler declarations
 
 ////@end AddOfflineTask event handler declarations
@@ -96,18 +86,22 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
-	wxString GetDownloadPath();
-	wxString GetUrlInputStr();
 
-	void ClearUrlInputStr();
+    bool IsTorrentPageSelected();
+
+    wxString GetDownloadDir();
+
+    wxString GetDownloadUrl();
 
 ////@begin AddOfflineTask member variables
-////@end AddOfflineTask member variables
 private:
-	
-	wxTextCtrl* downloadPath = nullptr;
-	wxTextCtrl* urlInput = nullptr;
+    void OnChangeBtnClicked(wxCommandEvent &event);
+    wxTextCtrl* downloadDirTextCtrl = nullptr;
+    wxNotebook* mainNotebook = nullptr;
+    wxTextCtrl* downloadUrlInput = nullptr;
+////@end AddOfflineTask member variables
+
 };
 
 #endif
-    // _ADD_OFFLINE_TASK_H_
+// _ADD_OFFLINE_TASK_H_

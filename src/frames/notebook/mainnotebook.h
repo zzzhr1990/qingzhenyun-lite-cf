@@ -87,7 +87,7 @@ public:
 	/// Should we show tooltips?
     static bool ShowToolTips();
 
-    void RefreshCurrentPage(int selection = -1);
+    void RefreshCurrentPage(int selection = -1,bool force = false);
 
 	void UpdateSpaceCapacity(const long long & spaceUsed, const long long & spaceCapacity);
 
@@ -100,7 +100,6 @@ private:
 	OfflineDownloadTaskPanel* offlineDownloadTaskPanel = nullptr;
     SyncPanel* syncPanel = nullptr;
 	bool inited = false;
-	void TimerTick();
 ////@begin MainNotebook member variables
 ////@end MainNotebook member variables
 };

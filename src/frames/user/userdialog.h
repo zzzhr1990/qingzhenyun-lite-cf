@@ -100,6 +100,7 @@ public:
 
 ////@begin UserDialog member variables
 private:
+    void EndModal(int retCode) override;
     void LogoutBtnClicked(wxCommandEvent &event);
     bool continueLogin = false;
 	pplx::cancellation_token_source logout_cancel_source = pplx::cancellation_token_source();

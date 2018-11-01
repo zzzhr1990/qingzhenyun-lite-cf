@@ -125,6 +125,7 @@ public:
 
     /// Should we show tooltips?
     static bool ShowToolTips();
+    wxString GetUserInput();
 
 private:
     pplx::cancellation_token_source get_path_cancellation = pplx::cancellation_token_source();
@@ -136,6 +137,8 @@ private:
     void OnTreeSelectChanged(wxTreeEvent &evt);
 	void OnTreeSelectActivated(wxTreeEvent & evt);
     void OnDirectoryDataReceived(web::json::value info, wxTreeItemId selection);
+    void OnCreateDirectoryBtnClicked(wxCommandEvent &event);
+
     wxTextCtrl* pathInput = nullptr;
 ////@begin remotefileselect member variables
 ////@end remotefileselect member variables

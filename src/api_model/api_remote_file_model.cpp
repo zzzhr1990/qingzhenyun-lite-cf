@@ -59,7 +59,7 @@ void api_remote_file_model::update_current_location(const utility::string_t &pat
     this->current_list = list;
 }
 
-bool api_remote_file_model::on_response_entity_received(response_entity &entity) {
+bool api_remote_file_model::on_response_entity_page_data_received(response_entity &entity) {
     if(!entity.success){
         return false;
     }
@@ -172,11 +172,10 @@ api_remote_file_model::goto_path(const pplx::cancellation_token_source &cancella
 pplx::task<response_entity>
 api_remote_file_model::create_new_directory(const pplx::cancellation_token_source &cancellation_token_source,
                                                const utility::string_t &directory_name,
-                                               const utility::string_t &parent_uuid) {
+                                               const utility::string_t &path) {
     web::json::value request;
-    request[_XPLATSTR("parent")] = web::json::value::string(parent_uuid.empty() ? this->current_file_id : parent_uuid);
+    request[_XPLATSTR("path")] = web::json::value::string(path);
     request[_XPLATSTR("name")] = web::json::value::string(directory_name);
-
     return this->post_json(_XPLATSTR("/v1/files/createDirectory"),request, cancellation_token_source);
 
 }

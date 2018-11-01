@@ -323,3 +323,8 @@ void UserDialog::OnClose(wxCloseEvent & event)
 	event.Skip();
 
 }
+
+void UserDialog::EndModal(int retCode) {
+    logout_cancel_source.cancel();
+    wxDialog::EndModal(retCode);
+}

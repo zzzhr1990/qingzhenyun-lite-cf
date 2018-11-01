@@ -21,7 +21,7 @@
 #include "../../common/common_wx.h"
 #include "wx/listctrl.h"
 #include "../../entity/response_entity.h"
-#include "../userfile/add_directory_dialog.h"
+#include "../file/add_directory_dialog.h"
 ////@end includes
 
 /*!
@@ -123,6 +123,8 @@ public:
     /// Should we show tooltips?
     static bool ShowToolTips();
 	void UpdateSpaceCapacity(const long long& spaceUsed = 0, const long long& spaceCapacity = 0);
+
+	void Terminate();
 
 ////@begin NyRemoteFilePanel member variables
 private:

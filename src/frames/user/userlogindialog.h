@@ -147,7 +147,8 @@ private:
     wxString phoneInfo;
 	pplx::cancellation_token_source send_message_cancellation_token_source = pplx::cancellation_token_source();
 
-	void OnClose(wxCloseEvent& event);
+	void EndModal(int retCode) override;
+	//void OnClose(wxCloseEvent& event);
 };
 
 #endif

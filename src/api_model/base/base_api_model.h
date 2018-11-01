@@ -141,8 +141,9 @@ namespace qingzhen::api {
                             response.message = utility::conversions::to_string_t(e.what());
                             return pplx::task_from_result(response);
                         }
-
-                    }, pplx::task_continuation_context::use_default());
+                        //, pplx::task_continuation_context::use_default()
+                        // pplx::task_continuation_context::
+                    });
             //return resp;
             try {
                 return resp.get();

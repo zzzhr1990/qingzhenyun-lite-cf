@@ -584,11 +584,11 @@ void MyRemoteFilePanel::NewDirectoryBtnClicked(wxCommandEvent &event) {
     auto const &result = addDirectoryDialog->ShowModal(); // this by itself doesn't work
     if (result == wxID_OK) {
         // check validate
-        const auto &userInput = addDirectoryDialog->getUserInput();
+        const auto &userInput = addDirectoryDialog->GetUserInput();
         auto &file_model = qingzhen::api::api_remote_file_model::instance();
         this->create_cancellation.cancel();
         this->create_cancellation = pplx::cancellation_token_source();
-        file_model.create_new_directory(this->create_cancellation,userInput).then([this](response_entity entity){
+        file_model.create_new_directory(this->create_cancellation,userInput,file_model.get_current_path()).then([this](response_entity entity){
             this->CallAfter([this](){
                 this->GotoPath();
             });
@@ -733,7 +733,7 @@ void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {
     }
 
 
-    auto success = file_model.on_response_entity_received(entity);
+    auto success = file_model.on_response_entity_page_data_received(entity);
     if(!success){
         return;
     }
@@ -860,4 +860,9 @@ void MyRemoteFilePanel::OnMoveBtnClicked(wxCommandEvent &event) {
     WXUNUSED(event);
     auto removeFileSelect = new RemoteFileSelect(this);
     removeFileSelect->ShowModal();
+}
+
+void MyRemoteFilePanel::Terminate() {
+    file_refresh_cancellation.cancel();
+    create_cancellation.cancel();
 }

@@ -178,6 +178,6 @@ wxIcon AddDirectoryDialog::GetIconResource(const wxString& name)
 }
 
 
-wxString AddDirectoryDialog::getUserInput() {
+wxString AddDirectoryDialog::GetUserInput() {
 	return directoryNameInput->GetValue();
 }
