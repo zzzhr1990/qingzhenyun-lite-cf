@@ -164,6 +164,10 @@ private:
                   const int &pageSize = -1, const int &type = -1);
     void GotoUUID(utility::string_t uuid = _XPLATSTR(""), const int &page = -1,
                   const int &pageSize = -1, const int &type = -1);
+
+    void SelectAllItems(bool select);
+
+    void OnCheckListBoxChanged(wxCommandEvent & evt);
 ////@end NyRemoteFilePanel member variables
 };
 

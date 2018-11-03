@@ -30,7 +30,6 @@
 #include "../../api_model/api_remote_file_model.h"
 #include "../../util/common_util.h"
 #include "../file/remove_file_select.h"
-
 ////@begin XPM images
 #include "../../resources/refresh.xpm"
 #include "../../resources/up_level.xpm"
@@ -294,6 +293,7 @@ void MyRemoteFilePanel::CreateControls() {
     mainListCtrl->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &MyRemoteFilePanel::OnItemRightClick, this);
 
     moveDirectoryBtn->Bind(wxEVT_BUTTON, &MyRemoteFilePanel::OnMoveBtnClicked, this);
+    itemCheckBox1->Bind(wxEVT_CHECKBOX,&MyRemoteFilePanel::OnCheckListBoxChanged, this);
 ////@end NyRemoteFilePanel content construction
 }
 
@@ -525,7 +525,7 @@ void MyRemoteFilePanel::OnUserRemoteFileActivated(wxListEvent &event) {
     } else if (type == -1) {
 
         wxMessageBox(wxT("This file is in invalid.\nThere's something wrong with our server."), _T("ErrorFile"),
-                     wxICON_ERROR);
+                     wxICON_ERROR | wxOK, this);
         //ShowModal())msg->Show();
     } else {
         if (fileData.has_field(_XPLATSTR("preview"))) {
@@ -725,7 +725,7 @@ void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {
     auto& file_model = qingzhen::api::api_remote_file_model::instance();
     if (entity.code == U("FILE_NOT_FOUND")) {
         wxMessageBox(_("Destination invalid.\nThere parent directory not found.\nAuto goto root dir."),
-                     _("Cannot go to directory"), wxICON_INFORMATION);
+                     _("Cannot go to directory"), wxICON_INFORMATION | wxOK, this);
         this->file_refresh_cancellation.cancel();
         this->file_refresh_cancellation = pplx::cancellation_token_source();
         qingzhen::api::api_remote_file_model::instance().refresh_path(this->file_refresh_cancellation);
@@ -865,4 +865,26 @@ void MyRemoteFilePanel::OnMoveBtnClicked(wxCommandEvent &event) {
 void MyRemoteFilePanel::Terminate() {
     file_refresh_cancellation.cancel();
     create_cancellation.cancel();
+}
+
+void MyRemoteFilePanel::SelectAllItems(bool select) {
+    /*
+    for(unsigned int i = 0; i< this->mainListCtrl->Gtr; i++){
+        this->mainCheckListBox->Check(i,select);
+    }
+     */
+    int n = mainListCtrl->GetItemCount();
+    for (int i = 0; i < n; i++){
+        if(select){
+            mainListCtrl->SetItemState(i,wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+        }
+        else{
+            mainListCtrl->SetItemState(i,0,wxLIST_STATE_SELECTED);
+        }
+    }
+
+}
+
+void MyRemoteFilePanel::OnCheckListBoxChanged(wxCommandEvent & evt) {
+    SelectAllItems(evt.GetSelection() == 1);
 }

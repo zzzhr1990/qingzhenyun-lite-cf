@@ -76,8 +76,8 @@ qingzhen::api::api_offline_task_model::start_task(const pplx::cancellation_token
                                                   const utility::string_t &save_path,
                                                   const utility::string_t &copy_file) {
     web::json::value request;
-    request[U("taskHash")] = web::json::value::string(task_hash);
-    request[U("savePath")] = web::json::value::string(save_path);
-    request[U("copyFile")] = web::json::value::string(copy_file);
+    request[_XPLATSTR("taskHash")] = web::json::value::string(task_hash);
+    request[_XPLATSTR("savePath")] = web::json::value::string(save_path);
+    request[_XPLATSTR("copyFile")] = web::json::value::string(copy_file);
     return this->post_json(_XPLATSTR("/v1/offline/start"),request, cancellation_token_source);
 }

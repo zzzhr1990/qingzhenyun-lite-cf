@@ -90,6 +90,36 @@ pplx::task<utility::string_t> api_user_model::async_read_token() {
     return token_store::instance().async_read_token();
 }
 
+pplx::task<response_entity>
+api_user_model::send_register_message(utility::string_t &country_code, utility::string_t &phone,
+                                      const pplx::cancellation_token_source &cancellation_token_source) {
+    web::json::value val = web::json::value::object();
+    val[_XPLATSTR("countryCode")] = web::json::value::string(country_code);
+    val[_XPLATSTR("phone")] = web::json::value::string(phone);
+    // password should be encode
+    return this->post_json(_XPLATSTR("/v1/user/sendRegisterMessage"),val, cancellation_token_source);
+}
+
+pplx::task<response_entity> api_user_model::register_by_message(utility::string_t &phone_info, utility::string_t &code,utility::string_t &password,
+                                                                const pplx::cancellation_token_source &cancellation_token_source) {
+    web::json::value val = web::json::value::object();
+    val[_XPLATSTR("phoneInfo")] = web::json::value::string(phone_info);
+    val[_XPLATSTR("code")] = web::json::value::string(code);
+    auto md5_str = qingzhen::util::utf8_to_md5(password);
+    val[_XPLATSTR("password")] = web::json::value::string(md5_str);
+    // password should be encode
+    return this->post_json(_XPLATSTR("/v1/user/register"),val, cancellation_token_source);
+}
+
+pplx::task<response_entity>
+api_user_model::change_username_and_get(const pplx::cancellation_token_source &cancellation_token_source,
+                                        const utility::string_t &name) {
+    web::json::value val = web::json::value::object();
+    val[_XPLATSTR("name")] = web::json::value::string(name);
+    // password should be encode
+    return this->post_json(_XPLATSTR("/v1/user/changeNameAndGet"),val, cancellation_token_source);
+}
+
 /*
 pplx::task<response_entity>
 api_user_model::create_directory(const pplx::cancellation_token_source &cancellation_token_source,

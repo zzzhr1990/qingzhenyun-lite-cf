@@ -20,9 +20,12 @@ if(MSVC)
 #	find_package(Boost REQUIRED filesystem)
 else(MSVC)
     set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-    find_package(wxWidgets REQUIRED COMPONENTS net core base)
+    find_package(wxWidgets REQUIRED COMPONENTS net core base all)
     include(${wxWidgets_USE_FILE})
-	
+endif()
+if(APPLE)
+	find_library(IOKit IOKit)
+	#find_library(Keneral Keneral)
 endif()
 find_package(Boost REQUIRED filesystem system chrono thread random)
 find_package(cpprestsdk CONFIG REQUIRED)
@@ -35,9 +38,15 @@ message(STATUS "CMAKE_BUILD_TYPE:${CMAKE_BUILD_TYPE}")
 #    "*.h"
 #    "*.cpp"
 #)
-include_directories(
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/include"
-)
+if(APPLE)
+	include_directories(
+    	"${CMAKE_CURRENT_SOURCE_DIR}/lib/include ${IOKit}"
+	)
+	else()
+	include_directories(
+			"${CMAKE_CURRENT_SOURCE_DIR}/lib/include"
+	)
+endif()
 find_package(TBB CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h src/*.xpm)
@@ -98,5 +107,5 @@ if(MSVC)
 	add_dependencies(${PROJECT_NAME} CopyDLLs)
     target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${dll_LIB} cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 else()
-    target_link_libraries(${PROJECT_NAME} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/usr/local/opt/mpv/lib/libmpv.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(${PROJECT_NAME} ${IOKit} TBB::tbb ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} "/usr/local/opt/mpv/lib/libmpv.dylib" cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal OpenSSL::SSL OpenSSL::Crypto)
 endif()

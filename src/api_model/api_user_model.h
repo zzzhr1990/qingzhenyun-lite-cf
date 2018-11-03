@@ -19,10 +19,17 @@ namespace qingzhen::api{
 
 		pplx::task<response_entity> check_user_info(const pplx::cancellation_token_source &cancellation_token_source);
 
+        pplx::task<response_entity> change_username_and_get(const pplx::cancellation_token_source &cancellation_token_source, const utility::string_t &name);
+
         pplx::task<response_entity>
         send_login_message(utility::string_t &country_code, utility::string_t &phone, const pplx::cancellation_token_source &cancellation_token_source);
 
+        pplx::task<response_entity>
+        send_register_message(utility::string_t &country_code, utility::string_t &phone, const pplx::cancellation_token_source &cancellation_token_source);
+
         pplx::task<response_entity> login_by_message(utility::string_t &phone_info, utility::string_t &code, const pplx::cancellation_token_source &cancellation_token_source);
+
+        pplx::task<response_entity> register_by_message(utility::string_t &phone_info, utility::string_t &code,utility::string_t &password, const pplx::cancellation_token_source &cancellation_token_source);
 
         void login(utility::string_t& country_code,
                 utility::string_t& value, utility::string_t& password,std::function<void(response_entity)> &callback, const pplx::cancellation_token_source &cancellation_token_source);

@@ -1,3 +1,5 @@
+#include <utility>
+
 /////////////////////////////////////////////////////////////////////////////
 // Name:        mainframe.cpp
 // Purpose:     
@@ -28,8 +30,17 @@
 #include "../util/common_util.h"
 #include "../common/common_util.hpp"
 #include "../local_model/config_model.h"
+#include "user/register/userregisterdialog.h"
 #include "user/userlogindialog.h"
-#include "updatedialog.h"
+#include "system/updatedialog.h"
+#include "./system/aboutdialog.h"
+#ifdef __WXOSX_MAC__
+
+//#include "IOKit/pwr_mgt/"
+// #include "Kernel/IOKit/IOService.h"
+#endif
+
+
 #include "user/userdialog.h"
 #include <wx/utils.h>
 #include <wx/stdpaths.h>
@@ -39,19 +50,21 @@
  * MainFrame type definition
  */
 
-IMPLEMENT_CLASS( MainFrame, wxFrame )
-
+wxIMPLEMENT_CLASS( MainFrame, wxFrame )
 
 /*
  * MainFrame event table definition
  */
 
-BEGIN_EVENT_TABLE( MainFrame, wxFrame )
+wxBEGIN_EVENT_TABLE( MainFrame, wxFrame )
+
 
 ////@begin MainFrame event table entries
+
+
 ////@end MainFrame event table entries
 
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 
 /*
@@ -105,6 +118,8 @@ MainFrame::~MainFrame()
 void MainFrame::Init()
 {
 ////@begin MainFrame member initialisation
+    // IOService s;
+    // s.PMinit();
 ////@end MainFrame member initialisation
 }
 
@@ -120,9 +135,12 @@ void MainFrame::CreateControls()
 
     auto* menuBar = new wxMenuBar;
     auto* itemMenu2 = new wxMenu;
+    itemMenu2->Append(wxID_ABOUT, _("About"), _("About this program"), wxITEM_NORMAL);
+    itemMenu2->Append(wxID_PREFERENCES, _("Preference"), _("Config this program"), wxITEM_NORMAL);
     itemMenu2->Append(wxID_ANY, _("Login/Change User"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu2, _("User"));
     itemFrame1->SetMenuBar(menuBar);
+    menuBar->Bind(wxEVT_MENU,&MainFrame::OnMainMenu,this);
 
     wxToolBar* mainToolBar = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR );
     wxBitmap itemtool5Bitmap(itemFrame1->GetBitmapResource(wxT("user.xpm")));
@@ -189,9 +207,17 @@ void MainFrame::showLoginFrame(const wxString& text) {
         }else{
             this->TryLoginByMessage(loginDialog->GetPhoneInfo(), loginDialog->GetMessageCodeInput());
         }
+    }else{
+        if(loginDialog->IsRegisterNew()){
+            //Register...
+            auto * registerDialog = new UserRegisterDialog(this);
+            registerDialog->Run();
+            if(registerDialog->IsRegisterSuccess()){
+                this->OnLoginSuccess(qingzhen::api::api_user_model::instance().get_user_info(), false);
+            }
+            registerDialog->Terminate();
+        }
     }
-
-   
 }
 
 void MainFrame::OnWindowCreate(wxIdleEvent& event){
@@ -211,7 +237,7 @@ void MainFrame::OnWindowCreate(wxIdleEvent& event){
 			qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp){
 				if (!resp.is_cancelled()) {
 					if (resp.success) {
-						this->OnLoginSuccess(resp);
+						this->OnLoginSuccess(resp.result);
 					}else{
 						this->CallAfter([this]() { this->showLoginFrame(_("Login Failed")); });
 					}
@@ -302,7 +328,7 @@ void MainFrame::TryLogin(const wxString &countryCode, const wxString &input, con
     pplx::task<response_entity> task = user_model.login(_cc, _ip, _pwd, normal_login_source);
     task.then([this](response_entity entity)->void {
         if(entity.success){
-            this->OnLoginSuccess(entity);
+            this->OnLoginSuccess(entity.result);
         }else{
 			if (entity.is_cancelled()) {
 				return;
@@ -336,7 +362,7 @@ void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &cod
         return;
     }
     if(code.empty()){
-        wxMessageBox(_("Code cannot be empty"),_("Code cannot be empty"));
+        wxMessageBox(_("Code cannot be empty"),_("Code cannot be empty"),wxICON_WARNING | wxOK,this);
         return;
     }
 	message_login_source.cancel();
@@ -346,7 +372,7 @@ void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &cod
     pplx::task<response_entity> task = user_model.login_by_message(_phoneInfo, _code, message_login_source);
     task.then([this](response_entity entity)->void {
         if(entity.success){
-            this->OnLoginSuccess(entity);
+            this->OnLoginSuccess(entity.result);
         }else{
 			if (entity.is_cancelled()) {
 				return;
@@ -359,35 +385,16 @@ void MainFrame::TryLoginByMessage(const wxString &phoneInfo, const wxString &cod
     });
 }
 
-void MainFrame::OnLoginSuccess(response_entity entity) {
-    qingzhen::api::api_user_model::instance().set_user_info(entity.result);
-    auto checkFunction = [this](){
-		if (qingzhen::api::api_user_model::instance().is_user_login()) {
-			// tick current page
-			mainNotebook->RefreshTimerTick();
-			qingzhen::util::get_current_linux_timestamp();
-			if (qingzhen::util::get_current_linux_timestamp() - last_user_refresh_time > 120L) {
-                check_login_source.cancel();
-                check_login_source = pplx::cancellation_token_source();
-				qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp) {
-					if (!resp.is_cancelled()) {
-						if (resp.success) {
-						    // jump into UI thread
-							this->CallAfter([this]() {this->UpdateUserInfo(); });
-						}
-						else {
-							if (resp.status == 401 || resp.status == 403) {
-								this->CallAfter([this]() { this->showLoginFrame(_("Login Failed")); });
-							}
-						}
-					}
-				});
-			}
-		}
-		
-    };
+void MainFrame::OnLoginSuccess(const web::json::value& value, bool update) {
+    if(update){
+        qingzhen::api::api_user_model::instance().set_user_info(value);
+    }
+
+
 	mainNotebook->RefreshTimerTick();
-    globalTimer.StartTimer(5000,checkFunction);
+    globalTimer.Expire();
+    globalTimer.StartTimer(5000, [this](){this->CheckInterval();});
+
 	this->CallAfter([this]() {
 		this->UpdateUserInfo();
 	});
@@ -406,7 +413,7 @@ void MainFrame::FindConfigPath()
 		success = true;
 	}
 	if (!success) {
-		wxMessageBox(_("Cannot get config directory, your configuration may not saved."), _("Cannot get config directory"));
+		wxMessageBox(_("Cannot get config directory, your configuration may not saved."), _("Cannot get config directory"),wxICON_ERROR | wxOK,this);
 	}
 	else {
 		utility::string_t s = config_path;
@@ -433,4 +440,37 @@ void MainFrame::UpdateUserInfo() {
 	if (user_info.has_field(U("spaceUsed"))) {
 		mainNotebook->UpdateSpaceCapacity(user_info.at(U("spaceUsed")).as_number().to_int64(), user_info.at(U("spaceCapacity")).as_number().to_int64());
 	}
+}
+
+void MainFrame::CheckInterval() {
+    if (qingzhen::api::api_user_model::instance().is_user_login()) {
+        // tick current page
+        mainNotebook->RefreshTimerTick();
+        qingzhen::util::get_current_linux_timestamp();
+        if (qingzhen::util::get_current_linux_timestamp() - last_user_refresh_time > 120L) {
+            check_login_source.cancel();
+            check_login_source = pplx::cancellation_token_source();
+            qingzhen::api::api_user_model::instance().check_user_info(check_login_source).then([this](response_entity resp) {
+                if (!resp.is_cancelled()) {
+                    if (resp.success) {
+                        // jump into UI thread
+                        this->CallAfter([this]() {this->UpdateUserInfo(); });
+                    }
+                    else {
+                        if (resp.status == 401 || resp.status == 403) {
+                            this->CallAfter([this]() { this->showLoginFrame(_("Login Failed")); });
+                        }
+                    }
+                }
+            });
+        }
+    }
+}
+
+void MainFrame::OnMainMenu(wxCommandEvent& evt) {
+    //std::cout << "Menu Evt.." << std::endl;
+    if(evt.GetId() == wxID_ABOUT){
+        auto aboutDlg = new AboutDialog(this);
+        aboutDlg->ShowModal();
+    }
 }

@@ -298,7 +298,7 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
             if(task->hash != fileHash){
                 task->status = wcs::file_download_status::failed;
                 task->error = sync_download_error::none;
-                //std::cout << "File hash not match " << std::endl;
+                std::cout << "File hash not match " << std::endl;
             }else {
                 task->error = sync_download_error::none;
                 task->fileSize = readBytes;
@@ -306,7 +306,6 @@ utility::size64_t wcs::WcsToolbox::PostFile(const utility::string_t &uploadUrl, 
             }
         }
     }catch (std::exception &e){
-        std::cout << e.what() << std::endl;
         if(task != nullptr){
             task ->status = wcs::file_download_status::failed;
             if(task->error == sync_download_error::none){

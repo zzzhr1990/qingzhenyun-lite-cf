@@ -482,7 +482,7 @@ void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
         currentDownloadPath = addOfflineTaskDialog->GetDownloadDir();
         auto url = addOfflineTaskDialog->GetDownloadUrl().Trim();
         if(url.empty()){
-            wxMessageBox(_("Please input urls"), _("Empty input"));
+            wxMessageBox(_("Please input urls"), _("Empty input"),wxICON_INFORMATION | wxOK, this);
             return;
         }
         action_cancellation.cancel();

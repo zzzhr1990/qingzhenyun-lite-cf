@@ -17,6 +17,7 @@
 
 #include "userdialog.h"
 #include "../../util/common_util.h"
+#include "./changeusernamedialog.h"
 #include "../../api_model/api_user_model.h"
 ////@begin XPM images
 ////@end XPM images
@@ -127,8 +128,8 @@ void UserDialog::CreateControls(const web::json::value & userData)
 
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
     itemFlexGridSizer7->Add(itemBoxSizer3, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
-    wxTextCtrl* itemTextCtrl4 = new wxTextCtrl( itemPanel3, ID_TEXTCTRL, userData.at(_XPLATSTR("name")).as_string(), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer3->Add(itemTextCtrl4, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    userNameTextCtrl = new wxTextCtrl( itemPanel3, ID_TEXTCTRL, userData.at(_XPLATSTR("name")).as_string(), wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+    itemBoxSizer3->Add(userNameTextCtrl, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxButton* itemButton3 = new wxButton( itemPanel3, wxID_ANY, _("Change"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer3->Add(itemButton3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -189,6 +190,7 @@ void UserDialog::CreateControls(const web::json::value & userData)
     itemBoxSizer6->Add(logoutButton, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
     logoutButton->Bind(wxEVT_BUTTON, &UserDialog::LogoutBtnClicked, this);
 
+    itemButton3->Bind(wxEVT_BUTTON, &UserDialog::ChangeNameBtnClicked,this);
     //itemButton2->SetFocus();
     itemFlexGridSizer16->Add(itemBoxSizer7, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxGauge* itemGauge8 = new wxGauge( itemPanel12, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL );
@@ -327,4 +329,26 @@ void UserDialog::OnClose(wxCloseEvent & event)
 void UserDialog::EndModal(int retCode) {
     logout_cancel_source.cancel();
     wxDialog::EndModal(retCode);
+}
+
+void UserDialog::ChangeNameBtnClicked(wxCommandEvent &event) {
+    auto* changeNameDlg = new ChangeUsernameDialog(this);
+    if(wxID_OK == changeNameDlg->ShowModal()){
+        utility::string_t name = changeNameDlg->GetUserNameInput();
+        if(!name.empty()){
+            this->logout_cancel_source.cancel();
+            this->logout_cancel_source = pplx::cancellation_token_source();
+            auto task = qingzhen::api::api_user_model::instance().change_username_and_get(this->logout_cancel_source, name);
+            task.then([this](response_entity entity){
+                if(!entity.is_cancelled() && entity.success)
+                this->CallAfter([this, entity]{
+                    auto data = entity.result;
+                    if(data.has_field(_XPLATSTR("name"))){
+                        qingzhen::api::api_user_model::instance().set_user_info(data);
+                        this->userNameTextCtrl->SetValue(data.at(_XPLATSTR("name")).as_string());
+                    }
+                });
+            });
+        }
+    }
 }

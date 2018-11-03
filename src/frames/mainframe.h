@@ -114,16 +114,18 @@ private:
     void OnWindowCreate(wxIdleEvent& event);
     void TryLogin(const wxString &countryCode, const wxString & input, const wxString & password);
     void TryLoginByMessage(const wxString &phoneInfo, const wxString & code);
-    void OnLoginSuccess(response_entity entity);
+    void OnLoginSuccess(const web::json::value &value, bool update = true);
     bool terminated = false;
     SimpleTimer globalTimer;
 	void FindConfigPath();
 	bool IsDirAvailable(wxString config_path);
 	void UpdateUserInfo();
 	time_t last_user_refresh_time;
+	void CheckInterval();
 	pplx::cancellation_token_source normal_login_source = pplx::cancellation_token_source();
 	pplx::cancellation_token_source message_login_source = pplx::cancellation_token_source();
 	pplx::cancellation_token_source check_login_source = pplx::cancellation_token_source();
+	void OnMainMenu(wxCommandEvent& evt);
 ////@end MainFrame member variables
 };
 

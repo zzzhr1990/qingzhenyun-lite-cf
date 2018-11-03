@@ -101,10 +101,10 @@ public:
     wxString GetMessageCountryCode();
     wxString GetPasswordCountryCode();
     wxString GetPhoneInfo();
+    bool IsRegisterNew();
 ////@begin UserLoginDialog member variables
 ////@end UserLoginDialog member variables
 private:
-    void LogoutBtnClicked(wxCommandEvent &event);
 
     wxChoice* passwordCountryCodeSelection = nullptr;
     wxChoice* messageCountryCodeSelection = nullptr;
@@ -116,25 +116,8 @@ private:
 
 	//int ia[] = {1};
 
-	std::pair<wxString,wxString> DEFAULT_COUNTRY_CODE_PAIR [7] = {
-	        /*
-	         * itemChoice9Strings.Add(_("PRC (+86)"));
-    itemChoice9Strings.Add(_("PRC (+86)"));
-    itemChoice9Strings.Add(_("HonKong (+852)"));
-    itemChoice9Strings.Add(_("Macao (+853)"));
-    itemChoice9Strings.Add(_("TaiWan (+886)"));
-    itemChoice9Strings.Add(_("USA (+1)"));
-    itemChoice9Strings.Add(_("Japan (+81)"));
-	         */
-	        std::pair<wxString,wxString>(wxT("Default"),wxT("")),
-            std::pair<wxString,wxString>(wxT("PRC (+86)"),wxT("86")),
-            std::pair<wxString,wxString>(wxT("HonKong (+852)"),wxT("852")),
-            std::pair<wxString,wxString>(wxT("Macao (+853)"),wxT("853")),
-            std::pair<wxString,wxString>(wxT("Taiwan (+886)"),wxT("886")),
-            std::pair<wxString,wxString>(wxT("USA (+1)"),wxT("1")),
-            std::pair<wxString,wxString>(wxT("Japan (+81)"),wxT("81")),
-	                };
-	void FillCountryCodeInput(wxChoice* userInput);
+
+	//void FillCountryCodeInput(wxChoice* userInput);
 	void SendTextMessage();
     wxArrayString GetCountryCodeArray();
     wxString GetCountryCode(wxChoice* choice);
@@ -147,8 +130,11 @@ private:
     wxString phoneInfo;
 	pplx::cancellation_token_source send_message_cancellation_token_source = pplx::cancellation_token_source();
 
+	bool registerNew = false;
+
 	void EndModal(int retCode) override;
 	//void OnClose(wxCloseEvent& event);
+
 };
 
 #endif

@@ -21,6 +21,7 @@
 #include "userlogindialog.h"
 #include "../../api_model/api_user_model.h"
 #include "../../common/common_util.hpp"
+#include "../../common/common_constants_wx.h"
 ////@begin XPM images
 ////@end XPM images
 
@@ -204,6 +205,8 @@ void UserLoginDialog::CreateControls()
     wxStaticText* itemStaticText4 = new wxStaticText( itemDialog1, wxID_STATIC, _("No Account? click here to register one"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer3->Add(itemStaticText4, 0, wxALIGN_RIGHT|wxALL, 5);
 
+    itemStaticText4->Bind(wxEVT_LEFT_UP, &UserLoginDialog::OnLeftUp, this);
+
     wxBoxSizer* itemBoxSizer7 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer2->Add(itemBoxSizer7, 0, wxGROW|wxALL, 5);
 
@@ -223,6 +226,7 @@ void UserLoginDialog::CreateControls()
     sendMessageButton->Bind(wxEVT_BUTTON, &UserLoginDialog::SendMessageButtonClicked, this);
 
     // Connect events and objects
+
     //itemStaticText4->Connect(wxID_STATIC, wxEVT_LEFT_UP, wxMouseEventHandler(UserLoginDialog::OnLeftUp), NULL, this);
 ////@end UserLoginDialog content construction
 }
@@ -273,12 +277,12 @@ void UserLoginDialog::OnLeftUp( wxMouseEvent& event )
 ////@begin wxEVT_LEFT_UP event handler for wxID_STATIC in UserLoginDialog.
 	// Before editing this code, remove the block markers.
 	event.Skip();
+    registerNew = true;
+    this->Close();
 ////@end wxEVT_LEFT_UP event handler for wxID_STATIC in UserLoginDialog.
 }
 
-void UserLoginDialog::LogoutBtnClicked(wxCommandEvent &event) {
 
-}
 
 int UserLoginDialog::GetNoteCurrentSelection() {
     return itemNotebook->GetSelection();
@@ -296,6 +300,7 @@ wxString UserLoginDialog::GetPasswordCountryCode() {
     return GetCountryCode(this->passwordCountryCodeSelection);
 }
 
+/*
 void UserLoginDialog::FillCountryCodeInput(wxChoice *input) {
     if(input != nullptr){
         if(input->GetCount() > 0){
@@ -306,13 +311,10 @@ void UserLoginDialog::FillCountryCodeInput(wxChoice *input) {
         }
     }
 }
+ */
 
 wxArrayString UserLoginDialog::GetCountryCodeArray() {
-    wxArrayString arrayString;
-    for(auto &p : DEFAULT_COUNTRY_CODE_PAIR){
-        arrayString.Add(p.first);
-    }
-    return arrayString;
+    return qingzhen::app::common_constants::get_country_code_array();
 }
 
 wxString UserLoginDialog::GetUsePassword() {
@@ -320,14 +322,7 @@ wxString UserLoginDialog::GetUsePassword() {
 }
 
 wxString UserLoginDialog::GetCountryCode(wxChoice *choice) {
-    if(choice == nullptr){
-        return wxString();
-    }
-    auto select = choice->GetSelection();
-    if(select < (7 - 1)){
-        return wxString();
-    }
-    return DEFAULT_COUNTRY_CODE_PAIR[select].second;
+    return qingzhen::app::common_constants::get_country_code(choice);
 }
 
 void UserLoginDialog::ResetTimerClick() {
@@ -359,7 +354,7 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
     utility::string_t countryCode = this->GetMessageCountryCode();
     auto phone = this->GetMessagePhoneInput();
     if(phone.IsEmpty() || (!phone.IsNumber())){
-        wxMessageBox(_("Phone must be number"),_("Validate error"));
+        wxMessageBox(_("Phone must be number"),_("Validate error"),wxICON_WARNING | wxOK, this);
         return;
     }
     //auto phone = this->
@@ -367,11 +362,12 @@ void UserLoginDialog::SendMessageButtonClicked(wxCommandEvent &event) {
     utility::string_t phoneToSend = phone;
 	send_message_cancellation_token_source.cancel();
 	send_message_cancellation_token_source = pplx::cancellation_token_source();
-	qingzhen::api::api_user_model::instance().send_login_message(countryCode, phoneToSend, send_message_cancellation_token_source)
+	qingzhen::api::api_user_model::instance().send_register_message(countryCode, phoneToSend, send_message_cancellation_token_source)
     .then([this](response_entity r){
         if(!r.success){
-            this->CallAfter([this](){
-                wxMessageBox(_("Send message failed."),_("Send text message error"));
+            this->CallAfter([this,r](){
+                timer.Expire();
+                wxMessageBox(wxString::Format(_("Send message failed.\n%s"),r.message),_("Send text message error"),wxICON_WARNING | wxOK,this);
                 this->ResetTimerClick();
             });
         }else{
@@ -396,6 +392,10 @@ wxString UserLoginDialog::GetPhoneInfo() {
 void UserLoginDialog::EndModal(int retCode) {
     send_message_cancellation_token_source.cancel();
     wxDialog::EndModal(retCode);
+}
+
+bool UserLoginDialog::IsRegisterNew() {
+    return registerNew;
 }
 
 
