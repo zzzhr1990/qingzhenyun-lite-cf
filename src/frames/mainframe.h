@@ -44,6 +44,7 @@
 #define ID_USER_TOOL 10003
 #define ID_SETTING_TOOL 10005
 #define ID_STATUSBAR 10010
+#define ID_USER_LOGIN 10004
 #define SYMBOL_MAINFRAME_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxCLOSE_BOX
 #define SYMBOL_MAINFRAME_TITLE _("MainFrame")
 #define SYMBOL_MAINFRAME_IDNAME ID_MAINFRAME
@@ -79,6 +80,8 @@ public:
 
 	void OnToolClick(const wxCommandEvent & event);
 
+	
+
 ////@begin MainFrame event handler declarations
 
 ////@end MainFrame event handler declarations
@@ -110,6 +113,7 @@ public:
 ////@begin MainFrame member variables
 private:
     MainNotebook* mainNotebook = nullptr;
+	void TryShowUserOrLoginDialog();
     void showLoginFrame(const wxString& text);
     void OnWindowCreate(wxIdleEvent& event);
     void TryLogin(const wxString &countryCode, const wxString & input, const wxString & password);

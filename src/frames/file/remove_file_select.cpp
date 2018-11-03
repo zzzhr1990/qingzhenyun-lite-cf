@@ -281,7 +281,13 @@ void RemoteFileSelect::OnTreeSelectChanged(wxTreeEvent &evt) {
 
 //OnTreeSelectActivated
 void RemoteFileSelect::OnTreeSelectActivated(wxTreeEvent &evt) {
-	this->mainTreeCtrl->Expand(evt.GetItem());
+	auto id = evt.GetItem();
+	if (this->mainTreeCtrl->IsExpanded(id)) {
+		this->mainTreeCtrl->Collapse(id);
+	}
+	else {
+		this->mainTreeCtrl->Expand(evt.GetItem());
+	}
 }
 
 void RemoteFileSelect::OnCreateDirectoryBtnClicked(wxCommandEvent &event) {

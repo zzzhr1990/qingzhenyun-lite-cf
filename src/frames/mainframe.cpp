@@ -137,7 +137,7 @@ void MainFrame::CreateControls()
     auto* itemMenu2 = new wxMenu;
     itemMenu2->Append(wxID_ABOUT, _("About"), _("About this program"), wxITEM_NORMAL);
     itemMenu2->Append(wxID_PREFERENCES, _("Preference"), _("Config this program"), wxITEM_NORMAL);
-    itemMenu2->Append(wxID_ANY, _("Login/Change User"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu2->Append(ID_USER_LOGIN, _("Login/Change User"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu2, _("User"));
     itemFrame1->SetMenuBar(menuBar);
     menuBar->Bind(wxEVT_MENU,&MainFrame::OnMainMenu,this);
@@ -168,7 +168,7 @@ void MainFrame::CreateControls()
     itemStatusBar17->SetFieldsCount(2);
     itemStatusBar17->SetStatusText(_("Waiting..."), 0);
     //itemStatusBar17->SetStatusText(_("-"), 1);
-    itemStatusBar17->SetStatusText(_("Sync"), 1);
+    itemStatusBar17->SetStatusText(_("No sync task"), 1);
     int itemStatusBar17Widths[2];
     itemStatusBar17Widths[0] = -1;
     itemStatusBar17Widths[1] = 200;
@@ -183,18 +183,23 @@ void MainFrame::CreateControls()
 void MainFrame::OnToolClick(const wxCommandEvent& event) {
 	if (event.GetId() == ID_USER_TOOL) {
 		//showLoginFrame(_("Login"));
-		auto & user_model = qingzhen::api::api_user_model::instance();
-		if(user_model.is_user_login()){
-		    // Show
-		    auto * userDialog = new UserDialog(this,user_model.get_user_info());
-            userDialog->ShowModal();
-            if(userDialog->GetContinueLogin()){
-                globalTimer.Expire();
-                showLoginFrame(_("Login"));
-            }
-		}else{
-            showLoginFrame(_("Login"));
+		this->TryShowUserOrLoginDialog();
+	}
+}
+
+void MainFrame::TryShowUserOrLoginDialog() {
+	auto & user_model = qingzhen::api::api_user_model::instance();
+	if (user_model.is_user_login()) {
+		// Show
+		auto * userDialog = new UserDialog(this, user_model.get_user_info());
+		userDialog->ShowModal();
+		if (userDialog->GetContinueLogin()) {
+			globalTimer.Expire();
+			showLoginFrame(_("Login"));
 		}
+	}
+	else {
+		showLoginFrame(_("Login"));
 	}
 }
 
@@ -469,8 +474,15 @@ void MainFrame::CheckInterval() {
 
 void MainFrame::OnMainMenu(wxCommandEvent& evt) {
     //std::cout << "Menu Evt.." << std::endl;
-    if(evt.GetId() == wxID_ABOUT){
+	auto id = evt.GetId();
+    if(id == wxID_ABOUT){
         auto aboutDlg = new AboutDialog(this);
         aboutDlg->ShowModal();
-    }
+	}
+	else if (id == wxID_PREFERENCES) {
+		// pass not write yet
+	}
+	else if (id == ID_USER_LOGIN) {
+		this->TryShowUserOrLoginDialog();
+	}
 }
