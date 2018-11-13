@@ -12,22 +12,14 @@
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/filename.h>
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-
-#include "wx/wx.h"
-
-#endif
-
 ////@begin includes
 #include "wx/imaglist.h"
 ////@end includes
 
 #include "my_remote_file.h"
 #include "../../api_model/api_remote_file_model.h"
+#include "../../api_model/api_file_store_model.h"
+
 #include "../../util/common_util.h"
 #include "../file/remove_file_select.h"
 ////@begin XPM images
@@ -40,6 +32,7 @@
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
 #include "../userfile/filedetail.h"
+#include <vector>
 
 #include "wx/dnd.h"         // drag and drop for the playlist
 
@@ -706,18 +699,21 @@ void MyRemoteFilePanel::UpdateSpaceCapacity(const long long &spaceUsed, const lo
 }
 
 void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
-    /*
+    auto count = fileNames.GetCount();
+    if(count < 1){
+        return;
+    }
+    std::vector<utility::string_t> res = std::vector<utility::string_t>();
+
     for (size_t i = 0; i < fileNames.GetCount(); ++i)
     {
         // m_list.AddToPlayList(files[i]);
         //std::cout << "Drag file:" << fileNames[i] << std::endl;
-        auto path = RemoteFileModel::Instance().GetCurrentPath();
+        //auto path = RemoteFileModel::Instance().GetCurrentPath();
+        res.push_back(fileNames[i]);
     }
-     */
-    //TODO:FIX
-    /*
-     * SyncModel::Instance().StartUploadFile(fileNames, RemoteFileModel::Instance().GetCurrentPath());
-     */
+
+    qingzhen::api::api_file_store_model::instance().add_upload_task(res,qingzhen::api::api_remote_file_model::instance().get_current_path());
 }
 
 void MyRemoteFilePanel::OnCurrentPageDataReceived(response_entity entity) {

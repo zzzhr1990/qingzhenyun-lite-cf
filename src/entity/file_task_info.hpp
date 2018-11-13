@@ -8,6 +8,7 @@
 #include <cpprest/details/basic_types.h>
 #include <vector>
 #include <memory>
+#include <pplx/pplxtasks.h>
 namespace qingzhen::sync_task{
     enum error_reason {
         none = 0,
@@ -20,6 +21,16 @@ namespace qingzhen::sync_task{
         api_error = 7,
         unknown_error = 9999,
         task_canceled = 1000
+    };
+    enum task_status {
+        added = 0,
+        parse = 1,
+        parsed = 2,
+        hashing = 3,
+        hashed = 4,
+        cancelled = 5,
+        finished = 6,
+        error = 7
     };
     struct file_task_info {
     public:
@@ -46,10 +57,14 @@ namespace qingzhen::sync_task{
         bool cancelled;
         bool upload;
         bool success;
+        bool stopped;
+        bool parsed = false;
         utility::string_t local_path;
         utility::string_t remote_path;
         unsigned int progress;
         error_reason error_reason;
+        task_status status;
+        pplx::cancellation_token_source cancellation_token_source;
         std::vector<std::shared_ptr<file_task_info>> task_detail = std::vector<std::shared_ptr<file_task_info>>();
     };
 }

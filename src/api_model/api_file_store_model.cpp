@@ -172,3 +172,76 @@ qingzhen::api::api_file_store_model::get_token_or_file_info(const pplx::cancella
     }
     return this->post_json(_XPLATSTR("/v1/store/token"),request, cancellation_token);
 }
+
+void qingzhen::api::api_file_store_model::add_upload_task(const std::vector<utility::string_t> &path,  const utility::string_t &remote_directory) {
+    //std::lock_guard<std::mutex> lock(task_mutex);
+    pplx::create_task([path,remote_directory,this](){do_add_upload_task(path,remote_directory);});
+}
+
+void qingzhen::api::api_file_store_model::do_add_upload_task(const std::vector<utility::string_t> &path,const utility::string_t &remote_directory) {
+    std::lock_guard<std::mutex> lock(task_mutex);
+    for(auto &current_file_path : path){
+        bool exists = false;
+        for(auto & current_task : tasks){
+            if(current_task->local_path == current_file_path){
+                exists = true;
+                break;
+            }
+        }
+        if(!exists){
+            // Create single task..
+            // 1st
+            auto info = std::shared_ptr<qingzhen::sync_task::sync_task_info>(new qingzhen::sync_task::sync_task_info());
+            info->local_path = current_file_path;
+            info->remote_path = remote_directory;
+            //first test if this is a directory.
+            auto test_local_path = common_fs::path(info->local_path);
+            //if(test_local_path.is)
+            try {
+                if(common_fs::is_regular_file(test_local_path)){
+                    // add regular file
+                    info->status = qingzhen::sync_task::task_status::parse;
+                    //
+                }else if(common_fs::is_directory(test_local_path)){
+                    info->status = qingzhen::sync_task::task_status::parse;
+                    // add directory
+                    do_add_directory(test_local_path,test_local_path.parent_path(), remote_directory, info);
+                    info->status = qingzhen::sync_task::task_status::parsed;
+                }else{
+                    // add unsupported
+                    info->status = qingzhen::sync_task::task_status::error;
+                    info->error_reason = qingzhen::sync_task::error_reason::io_error;
+                    info->success = false;
+                    info->stopped = true;
+                }
+            }catch (std::exception &ioe){
+                std::cout << "IOE " << ioe.what() << std::endl;
+                info->status = qingzhen::sync_task::task_status::error;
+                info->error_reason = qingzhen::sync_task::error_reason::io_error;
+                info->success = false;
+                info->stopped = true;
+            }
+            tasks.push_back(info);
+        }
+    }
+}
+
+void qingzhen::api::api_file_store_model::do_add_directory(const common_fs::path &path,const common_fs::path &base_path,
+                                                           const utility::string_t &remote_directory, std::shared_ptr<qingzhen::sync_task::sync_task_info> & info) {
+    // list directory
+
+    for(common_fs::directory_entry& p: common_fs::directory_iterator(path)){
+        const auto &c_path = p.path();
+        if(common_fs::is_directory(c_path)){
+            do_add_directory(c_path,base_path, remote_directory, info);
+        }else if(common_fs::is_regular_file(c_path)){
+            // add task...
+            std::cout << "Adding single file..." << p << std::endl;
+            utility::string_t add_parent_path = base_path.string();
+            utility::string_t add_current_path = c_path.string();
+            add_current_path = info->remote_path + add_current_path.substr(add_parent_path.size());
+            std::cout << utility::conversions::to_utf8string(add_current_path) << std::endl;
+        }
+
+    }
+}
