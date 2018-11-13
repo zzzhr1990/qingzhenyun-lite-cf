@@ -706,14 +706,15 @@ void MyRemoteFilePanel::UpdateSpaceCapacity(const long long &spaceUsed, const lo
 }
 
 void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
-    /*
+    
+	//std::vector
     for (size_t i = 0; i < fileNames.GetCount(); ++i)
     {
         // m_list.AddToPlayList(files[i]);
         //std::cout << "Drag file:" << fileNames[i] << std::endl;
-        auto path = RemoteFileModel::Instance().GetCurrentPath();
+        //auto path = RemoteFileModel::Instance().GetCurrentPath();
     }
-     */
+    
     //TODO:FIX
     /*
      * SyncModel::Instance().StartUploadFile(fileNames, RemoteFileModel::Instance().GetCurrentPath());

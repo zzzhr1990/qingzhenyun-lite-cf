@@ -50,7 +50,7 @@ utility::size64_t qingzhen::wcs::wcs_toolbox::read_block_and_hash_from_stream(st
             break;
             // Hash
         }
-        SHA1_Update(&shaCtx, buffer, buffer_read_size);
+        SHA1_Update(&shaCtx, buffer, static_cast<size_t>(buffer_read_size));
         block_read += buffer_read_size;
     }
 
@@ -180,7 +180,7 @@ wcs_toolbox::post_simple_file(const pplx::cancellation_token &cancellation_token
             if(info.error_reason == qingzhen::sync_task::error_reason::none){
                 info.error_reason = qingzhen::sync_task::error_reason::hash_not_match;
             }
-            std::cout << "HASH_NOT_MATCH!!!!" << file_hash << ": :" << info.file_hash << std::endl;
+            //std::cout << "HASH_NOT_MATCH!!!!" << file_hash << ": :" << info.file_hash << std::endl;
             return false;
         }
     }
