@@ -10,17 +10,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 // For compilers that support precompilation, includes "wx/wx.h".
-#include <wx/filename.h>
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-
-#include "wx/wx.h"
-
-#endif
 
 ////@begin includes
 #include "wx/imaglist.h"
@@ -28,6 +17,7 @@
 
 #include "my_remote_file.h"
 #include "../../api_model/api_remote_file_model.h"
+#include "../../api_model/api_file_store_model.h"
 #include "../../util/common_util.h"
 #include "../file/remove_file_select.h"
 ////@begin XPM images
@@ -706,6 +696,17 @@ void MyRemoteFilePanel::UpdateSpaceCapacity(const long long &spaceUsed, const lo
 }
 
 void MyRemoteFilePanel::DoOpenFiles(const wxArrayString &fileNames) {
+	auto count = fileNames.GetCount();
+	std::vector<utility::string_t> data;
+	if (count < 0) {
+		return;
+	}
+	for (size_t i = 0; i < count; ++i)
+	{
+		utility::string_t s = fileNames[i];
+		data.push_back(s);
+	}
+	qingzhen::api::api_file_store_model::instance().add_upload_task(data, qingzhen::api::api_remote_file_model::instance().get_current_path());
     /*
     for (size_t i = 0; i < fileNames.GetCount(); ++i)
     {

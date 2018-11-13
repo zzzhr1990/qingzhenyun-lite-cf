@@ -23,6 +23,16 @@ std::string util::random_string() {
     return str.substr(0, 32);    // assumes 32 < number of characters in str
 }
 
+utility::string_t qingzhen::util::format_remote_path(utility::string_t str)
+{
+	for (auto &c_char : str) {
+		if (c_char == _XPLATSTR('\\')) {
+			c_char = _XPLATSTR('/');
+		}
+	}
+	return str;
+}
+
 utility::string_t util::random_string_t() {
     return utility::conversions::to_string_t(random_string());
 }
@@ -45,4 +55,14 @@ utility::string_t util::utf8_to_md5(utility::string_t &str) {
 
 time_t util::get_current_linux_timestamp() {
     return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+}
+
+utility::string_t qingzhen::util::convert_path(const common_fs::path & path)
+{
+//#if defined(_WIN32) || defined(__WINDOWS__) || defined(__WXMSW__)
+#ifdef	_UTF16_STRINGS
+	return utility::string_t(path.wstring()); //compatible for shit
+#else
+	return utility::string_t(path.string());
+#endif
 }

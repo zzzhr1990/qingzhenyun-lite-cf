@@ -5,6 +5,7 @@
 #include "api_file_store_model.h"
 #include "../wcs/wcs_toolbox.h"
 #include "../common/common_fs.h"
+#include "../common/common_util.h"
 
 pplx::task<response_entity> qingzhen::api::api_file_store_model::get_token_or_file_info(
         const pplx::cancellation_token_source &cancellation_token_source, const utility::string_t &file_hash,
@@ -230,16 +231,17 @@ void qingzhen::api::api_file_store_model::do_add_directory(const common_fs::path
                                                            const utility::string_t &remote_directory, std::shared_ptr<qingzhen::sync_task::sync_task_info> & info) {
     // list directory
 
-    for(common_fs::directory_entry& p: common_fs::directory_iterator(path)){
+    for(const common_fs::directory_entry& p: common_fs::directory_iterator(path)){
         const auto &c_path = p.path();
         if(common_fs::is_directory(c_path)){
             do_add_directory(c_path,base_path, remote_directory, info);
         }else if(common_fs::is_regular_file(c_path)){
             // add task...
-            std::cout << "Adding single file..." << p << std::endl;
-            utility::string_t add_parent_path = base_path.string();
-            utility::string_t add_current_path = c_path.string();
-            add_current_path = info->remote_path + add_current_path.substr(add_parent_path.size());
+			
+
+            utility::string_t add_parent_path = qingzhen::util::convert_path(base_path);
+            utility::string_t add_current_path = qingzhen::util::convert_path(c_path.string());
+			add_current_path = qingzhen::util::format_remote_path(info->remote_path + add_current_path.substr(add_parent_path.size()));
             std::cout << utility::conversions::to_utf8string(add_current_path) << std::endl;
         }
 
