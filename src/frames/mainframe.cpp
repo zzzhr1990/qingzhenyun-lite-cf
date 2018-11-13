@@ -28,12 +28,13 @@
 #include "../api_model/api_user_model.h"
 #include "../common/common_event_ids.h"
 #include "../util/common_util.h"
-#include "../common/common_util.hpp"
+#include "../common/common_util.h"
 #include "../local_model/config_model.h"
 #include "user/register/userregisterdialog.h"
 #include "user/userlogindialog.h"
 #include "system/updatedialog.h"
 #include "./system/aboutdialog.h"
+#include "./system/settingdialog.h"
 #ifdef __WXOSX_MAC__
 
 //#include "IOKit/pwr_mgt/"
@@ -181,9 +182,13 @@ void MainFrame::CreateControls()
 ////@end MainFrame content construction
 }
 void MainFrame::OnToolClick(const wxCommandEvent& event) {
-	if (event.GetId() == ID_USER_TOOL) {
+    auto id = event.GetId();
+	if (id == ID_USER_TOOL) {
 		//showLoginFrame(_("Login"));
 		this->TryShowUserOrLoginDialog();
+	} else if(ID_SETTING_TOOL == id){
+        auto settingDlg = new SettingDialog(this);
+        settingDlg->ShowModal();
 	}
 }
 
@@ -475,14 +480,14 @@ void MainFrame::CheckInterval() {
 void MainFrame::OnMainMenu(wxCommandEvent& evt) {
     //std::cout << "Menu Evt.." << std::endl;
 	auto id = evt.GetId();
-    if(id == wxID_ABOUT){
+    if(id == wxID_ABOUT) {
         auto aboutDlg = new AboutDialog(this);
         aboutDlg->ShowModal();
-	}
-	else if (id == wxID_PREFERENCES) {
+	} else if (id == wxID_PREFERENCES) {
 		// pass not write yet
-	}
-	else if (id == ID_USER_LOGIN) {
+		auto settingDlg = new SettingDialog(this);
+		settingDlg->ShowModal();
+	} else if (id == ID_USER_LOGIN) {
 		this->TryShowUserOrLoginDialog();
 	}
 }

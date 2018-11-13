@@ -6,7 +6,7 @@
 #include "./userregisterdialog.h"
 #include "../../../common/common_constants_wx.h"
 #include "../../../api_model/api_user_model.h"
-#include "../../../common/common_util.hpp"
+#include "../../../common/common_util.h"
 
 /*
  * WizardPage1 type definition

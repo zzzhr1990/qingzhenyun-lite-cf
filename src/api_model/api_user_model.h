@@ -40,6 +40,7 @@ namespace qingzhen::api{
 
         pplx::task<utility::string_t>  async_read_token();
 
+        utility::string_t user_random_string();
 
     private:
         web::json::value user_info;

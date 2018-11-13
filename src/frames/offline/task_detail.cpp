@@ -222,16 +222,16 @@ void TaskDetail::setView(const web::json::value& v)
 			break;
 		}
 	}
-	if (v.has_field(U("progress"))) {
+	if (v.has_field(_XPLATSTR("progress"))) {
 		//pathStaticText->SetValue(v.at(U("filePath")).as_string());
 		if (v.has_field(U("size")) && v.has_field(U("finishedSize"))) {
 			
 			progressStaticText->SetLabel(wxString::Format(_("%s/%s (%d%%)"),
 				ConvertSizeToDisplay(v.at(U("finishedSize")).as_number().to_int64()),
-				ConvertSizeToDisplay(v.at(U("size")).as_number().to_int64()), v.at(U("progress")).as_integer()));
+				ConvertSizeToDisplay(v.at(U("size")).as_number().to_int64()), v.at(_XPLATSTR("progress")).as_integer()));
 		}
 		else {
-			progressStaticText->SetLabel(wxString::Format(_("%d"), v.at(U("progress")).as_integer()));
+			progressStaticText->SetLabel(wxString::Format(_("%d"), v.at(_XPLATSTR("progress")).as_integer()));
 		}
 	}
 	if (v.has_field(U("mime"))) {

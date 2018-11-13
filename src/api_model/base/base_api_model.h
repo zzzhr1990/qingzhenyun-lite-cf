@@ -36,7 +36,7 @@ namespace qingzhen::api {
     public:
         static T &instance();
         pplx::task<response_entity> post_json(const utility::string_t& uri, const web::json::value & data, const pplx::cancellation_token_source &cancellation_token_source);
-        //void post_json(const utility::string_t& uri, const web::json::value & data,std::function<void(response_entity)> callback, const pplx::cancellation_token_source &cancellation_token_source);
+        pplx::task<response_entity> post_json(const utility::string_t& uri, const web::json::value & data, const pplx::cancellation_token &cancellation_token);
         void then_json(pplx::task<response_entity> task, std::function<void(response_entity)> callback);
     private:
         // web::http::client::http_client raw_client;
@@ -48,9 +48,18 @@ namespace qingzhen::api {
         return c;
     }
 
+
+
+    template<class T>
+    void base_api_model<T>::then_json(pplx::task<response_entity> task, std::function<void(response_entity)> callback) {
+        task.then([callback](response_entity entity) -> void {
+            callback(entity);
+        });
+    }
+
     template<class T>
     pplx::task<response_entity> base_api_model<T>::post_json(const utility::string_t &uri, const web::json::value &data,
-                                                             const pplx::cancellation_token_source &cancellation_token_source) {
+                                                             const pplx::cancellation_token &cancellation_token) {
         web::http::http_request request(web::http::methods::POST);
         web::uri_builder login_uri(uri);
         request.set_request_uri(login_uri.to_string());
@@ -62,111 +71,72 @@ namespace qingzhen::api {
             headers.add(_XPLATSTR("Token"), token);
         }
         request.set_body(data);
-        return pplx::create_task([request,&cancellation_token_source] {
-            const pplx::task<response_entity> resp = client_static::get_client().request(request, cancellation_token_source.get_token()).then(
-                    [](pplx::task<web::http::http_response> response_task) {
-                        try {
-                            auto json_response = response_task.get();
-                            auto code = json_response.status_code();
-                            try {
-                                auto json = json_response.extract_json(true);
-                                auto v = json.get();
-                                if (v.has_field(_XPLATSTR("token"))) {
-                                    utility::string_t new_token = v.at(_XPLATSTR("token")).as_string();
-                                    token_store::instance().update_token(new_token);
-                                }
-                                auto success = v[_XPLATSTR("success")].as_bool();
-                                response_entity response;
-                                response.success = success;
-                                if (v.has_field(_XPLATSTR("message"))) {
-                                    response.message = v.at(_XPLATSTR("message")).as_string();
-                                }
-                                if (v.has_field(_XPLATSTR("code"))) {
-                                    response.code = v.at(_XPLATSTR("code")).as_string();
-                                }
-                                if (v.has_field(_XPLATSTR("result"))) {
-                                    response.result = v.at(_XPLATSTR("result"));
-                                }
-                                if (v.has_field(_XPLATSTR("status"))) {
-                                    response.status = v.at(_XPLATSTR("status")).as_integer();
-                                }
-                                return pplx::task_from_result(response);
-                            }catch (const pplx::task_canceled &e) {
-                                if(code == web::http::status_codes::NotFound){
-                                    response_entity response;
-                                    response.success = false;
-                                    response.status = -1;
-                                    response.result = web::json::value();
-                                    response.message = _XPLATSTR("API not found");
-                                    std::cout << "API cannot found" << std::endl;
-                                    return pplx::task_from_result(response);
-                                } else{
-                                    throw e;
-                                }
-                            }
-
-
-                        }
-                        catch (const pplx::task_canceled &e) {
-                            response_entity response;
-                            response.success = false;
-                            response.status = -99999;
-                            response.result = web::json::value();
-                            response.message = utility::conversions::to_string_t(e.what());
-                            return pplx::task_from_result(response);
-                        }
-                        catch (web::http::http_exception & http_ex) {
-                            if (http_ex.error_code() == std::errc::operation_canceled) {
-                                response_entity response;
-                                response.success = false;
-                                response.status = -99999;
-                                response.result = web::json::value();
-                                response.message = utility::conversions::to_string_t(http_ex.what());
-                                return pplx::task_from_result(response);
-                            }
-                            else {
-                                response_entity response;
-                                response.success = false;
-                                response.status = -1;
-                                response.result = web::json::value();
-                                response.message = utility::conversions::to_string_t(http_ex.what());
-                                return pplx::task_from_result(response);
-                            }
-                        }
-                        catch (const std::exception &e) {
-                            response_entity response;
-                            response.success = false;
-                            response.status = -1;
-                            response.result = web::json::value();
-                            response.message = utility::conversions::to_string_t(e.what());
-                            return pplx::task_from_result(response);
-                        }
-                        //, pplx::task_continuation_context::use_default()
-                        // pplx::task_continuation_context::
-                    });
-            //return resp;
-            try {
-                return resp.get();
+        //auto cancellation_token = cancellation_token_source.get_token();
+        response_entity response_data;
+        try {
+            client_static::get_client().request(request, cancellation_token).then([&response_data](web::http::http_response response) {
+                //return pplx::task_from_result(false);
+                response_data.status = response.status_code();
+                return response.extract_json(true).then([&response_data](web::json::value v){
+                    if (v.has_field(_XPLATSTR("token"))) {
+                        utility::string_t new_token = v.at(_XPLATSTR("token")).as_string();
+                        token_store::instance().update_token(new_token);
+                    }
+                    auto success = v[_XPLATSTR("success")].as_bool();
+                    response_data.success = success;
+                    if (v.has_field(_XPLATSTR("message"))) {
+                        response_data.message = v.at(_XPLATSTR("message")).as_string();
+                    }
+                    if (v.has_field(_XPLATSTR("code"))) {
+                        response_data.code = v.at(_XPLATSTR("code")).as_string();
+                    }
+                    if (v.has_field(_XPLATSTR("result"))) {
+                        response_data.result = v.at(_XPLATSTR("result"));
+                    }
+                    if (v.has_field(_XPLATSTR("status"))) {
+                        response_data.status = v.at(_XPLATSTR("status")).as_integer();
+                    }
+                    //return pplx::task_from_result(response_re);
+                });
+            }).wait();
+        } catch (const pplx::task_canceled &e) {
+            if(response_data.status != 0){
+                response_data.status = -99999;
             }
-            catch (const std::exception &e) {
-                response_entity response;
-                response.success = false;
-                response.status = -1;
-                response.result = web::json::value();
-                response.message = utility::conversions::to_string_t(e.what());
-                return response;
+            response_data.message = utility::conversions::to_string_t(e.what());
+        } catch (web::http::http_exception & http_ex) {
+            if (http_ex.error_code() == std::errc::operation_canceled) {
+
+                if(response_data.status != 0){
+                    response_data.status = -99999;
+                }
+                response_data.message = utility::conversions::to_string_t(http_ex.what());
             }
-        }, cancellation_token_source.get_token());
+            else {
+
+                response_data.success = false;
+                if(response_data.status != 0){
+                    response_data.status = -1;
+                }
+                response_data.result = web::json::value();
+                response_data.message = utility::conversions::to_string_t(http_ex.what());
+            }
+        } catch (const std::exception &e) {
+
+            if(response_data.status != 0){
+                response_data.status = -1;
+            }
+            response_data.result = web::json::value();
+            response_data.message = utility::conversions::to_string_t(e.what());
+        }
+        return pplx::task_from_result(response_data,cancellation_token);
     }
 
     template<class T>
-    void base_api_model<T>::then_json(pplx::task<response_entity> task, std::function<void(response_entity)> callback) {
-        task.then([callback](response_entity entity) -> void {
-            callback(entity);
-        });
+    pplx::task<response_entity> base_api_model<T>::post_json(const utility::string_t &uri, const web::json::value &data,
+                                                             const pplx::cancellation_token_source &cancellation_token_source) {
+        return post_json(uri,data,cancellation_token_source.get_token());
     }
-
-
 }
 
 #endif //QINGZHENYUN_LITE_BASE_API_MODEL_H

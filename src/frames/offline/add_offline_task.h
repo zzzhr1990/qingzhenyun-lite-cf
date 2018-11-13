@@ -93,12 +93,19 @@ public:
 
     wxString GetDownloadUrl();
 
+    wxString GetTorrentFilePath();
+
+    void DoOpenFiles(const wxArrayString &fileNames);
+
+    void OnFileOpen(wxCommandEvent& event );
+
 ////@begin AddOfflineTask member variables
 private:
     void OnChangeBtnClicked(wxCommandEvent &event);
     wxTextCtrl* downloadDirTextCtrl = nullptr;
     wxNotebook* mainNotebook = nullptr;
     wxTextCtrl* downloadUrlInput = nullptr;
+    wxTextCtrl* filePathTextCtrl = nullptr;
 ////@end AddOfflineTask member variables
 
 };

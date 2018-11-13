@@ -3,7 +3,7 @@
 //
 
 #include "api_user_model.h"
-#include "../common/common_util.hpp"
+#include "../common/common_util.h"
 #include "./base/token_store.h"
 using namespace qingzhen::api;
 
@@ -118,6 +118,14 @@ api_user_model::change_username_and_get(const pplx::cancellation_token_source &c
     val[_XPLATSTR("name")] = web::json::value::string(name);
     // password should be encode
     return this->post_json(_XPLATSTR("/v1/user/changeNameAndGet"),val, cancellation_token_source);
+}
+
+utility::string_t api_user_model::user_random_string() {
+    auto rand_str = qingzhen::util::random_string();
+    if(this->user_info.has_field(_XPLATSTR("uuid"))){
+        rand_str += '-' + std::to_string(this->user_info.at(_XPLATSTR("uuid")).as_number().to_int64());
+    }
+    return utility::conversions::to_string_t(rand_str);
 }
 
 /*

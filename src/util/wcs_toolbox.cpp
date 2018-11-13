@@ -337,3 +337,5 @@ utility::size64_t wcs::WcsToolbox::HashFile(const utility::string_t &filePath, u
     in.close();
     return fileSize;
 }
+
+

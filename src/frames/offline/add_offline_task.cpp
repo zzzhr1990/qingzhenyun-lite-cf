@@ -20,11 +20,32 @@
 
 #include "add_offline_task.h"
 #include "../file/remove_file_select.h"
+#include "wx/dnd.h"         // drag and drop for the playlist
+#include "wx/filedlg.h"
 
 ////@begin XPM images
 ////@end XPM images
 
+#if wxUSE_DRAG_AND_DROP
 
+class wxAddTorrentDropTarget : public wxFileDropTarget {
+public:
+    wxAddTorrentDropTarget(AddOfflineTask &panel) : m_book(panel) {}
+
+    ~wxAddTorrentDropTarget() {}
+
+    virtual bool OnDropFiles(wxCoord WXUNUSED(x), wxCoord WXUNUSED(y),
+                             const wxArrayString &files) {
+        m_book.DoOpenFiles(files);
+
+        return true;
+    }
+
+    //wxListCtrl& m_list;
+    AddOfflineTask &m_book;
+};
+
+#endif
 /*
  * AddOfflineTask type definition
  */
@@ -57,6 +78,8 @@ AddOfflineTask::AddOfflineTask( wxWindow* parent, wxWindowID id, const wxString&
 {
 	Init();
 	Create(parent, id, caption, pos, size, style);
+
+
 }
 
 
@@ -147,13 +170,17 @@ void AddOfflineTask::CreateControls()
 
 	wxBoxSizer* itemBoxSizer10 = new wxBoxSizer(wxHORIZONTAL);
 	itemBoxSizer9->Add(itemBoxSizer10, 1, wxGROW|wxALL, 5);
-	wxTextCtrl* itemTextCtrl8 = new wxTextCtrl( itemPanel8, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	itemBoxSizer10->Add(itemTextCtrl8, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+	filePathTextCtrl = new wxTextCtrl( itemPanel8, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+	itemBoxSizer10->Add(filePathTextCtrl, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 	wxButton* itemButton9 = new wxButton( itemPanel8, wxID_ANY, _("Browse in my computer"), wxDefaultPosition, wxDefaultSize, 0 );
 	itemBoxSizer10->Add(itemButton9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
+	itemButton9->Bind(wxEVT_BUTTON, &AddOfflineTask::OnFileOpen, this);
 	mainNotebook->AddPage(itemPanel8, _("Upload Torrents"));
+
+#if wxUSE_DRAG_AND_DROP
+    itemPanel8->SetDropTarget(new wxAddTorrentDropTarget(*this));
+#endif
 
 	itemBoxSizer1->Add(mainNotebook, 1, wxGROW, 5);
 
@@ -243,4 +270,49 @@ wxString AddOfflineTask::GetDownloadDir() {
 
 wxString AddOfflineTask::GetDownloadUrl() {
 	return downloadUrlInput->GetValue();
+}
+
+void AddOfflineTask::DoOpenFiles(const wxArrayString &fileNames) {
+
+
+}
+
+void AddOfflineTask::OnFileOpen(wxCommandEvent &event) {
+	WXUNUSED(event);
+
+	static wxString s_extDef = "*.torrent";
+	wxString path = wxFileSelector(
+			_("Select the torrent file to load"),
+			wxEmptyString, wxEmptyString,
+			s_extDef,
+			_("C++ files (*.torrent)|*.torrent"),
+			wxFD_OPEN|wxFD_CHANGE_DIR|wxFD_PREVIEW,
+			this
+	);
+
+	if(!path.empty()){
+		filePathTextCtrl->SetValue(path);
+	}
+
+	/*
+	wxFileDialog dialog
+			(
+			this,
+			wxT("Testing open file dialog"),
+			wxEmptyString,
+			wxEmptyString,
+#ifdef __WXMOTIF__
+			wxT("C++ files (*.cpp)|*.cpp")
+#else
+			wxT("C++ files (*.torrent)|*.torrent")
+#endif
+	);
+	dialog.ShowModal();
+
+	 */
+
+}
+
+wxString AddOfflineTask::GetTorrentFilePath() {
+	return filePathTextCtrl ->GetValue();
 }

@@ -4,7 +4,7 @@
 
 #include "token_store.h"
 #include "../../local_model/config_model.h"
-#include "../../common/common_util.hpp"
+#include "../../common/common_util.h"
 
 qingzhen::api::token_store &qingzhen::api::token_store::instance() {
     static token_store c;

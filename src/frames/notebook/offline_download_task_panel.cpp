@@ -21,9 +21,12 @@
 #include "../../resources/left_btn.xpm"
 #include "../../resources/right_btn.xpm"
 #include "../../api_model/api_offline_task_model.h"
+#include "../../api_model/api_file_store_model.h"
+
 #include "../../common/common_event_ids.h"
 #include "../../util/common_util.h"
 #include "../../util/listctrlutil.h"
+#include "../../common/common_fs.h"
 #include "../offline/add_task_result_dialog.h"
 
 ////@end XPM images
@@ -474,26 +477,68 @@ void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
 
 	AddOfflineTask * addOfflineTaskDialog = new AddOfflineTask(this);
 	if(addOfflineTaskDialog->ShowModal() == wxID_OK) {
+        currentDownloadPath = addOfflineTaskDialog->GetDownloadDir();
 	    if(addOfflineTaskDialog->IsTorrentPageSelected()){
+	        // first, upload file
+	        auto torrentPath = addOfflineTaskDialog->GetTorrentFilePath().Trim();
+            if(torrentPath.empty()){
+                wxMessageBox(_("Please select torrent file"), _("Empty input"),wxICON_INFORMATION | wxOK, this);
+                return;
+            }
+            auto path = common_fs::path(torrentPath);
+#ifdef __WXMSW__
+            path.filename()
+            utility::string_t filename = path.filename().wstring();
+#else
+            utility::string_t filename = path.filename().string();
 
+#endif
+            utility::string_t torrent_path = torrentPath;
+            action_cancellation.cancel();
+            action_cancellation = pplx::cancellation_token_source();
+            utility::string_t remote_path = _XPLATSTR(":torrent/") + filename;
+            qingzhen::api::api_file_store_model::instance().post_simple_file(action_cancellation,torrent_path,remote_path).then([this,torrentPath](qingzhen::sync_task::file_task_info info){
+                //std::cout << "Upload file " << info.success << " reason :" << info.error_reason << " path: " << info.remote_path << std::endl;
+                //action_cancellation.cancel();
+                //action_cancellation = pplx::cancellation_token_source(); use local lock
+                //if()
+                this->CallAfter([this,info,torrentPath](){
+                    if(!info.success){
+                        wxMessageBox(_("Upload file failed."), _("Upload torrent failed."),wxICON_INFORMATION | wxOK, this);
+                        return;
+                    }
+                    action_cancellation.cancel();
+                    action_cancellation = pplx::cancellation_token_source();
+                    utility::string_t tp = torrentPath;
+                    utility::string_t torrent_upload_path = info.remote_path.empty() ? tp : info.remote_path;
+                    qingzhen::api::api_offline_task_model::instance().parse_torrent(action_cancellation, torrent_upload_path).then([this](response_entity entity){
+                        if(!entity.is_cancelled()){
+                            this->CallAfter([this, entity](){
+                                this->OnUrlParsed(entity);
+                            });
+                        }
+                    });
+                });
+
+            });
 	    }else{
 
-	    }
-        currentDownloadPath = addOfflineTaskDialog->GetDownloadDir();
-        auto url = addOfflineTaskDialog->GetDownloadUrl().Trim();
-        if(url.empty()){
-            wxMessageBox(_("Please input urls"), _("Empty input"),wxICON_INFORMATION | wxOK, this);
-            return;
-        }
-        action_cancellation.cancel();
-        action_cancellation = pplx::cancellation_token_source();
-        qingzhen::api::api_offline_task_model::instance().parse_url(action_cancellation, url).then([this](response_entity entity){
-            if(!entity.is_cancelled()){
-                this->CallAfter([this, entity](){
-                    this->OnUrlParsed(entity);
-                });
+            auto url = addOfflineTaskDialog->GetDownloadUrl().Trim();
+            if(url.empty()){
+                wxMessageBox(_("Please input urls"), _("Empty input"),wxICON_INFORMATION | wxOK, this);
+                return;
             }
-        });
+            action_cancellation.cancel();
+            action_cancellation = pplx::cancellation_token_source();
+            qingzhen::api::api_offline_task_model::instance().parse_url(action_cancellation, url).then([this](response_entity entity){
+                if(!entity.is_cancelled()){
+                    this->CallAfter([this, entity](){
+                        this->OnUrlParsed(entity);
+                    });
+                }
+            });
+	    }
+
     }
 }
 
@@ -594,9 +639,9 @@ void OfflineDownloadTaskPanel::RefreshDataGridDisplay() {
         // col1 taskname
 
         // col 2 file size
-        mainListCtrl->SetItem(cur, 1, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
-        // col3 progress
-        int progress = i.at(U("progress")).as_integer();
+        mainListCtrl->SetItem(cur, 1, ConvertSizeToDisplay(i.at(_XPLATSTR("size")).as_number().to_int64()));
+        // col3 sync_task
+        int progress = i.at(_XPLATSTR("progress")).as_integer();
         if (progress > 100) {
             progress = 100;
         }
@@ -605,10 +650,10 @@ void OfflineDownloadTaskPanel::RefreshDataGridDisplay() {
         }
         mainListCtrl->SetItem(cur, 2, wxString::Format(_T("%d%%"), progress));
 
-        int status = i.at(U("status")).as_integer();
+        int status = i.at(_XPLATSTR("status")).as_integer();
 
         if (status < 0) {
-            mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error %d"), i.at(U("errorCode")).as_integer()));
+            mainListCtrl->SetItem(cur, 3, wxString::Format(_T("Error %d"), i.at(_XPLATSTR("errorCode")).as_integer()));
         }
         else {
             if (status == 90) {

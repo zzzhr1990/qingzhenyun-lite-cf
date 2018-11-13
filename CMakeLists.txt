@@ -47,6 +47,7 @@ if(APPLE)
 			"${CMAKE_CURRENT_SOURCE_DIR}/lib/include"
 	)
 endif()
+
 find_package(TBB CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.hpp src/*.h src/*.xpm)

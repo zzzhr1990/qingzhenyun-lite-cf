@@ -331,9 +331,9 @@ void SyncPanel::RefreshListData(const response_entity &payload, const bool & upd
 
         // col 2 file size
         mainListCtrl->SetItem(cur, 1, ConvertSizeToDisplay(i.at(U("size")).as_number().to_int64()));
-        // col3 progress
+        // col3 sync_task
 
-        int progress = i.at(U("progress")).as_integer();
+        int progress = i.at(_XPLATSTR("progress")).as_integer();
         if (progress > 100) {
             progress = 100;
         }

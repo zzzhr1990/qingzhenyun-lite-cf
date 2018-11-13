@@ -20,7 +20,7 @@
 
 #include "userlogindialog.h"
 #include "../../api_model/api_user_model.h"
-#include "../../common/common_util.hpp"
+#include "../../common/common_util.h"
 #include "../../common/common_constants_wx.h"
 ////@begin XPM images
 ////@end XPM images

@@ -10,6 +10,7 @@
 #include "base/base_api_model.h"
 namespace qingzhen::api {
     class api_update_model : public base_api_model<api_update_model> {
+        //Get F
 
     };
 }

@@ -27,6 +27,7 @@ namespace qingzhen::api {
                                                const utility::string_t &task_hash, const utility::string_t &save_path,
                                                const utility::string_t &copy_file);
         pplx::task<response_entity> parse_url(const pplx::cancellation_token_source &cancellation_token_source,const utility::string_t& url);
+        pplx::task<response_entity> parse_torrent(const pplx::cancellation_token_source &cancellation_token_source,const utility::string_t& path);
     private:
         int current_page = 1;
         int current_page_size = 50;

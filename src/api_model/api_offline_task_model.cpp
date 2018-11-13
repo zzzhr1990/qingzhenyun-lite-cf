@@ -71,6 +71,14 @@ qingzhen::api::api_offline_task_model::parse_url(const pplx::cancellation_token_
 }
 
 pplx::task<response_entity>
+qingzhen::api::api_offline_task_model::parse_torrent(const pplx::cancellation_token_source &cancellation_token_source,
+                                                 const utility::string_t &path) {
+    web::json::value request;
+    request[_XPLATSTR("path")] = web::json::value::string(path);
+    return this->post_json(_XPLATSTR("/v1/offline/parseTorrent"),request, cancellation_token_source);
+}
+
+pplx::task<response_entity>
 qingzhen::api::api_offline_task_model::start_task(const pplx::cancellation_token_source &cancellation_token_source,
                                                   const utility::string_t &task_hash,
                                                   const utility::string_t &save_path,
