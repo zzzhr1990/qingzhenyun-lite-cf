@@ -485,9 +485,10 @@ void OfflineDownloadTaskPanel::NewTaskBtnClicked(const wxCommandEvent &event) {
                 wxMessageBox(_("Please select torrent file"), _("Empty input"),wxICON_INFORMATION | wxOK, this);
                 return;
             }
-            auto path = common_fs::path(torrentPath);
+			utility::string_t sp = torrentPath;
+            auto path = common_fs::path(sp);
 #ifdef __WXMSW__
-            path.filename()
+			path.filename();
             utility::string_t filename = path.filename().wstring();
 #else
             utility::string_t filename = path.filename().string();
